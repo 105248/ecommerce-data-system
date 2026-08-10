@@ -99,7 +99,7 @@ meta_fix = re.search(r"'/diagnosis':\s*\{title:'问题诊断', supports_shop:fal
 check("F2 诊断页 supports_shop=false", bool(meta_fix))
 
 # ============ G. F1.0.2 新端点契约（品线/MP/风险/机会/趋势日层） ============
-r = get("/product-lines/summary", {"product_line_name": "鱼子酱品线", "start_date": SD, "end_date": ED})
+r = get("/product-lines/summary", {"product_line_name": "鱼子酱洗发水品线", "start_date": SD, "end_date": ED})
 check("G1 品线经营汇总（正式函数）", r.get("success") and r["data"].get("user_pay_amount") is not None, r.get("error", {}).get("code", "?"))
 r = get("/master-products/rank", {"start_date": SD, "end_date": ED, "metric_key": "user_pay_amount", "limit": 3})
 check("G2 MP 排名（user_pay_amount）", r.get("success") and len(r["data"]) > 0, r.get("error", {}).get("code", "?"))
@@ -143,7 +143,7 @@ try:
     wl_names = {i.get("object_name") for i in wl.get("interfaces", [])}
     need = {"get_product_line_members", "get_product_line_period_summary", "get_master_product_period_summary", "rank_master_products"}
     check("J1 品线/MP 4 函数已入白名单", need.issubset(wl_names), str(need - wl_names) if need - wl_names else "全含")
-    check("J2 白名单总数=69(F1.0.3)", wl.get("interface_count") == 69, str(wl.get("interface_count")))
+    check("J2 白名单总数=70(F1.0.4-R3)", wl.get("interface_count") == 70, str(wl.get("interface_count")))
 except Exception as e:
     check("J1/J2 白名单检查", False, str(e)[:100])
 

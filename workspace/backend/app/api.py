@@ -99,6 +99,17 @@ def business_summary(platform_code: str = Query("douyin"), shop_code: str = Quer
     return ok(data, meta)
 
 
+# ===== F1.0.4-R3 周期进度（日报/周报/月报同结构）：3 店铺表 × 6 经营类型 × 6 指标 =====
+@router.get("/business/cycle-report")
+def business_cycle_report(start_date: str = Query(...), end_date: str = Query(...)):
+    check_period(start_date, end_date)
+    rows, _ = db.query("SELECT * FROM mart.get_cycle_report(%s::date, %s::date)",
+                       (start_date, end_date))
+    if not rows:
+        raise ApiError("NO_DATA", "该区间无经营数据")
+    return ok({"start_date": start_date, "end_date": end_date, "rows": rows})
+
+
 # ===== business compare =====
 @router.get("/business/compare")
 def business_compare(platform_code: str = Query("douyin"), shop_code: str = Query(None),

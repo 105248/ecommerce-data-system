@@ -6,19 +6,13 @@ import { esc } from '../lib/format'
 
 export const ROUTES: Array<[string, string]> = [
   ['/today', '今日经营'],
-  ['/store', '店铺'],
+  ['/cycle', '周期进度'],
   ['/priorities', '经营优先级'],
   ['/product-lines', '品线'],
   ['/master-products', 'Master Product'],
-  ['/products', '商品'],
-  ['/product-card', '商品卡'],
-  ['/advertising', '投放'],
-  ['/refunds', '退款'],
   ['/accounts', '达人/账号'],
-  ['/live', '直播'],
-  ['/videos', '短视频'],
-  ['/search', '搜索'],
   ['/materials', '素材'],
+  ['/search', '搜索'],
   ['/smart-operation', '智能经营'],
   ['/risks', '风险中心'],
   ['/diagnostics', '问题诊断'],
@@ -27,19 +21,13 @@ export const ROUTES: Array<[string, string]> = [
 
 export const PAGE_META: Record<string, PageMeta> = {
   '/today': { title: '今日经营', supportsShop: true, supportsScope: true },
-  '/store': { title: '店铺经营', supportsShop: false, supportsScope: true },
+  '/cycle': { title: '周期进度', supportsShop: false, supportsScope: false },
   '/priorities': { title: '经营优先级', supportsShop: false, supportsScope: false },
   '/product-lines': { title: '品线分析', supportsShop: false, supportsScope: false },
   '/master-products': { title: 'Master Product', supportsShop: false, supportsScope: false },
-  '/products': { title: '商品分析', supportsShop: true, supportsScope: false },
-  '/product-card': { title: '商品卡经营', supportsShop: true, supportsScope: true },
-  '/advertising': { title: '投放经营', supportsShop: true, supportsScope: true },
-  '/refunds': { title: '退款分析', supportsShop: true, supportsScope: true },
   '/accounts': { title: '达人 / 账号', supportsShop: true, supportsScope: false },
-  '/live': { title: '直播经营', supportsShop: true, supportsScope: true },
-  '/videos': { title: '短视频经营', supportsShop: true, supportsScope: true },
-  '/search': { title: '搜索', supportsShop: false, supportsScope: false },
   '/materials': { title: '素材', supportsShop: true, supportsScope: false },
+  '/search': { title: '搜索', supportsShop: false, supportsScope: false },
   '/smart-operation': { title: '智能经营', supportsShop: false, supportsScope: false },
   '/risks': { title: '风险中心', supportsShop: false, supportsScope: false },
   '/diagnostics': { title: '问题诊断', supportsShop: false, supportsScope: false },
@@ -64,6 +52,7 @@ function applyPreset(key: string, baseStr?: string): { sd: string; ed: string } 
   const ed = fmtD(t)
   const add = (days: number) => { const d = new Date(t); d.setDate(d.getDate() - days); return fmtD(d) }
   const monthStart = () => `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-01`
+  const monthEnd = () => fmtD(new Date(t.getFullYear(), t.getMonth() + 1, 0))
   const lastMonthEnd = () => fmtD(new Date(t.getFullYear(), t.getMonth(), 0))
   const lastMonthStart = () => `${t.getMonth() === 0 ? t.getFullYear() - 1 : t.getFullYear()}-${String(t.getMonth() === 0 ? 12 : t.getMonth()).padStart(2, '0')}-01`
   switch (key) {
@@ -72,7 +61,8 @@ function applyPreset(key: string, baseStr?: string): { sd: string; ed: string } 
     case 'last7days': return { sd: add(6), ed }
     case 'last14days': return { sd: add(13), ed }
     case 'last30days': return { sd: add(29), ed }
-    case 'this_month': return { sd: monthStart(), ed }
+    // F1.0.4-R3：月报=自然月（整月区间，数据覆盖到哪显示到哪），不随 MX 截断
+    case 'this_month': return { sd: monthStart(), ed: monthEnd() }
     case 'last_month': return { sd: lastMonthStart(), ed: lastMonthEnd() }
     default: return { sd: add(6), ed }
   }
@@ -83,7 +73,7 @@ const DEFAULT_FILTERS: Filters = (() => {
   return { shop: '', shopName: '抖音整体', sd: p.sd, ed: p.ed, scope: '全店', preset: 'last7days' }
 })()
 
-export function AppShell({ children }: { children: (f: Filters) => React.ReactNode }) {
+export function AppShell({ children }: { children: (f: Filters, h: { changePreset: (k: string) => void }) => React.ReactNode }) {
   const [route, setRoute] = useState<string>(() => location.hash.slice(1) || '/today')
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS)
   const [status, setStatus] = useState<{ fact?: string }>({})
@@ -172,7 +162,7 @@ export function AppShell({ children }: { children: (f: Filters) => React.ReactNo
           <span>系统最新入库数据：{esc(status.fact || '—')}</span>
           <span>店铺：{filters.shopName}｜口径：{filters.scope}</span>
         </div>
-        <div id="page">{children({ ...filters, today })}</div>
+        <div id="page">{children({ ...filters, today }, { changePreset })}</div>
       </main>
     </div>
   )

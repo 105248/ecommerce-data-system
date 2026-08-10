@@ -1,36 +1,29 @@
-// F1.0.4 正式前端入口：18 路由 → 独立 Page
+// F1.0.4-R3 正式前端入口：核心页 + 周期进度 + 智能视图（业务分析页已按需求移除）
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { AppShell } from './components/AppShell'
 import { TodayPage } from './features/dashboard/TodayPage'
-import { StorePage } from './features/store/StorePage'
+import { CycleProgressPage } from './features/cycle/CycleProgressPage'
 import { PrioritiesPage } from './features/priorities/PrioritiesPage'
 import { ProductLinesPage } from './features/product-lines/ProductLinesPage'
 import { MasterProductsPage } from './features/master-products/MasterProductsPage'
-import { ProductCardPage } from './features/product-card/ProductCardPage'
-import { VideosPage } from './features/videos/VideosPage'
 import { MaterialsPage } from './features/materials/MaterialsPage'
-import { LivePage } from './features/live/LivePage'
-import { ProductsPage, AdvertisingPage, RefundsPage, AccountsPage, RisksPage, OpportunitiesPage, DiagnosticsPage, SmartOperationPage, SearchPage } from './features/pages'
+import { AccountsPage, RisksPage, OpportunitiesPage, DiagnosticsPage, SmartOperationPage, SearchPage } from './features/pages'
 import type { Filters } from './types'
 
-function Router({ f }: { f: Filters }) {
+type Helpers = { changePreset: (k: string) => void }
+
+function Router({ f, h }: { f: Filters; h: Helpers }) {
   const route = location.hash.slice(1) || '/today'
   switch (route) {
     case '/today': return <TodayPage f={f} />
-    case '/store': return <StorePage f={f} />
+    case '/cycle': return <CycleProgressPage f={f} h={h} />
     case '/priorities': return <PrioritiesPage f={f} />
     case '/product-lines': return <ProductLinesPage f={f} />
     case '/master-products': return <MasterProductsPage f={f} />
-    case '/products': return <ProductsPage f={f} />
-    case '/product-card': return <ProductCardPage f={f} />
-    case '/advertising': return <AdvertisingPage f={f} />
-    case '/refunds': return <RefundsPage f={f} />
     case '/accounts': return <AccountsPage f={f} />
-    case '/live': return <LivePage f={f} />
-    case '/videos': return <VideosPage f={f} />
-    case '/search': return <SearchPage />
     case '/materials': return <MaterialsPage f={f} />
+    case '/search': return <SearchPage />
     case '/smart-operation': return <SmartOperationPage f={f} />
     case '/risks': return <RisksPage f={f} />
     case '/diagnostics': return <DiagnosticsPage f={f} />
@@ -42,7 +35,7 @@ function Router({ f }: { f: Filters }) {
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <AppShell>
-      {(f) => <Router f={f} />}
+      {(f, h) => <Router f={f} h={h} />}
     </AppShell>
   </React.StrictMode>,
 )

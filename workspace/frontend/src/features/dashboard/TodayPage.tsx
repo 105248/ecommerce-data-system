@@ -1,7 +1,7 @@
-// F1.0.4 /today 经营驾驶舱（标题随区间；KPI 绑定正确；环比消费 API 字段）
+// F1.0.4-R3 /today 经营驾驶舱（标题随区间；KPI 绑定正确；环比消费 API 字段；店铺贡献已移周期进度页去重）
 import { useEffect, useState } from 'react'
-import type { BusinessSummary, Filters, RiskRow, OpportunityRow, TrendPoint, ShopContributionRow } from '../../types'
-import { getSummary, getTrend, getRiskTop, getOpportunityTop, getShopContribution, getIntelligenceStatus, api } from '../../services/api'
+import type { BusinessSummary, Filters, RiskRow, OpportunityRow, TrendPoint } from '../../types'
+import { getSummary, getTrend, getRiskTop, getOpportunityTop, getIntelligenceStatus, api } from '../../services/api'
 import { MetricCard } from '../../components/MetricCard'
 import { TrendChart } from '../../components/TrendChart'
 import { CapabilityNotice } from '../../components/CapabilityNotice'
@@ -14,7 +14,6 @@ export function TodayPage({ f }: { f: Filters }) {
   const [trend, setTrend] = useState<TrendPoint[]>([])
   const [risks, setRisks] = useState<RiskRow[]>([])
   const [opps, setOpps] = useState<OpportunityRow[]>([])
-  const [shops, setShops] = useState<ShopContributionRow[]>([])
   const [cmp, setCmp] = useState<CompareData>({})
   const [stale, setStale] = useState(false)
   const [err, setErr] = useState('')
@@ -27,7 +26,6 @@ export function TodayPage({ f }: { f: Filters }) {
     getTrend(q, 'transaction_amount').then(r => setTrend(r.data)).catch(() => setTrend([]))
     getRiskTop({ sd: f.sd, ed: f.ed }).then(r => setRisks(r.data)).catch(() => setRisks([]))
     getOpportunityTop({ sd: f.sd, ed: f.ed }).then(r => setOpps(r.data)).catch(() => setOpps([]))
-    getShopContribution({ sd: f.sd, ed: f.ed, scope: f.scope }).then(r => setShops(r.data.shops || [])).catch(() => setShops([]))
     api<CompareData>('/business/compare', { start_date: f.sd, end_date: f.ed, metric_key: 'user_pay_amount' })
       .then(r => setCmp(r.data)).catch(() => setCmp({}))
     // F1.0.4-R2：智能层 STALE 时禁止用"无风险/无机会"误导（四能力任一落后事实即 STALE）
@@ -78,21 +76,10 @@ export function TodayPage({ f }: { f: Filters }) {
             </div>
           </div>
           <div className="card" style={{ marginTop: 12 }}>
-            <h3>店铺贡献（抖音整体）</h3>
-            <table>
-              <thead><tr><th>店铺</th><th className="num">当前值</th><th className="num">上期</th><th className="num">贡献率</th><th className="num">变化</th></tr></thead>
-              <tbody>
-                {shops.map((x, i) => (
-                  <tr key={i}>
-                    <td>{esc(x.shop_name)}</td>
-                    <td className="num">{yuan(x.current_value)}</td>
-                    <td className="num">{x.previous_value != null ? yuan(x.previous_value) : '—'}</td>
-                    <td className="num">{pct(x.contribution)}</td>
-                    <td className="num">{x.contribution_change != null ? fmt(x.contribution_change) : '—'}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <h3>周期进度</h3>
+            <div style={{ padding: '10px 0', fontSize: 13, color: '#374151' }}>
+              日报 / 周报 / 月报（抖音整体 + 两店 × 6 经营类型 × 6 指标）已移至 <a href="#/cycle" style={{ fontWeight: 600 }}>周期进度</a> 页，与今日经营不重复。
+            </div>
           </div>
         </>
       )}
