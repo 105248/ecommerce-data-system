@@ -1,0 +1,16 @@
+﻿page,backend_endpoint,db_interface,whitelist,wrapper_type,formula_in_backend,status
+今日经营,/business/summary /business/trend /business/compare,get_business_period_summary/get_platform_business_period_summary/get_business_daily_trend(新),是,薄包装,否,READY
+店铺,/business/summary /business/shop-contribution,get_business_period_summary×2/get_shop_contribution,是,薄包装,否,READY
+品线,/product-lines/summary /master-data/product-lines /master-data/product-line-members,get_product_line_period_summary(新白名单)/get_product_line_members(新白名单),是,薄包装,否,READY(F1.0.2新增)
+Master Product,/master-products/rank /master-products/summary /master-products/decompose,rank_master_products(新白名单)/get_master_product_period_summary(新白名单)/decompose_master_product_by_shop_product,是,薄包装,否,READY(F1.0.2新增)
+商品,/business/products/top,rank_products,是,薄包装,否,READY(整体拒绝)
+商品卡,/business/summary?scope=商品卡 /business/trend,get_business_period_summary(scope)/get_business_daily_trend,是,薄包装,否,READY
+投放,/advertising/summary,get_advertising_period_summary,是,薄包装,否,READY(整体拒绝)
+退款,/business/summary /business/trend,get_business_period_summary,是,薄包装,否,READY
+达人/账号,/accounts/summary /accounts/top /accounts/contribution,get_account_period_summary/rank_accounts/get_account_contribution,是,薄包装,否,READY
+直播,/business/summary?scope=直播 /business/trend,get_business_period_summary(scope),是,薄包装,否,READY
+短视频,/business/summary?scope=短视频 /business/trend,get_business_period_summary(scope),是,薄包装,否,READY
+风险中心,/risks/complete /risks/summary /risks/entity,get_anomalies/get_anomaly_summary/get_entity_anomalies,是,薄包装(F1.0.2新增),否,READY(F1.0.2新增)
+问题诊断,/diagnostics/results /diagnostics/funnel /diagnostics/decomposition /diagnostics/advertising,get_diagnostic_result/get_funnel_diagnosis/decompose_platform_change_by_shop/get_advertising_diagnosis,是,薄包装(advertising新增),否,READY(advertising F1.0.2新增)
+增长机会,/opportunities/complete /opportunities/summary /opportunities/entity,get_growth_opportunities/get_opportunity_summary/get_entity_opportunity,是,薄包装(F1.0.2新增),否,READY(F1.0.2新增)
+智能经营,/priorities/* /intelligence-status,get_daily_*_priorities/get_daily_action_list,是,薄包装(intelligence-status新增),否,READY

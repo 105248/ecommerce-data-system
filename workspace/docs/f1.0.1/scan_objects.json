@@ -1,0 +1,633 @@
+{
+ "mart_functions": [
+  {
+   "fn": "_diag_account",
+   "args": "p_shop_name text, p_cs date, p_ce date, p_ps date, p_pe date, p_scope_key text",
+   "secdef": false
+  },
+  {
+   "fn": "_diag_carrier",
+   "args": "p_shop_name text, p_cs date, p_ce date, p_ps date, p_pe date, p_scope_key text",
+   "secdef": false
+  },
+  {
+   "fn": "_diag_category",
+   "args": "p_shop_name text, p_cs date, p_ce date, p_ps date, p_pe date, p_category_level integer",
+   "secdef": false
+  },
+  {
+   "fn": "_diag_master_product",
+   "args": "p_shop_name text, p_cs date, p_ce date, p_ps date, p_pe date, p_entity_id text, p_entity_name text",
+   "secdef": false
+  },
+  {
+   "fn": "_diag_product",
+   "args": "p_shop_name text, p_cs date, p_ce date, p_ps date, p_pe date, p_entity_id text, p_entity_name text",
+   "secdef": false
+  },
+  {
+   "fn": "_diag_product_line",
+   "args": "p_shop_name text, p_cs date, p_ce date, p_ps date, p_pe date, p_entity_name text",
+   "secdef": false
+  },
+  {
+   "fn": "_diag_scope",
+   "args": "p_shop_name text, p_cs date, p_ce date, p_ps date, p_pe date, p_scope_key text",
+   "secdef": false
+  },
+  {
+   "fn": "_diag_shop",
+   "args": "p_shop_name text, p_cs date, p_ce date, p_ps date, p_pe date",
+   "secdef": false
+  },
+  {
+   "fn": "assert_period",
+   "args": "p_start_date date, p_end_date date",
+   "secdef": true
+  },
+  {
+   "fn": "assert_rank_args",
+   "args": "p_domain_key text, p_metric_key text, p_sort_by text, p_sort_direction text, p_limit integer",
+   "secdef": true
+  },
+  {
+   "fn": "check_mapping_period_conflict",
+   "args": "p_platform_code text, p_shop_id bigint, p_platform_product_id text, p_valid_from date, p_valid_to date, p_exclude_mapping_id bigint",
+   "secdef": false
+  },
+  {
+   "fn": "compare_advertising_period",
+   "args": "p_shop_name text, p_start_date date, p_end_date date, p_scope_key text",
+   "secdef": true
+  },
+  {
+   "fn": "compare_business_period",
+   "args": "p_shop_name text, p_start_date date, p_end_date date, p_scope_key text, p_metric_key text",
+   "secdef": true
+  },
+  {
+   "fn": "compare_platform_business",
+   "args": "p_platform_code text, p_start_date date, p_end_date date, p_scope_key text, p_metric_key text",
+   "secdef": true
+  },
+  {
+   "fn": "decompose_master_product_by_shop_product",
+   "args": "p_master_product_id bigint, p_start_date date, p_end_date date",
+   "secdef": true
+  },
+  {
+   "fn": "decompose_platform_change_by_shop",
+   "args": "p_platform_code text, p_start_date date, p_end_date date, p_scope_key text, p_metric_key text",
+   "secdef": true
+  },
+  {
+   "fn": "detect_anomalies",
+   "args": "p_platform_code text, p_start_date date, p_end_date date, p_domain_key text, p_shop_name text",
+   "secdef": true
+  },
+  {
+   "fn": "detect_growth_opportunities",
+   "args": "p_platform_code text, p_start_date date, p_end_date date, p_domain_key text, p_shop_name text",
+   "secdef": true
+  },
+  {
+   "fn": "diagnose_anomaly",
+   "args": "p_anomaly_event_id bigint",
+   "secdef": true
+  },
+  {
+   "fn": "diagnose_entity",
+   "args": "p_domain_key text, p_entity_name text, p_start_date date, p_end_date date, p_shop_name text, p_scope_key text, p_anomaly_event_id bigint",
+   "secdef": true
+  },
+  {
+   "fn": "format_percent_2",
+   "args": "value_decimal numeric",
+   "secdef": false
+  },
+  {
+   "fn": "generate_daily_action_items",
+   "args": "p_platform_code text, p_start_date date, p_end_date date",
+   "secdef": true
+  },
+  {
+   "fn": "get_account_contribution",
+   "args": "p_shop_name text, p_start_date date, p_end_date date, p_sale_scope text, p_metric_key text, p_account_name text, p_include_aggregate_bucket boolean, p_limit integer",
+   "secdef": true
+  },
+  {
+   "fn": "get_account_period_summary",
+   "args": "p_shop_name text, p_start_date date, p_end_date date, p_sale_scope text, p_account_name text",
+   "secdef": true
+  },
+  {
+   "fn": "get_advertising_diagnosis",
+   "args": "p_domain_key text, p_entity_name text, p_start_date date, p_end_date date, p_shop_name text",
+   "secdef": true
+  },
+  {
+   "fn": "get_advertising_period_summary",
+   "args": "p_shop_name text, p_start_date date, p_end_date date, p_scope_key text",
+   "secdef": true
+  },
+  {
+   "fn": "get_anomalies",
+   "args": "p_platform_code text, p_start_date date, p_end_date date, p_domain_key text, p_entity_name text, p_severity text, p_status text",
+   "secdef": true
+  },
+  {
+   "fn": "get_anomaly_summary",
+   "args": "p_platform_code text, p_start_date date, p_end_date date, p_status text",
+   "secdef": true
+  },
+  {
+   "fn": "get_audience_period_summary",
+   "args": "p_shop_name text, p_start_date date, p_end_date date, p_audience_type text, p_carrier_type text",
+   "secdef": true
+  },
+  {
+   "fn": "get_business_contribution",
+   "args": "p_shop_name text, p_start_date date, p_end_date date, p_scope_key text, p_metric_key text",
+   "secdef": true
+  },
+  {
+   "fn": "get_business_period_summary",
+   "args": "p_shop_name text, p_start_date date, p_end_date date, p_scope_key text",
+   "secdef": true
+  },
+  {
+   "fn": "get_business_report",
+   "args": "p_start_date date, p_end_date date",
+   "secdef": true
+  },
+  {
+   "fn": "get_carrier_period_summary",
+   "args": "p_shop_name text, p_start_date date, p_end_date date, p_sale_scope text, p_carrier_type text, p_account_channel text",
+   "secdef": true
+  },
+  {
+   "fn": "get_category_contribution",
+   "args": "p_shop_name text, p_start_date date, p_end_date date, p_category_level integer, p_category_l1 text, p_category_l2 text, p_metric_key text, p_limit integer",
+   "secdef": true
+  },
+  {
+   "fn": "get_category_period_summary",
+   "args": "p_shop_name text, p_start_date date, p_end_date date, p_category_level integer, p_category_l1 text, p_category_l2 text, p_category_l3 text",
+   "secdef": true
+  },
+  {
+   "fn": "get_content_period_summary",
+   "args": "p_shop_name text, p_start_date date, p_end_date date, p_selling_type text, p_carrier_type text, p_content_id text",
+   "secdef": true
+  },
+  {
+   "fn": "get_daily_action_list",
+   "args": "p_platform_code text, p_start_date date, p_end_date date, p_item_type text, p_limit integer",
+   "secdef": true
+  },
+  {
+   "fn": "get_daily_business_brief",
+   "args": "p_platform_code text, p_start_date date, p_end_date date",
+   "secdef": true
+  },
+  {
+   "fn": "get_daily_opportunity_priorities",
+   "args": "p_platform_code text, p_start_date date, p_end_date date, p_limit integer",
+   "secdef": true
+  },
+  {
+   "fn": "get_daily_risk_priorities",
+   "args": "p_platform_code text, p_start_date date, p_end_date date, p_limit integer",
+   "secdef": true
+  },
+  {
+   "fn": "get_data_coverage",
+   "args": "p_shop_name text",
+   "secdef": true
+  },
+  {
+   "fn": "get_diagnostic_entity_metrics",
+   "args": "p_domain_key text",
+   "secdef": true
+  },
+  {
+   "fn": "get_diagnostic_result",
+   "args": "p_platform_code text, p_start_date date, p_end_date date, p_domain_key text, p_status text",
+   "secdef": true
+  },
+  {
+   "fn": "get_diagnostic_snapshot",
+   "args": "p_shop_name text, p_start_date date, p_end_date date, p_domain_key text, p_scope_key text, p_entity_id text, p_entity_name text, p_category_level integer",
+   "secdef": true
+  },
+  {
+   "fn": "get_diagnostic_supported_metrics",
+   "args": "",
+   "secdef": true
+  },
+  {
+   "fn": "get_entity_anomalies",
+   "args": "p_platform_code text, p_domain_key text, p_entity_name text, p_start_date date, p_end_date date",
+   "secdef": true
+  },
+  {
+   "fn": "get_entity_opportunity",
+   "args": "p_platform_code text, p_domain_key text, p_entity_name text, p_start_date date, p_end_date date",
+   "secdef": true
+  },
+  {
+   "fn": "get_funnel_diagnosis",
+   "args": "p_domain_key text, p_entity_name text, p_start_date date, p_end_date date, p_shop_name text, p_scope_key text",
+   "secdef": true
+  },
+  {
+   "fn": "get_growth_opportunities",
+   "args": "p_platform_code text, p_start_date date, p_end_date date, p_domain_key text, p_opportunity_code text, p_min_level text",
+   "secdef": true
+  },
+  {
+   "fn": "get_master_product_members",
+   "args": "p_master_product_id bigint",
+   "secdef": true
+  },
+  {
+   "fn": "get_master_product_period_summary",
+   "args": "p_master_product_id bigint, p_start_date date, p_end_date date, p_shop_name text",
+   "secdef": true
+  },
+  {
+   "fn": "get_masterdata_quality",
+   "args": "p_start_date date, p_end_date date",
+   "secdef": true
+  },
+  {
+   "fn": "get_opportunity_summary",
+   "args": "p_platform_code text, p_start_date date, p_end_date date, p_status text",
+   "secdef": true
+  },
+  {
+   "fn": "get_platform_business_period_summary",
+   "args": "p_platform_code text, p_start_date date, p_end_date date, p_scope_key text",
+   "secdef": true
+  },
+  {
+   "fn": "get_platform_diagnostic_snapshot",
+   "args": "p_platform_code text, p_start_date date, p_end_date date, p_scope_key text",
+   "secdef": true
+  },
+  {
+   "fn": "get_price_band_period_summary",
+   "args": "p_shop_name text, p_start_date date, p_end_date date, p_price_band text",
+   "secdef": true
+  },
+  {
+   "fn": "get_product_contribution",
+   "args": "p_shop_name text, p_start_date date, p_end_date date, p_metric_key text, p_product_id text, p_product_name text, p_limit integer",
+   "secdef": true
+  },
+  {
+   "fn": "get_product_line_members",
+   "args": "p_product_line_name text",
+   "secdef": true
+  },
+  {
+   "fn": "get_product_line_period_summary",
+   "args": "p_product_line_name text, p_start_date date, p_end_date date",
+   "secdef": true
+  },
+  {
+   "fn": "get_product_period_summary",
+   "args": "p_shop_name text, p_start_date date, p_end_date date, p_product_id text, p_product_name text, p_carrier_type text",
+   "secdef": true
+  },
+  {
+   "fn": "get_shop_contribution",
+   "args": "p_platform_code text, p_start_date date, p_end_date date, p_scope_key text, p_metric_key text",
+   "secdef": true
+  },
+  {
+   "fn": "get_terminal_period_summary",
+   "args": "p_shop_name text, p_start_date date, p_end_date date, p_terminal_type text, p_selling_type text",
+   "secdef": true
+  },
+  {
+   "fn": "period_scope_rule",
+   "args": "p_scope_key text",
+   "secdef": true
+  },
+  {
+   "fn": "previous_period",
+   "args": "p_start_date date, p_end_date date",
+   "secdef": true
+  },
+  {
+   "fn": "rank_accounts",
+   "args": "p_shop_name text, p_start_date date, p_end_date date, p_sale_scope text, p_metric_key text, p_sort_by text, p_sort_direction text, p_limit integer, p_include_aggregate_bucket boolean, p_account_name text",
+   "secdef": true
+  },
+  {
+   "fn": "rank_audiences",
+   "args": "p_shop_name text, p_start_date date, p_end_date date, p_carrier_type text, p_metric_key text, p_sort_by text, p_sort_direction text, p_limit integer",
+   "secdef": true
+  },
+  {
+   "fn": "rank_carriers",
+   "args": "p_shop_name text, p_start_date date, p_end_date date, p_sale_scope text, p_metric_key text, p_sort_by text, p_sort_direction text, p_limit integer",
+   "secdef": true
+  },
+  {
+   "fn": "rank_categories",
+   "args": "p_shop_name text, p_start_date date, p_end_date date, p_category_level integer, p_category_l1 text, p_category_l2 text, p_metric_key text, p_sort_by text, p_sort_direction text, p_limit integer",
+   "secdef": true
+  },
+  {
+   "fn": "rank_master_products",
+   "args": "p_start_date date, p_end_date date, p_metric_key text, p_sort_by text, p_sort_direction text, p_limit integer",
+   "secdef": true
+  },
+  {
+   "fn": "rank_price_bands",
+   "args": "p_shop_name text, p_start_date date, p_end_date date, p_metric_key text, p_sort_by text, p_sort_direction text, p_limit integer",
+   "secdef": true
+  },
+  {
+   "fn": "rank_products",
+   "args": "p_shop_name text, p_start_date date, p_end_date date, p_metric_key text, p_sort_by text, p_sort_direction text, p_limit integer, p_product_id text, p_product_name text",
+   "secdef": true
+  },
+  {
+   "fn": "resolve_diagnostic_period",
+   "args": "p_period_key text, p_end_date date, p_current_days integer",
+   "secdef": false
+  },
+  {
+   "fn": "resolve_master_product",
+   "args": "p_platform_code text, p_shop_name text, p_platform_product_id text, p_biz_date date",
+   "secdef": true
+  },
+  {
+   "fn": "resolve_scope",
+   "args": "p_scope character varying",
+   "secdef": false
+  },
+  {
+   "fn": "scope_daily",
+   "args": "p_scope character varying, p_date_from date, p_date_to date",
+   "secdef": false
+  }
+ ],
+ "whitelist_count": 54,
+ "whitelist_functions": [
+  "compare_advertising_period",
+  "compare_business_period",
+  "compare_platform_business",
+  "decompose_master_product_by_shop_product",
+  "decompose_platform_change_by_shop",
+  "get_account_contribution",
+  "get_account_period_summary",
+  "get_advertising_diagnosis",
+  "get_advertising_period_summary",
+  "get_anomalies",
+  "get_anomaly_summary",
+  "get_audience_period_summary",
+  "get_business_period_summary",
+  "get_business_report",
+  "get_carrier_period_summary",
+  "get_category_contribution",
+  "get_category_period_summary",
+  "get_content_period_summary",
+  "get_daily_action_list",
+  "get_daily_business_brief",
+  "get_daily_opportunity_priorities",
+  "get_daily_risk_priorities",
+  "get_data_coverage",
+  "get_diagnostic_result",
+  "get_diagnostic_snapshot",
+  "get_diagnostic_supported_metrics",
+  "get_entity_anomalies",
+  "get_entity_opportunity",
+  "get_funnel_diagnosis",
+  "get_growth_opportunities",
+  "get_master_product_members",
+  "get_opportunity_summary",
+  "get_platform_business_period_summary",
+  "get_platform_diagnostic_snapshot",
+  "get_price_band_period_summary",
+  "get_product_contribution",
+  "get_product_period_summary",
+  "get_shop_contribution",
+  "get_terminal_period_summary",
+  "rank_accounts",
+  "rank_audiences",
+  "rank_carriers",
+  "rank_categories",
+  "rank_price_bands",
+  "rank_products",
+  "resolve_master_product"
+ ],
+ "mart_not_in_whitelist": [
+  "_diag_account",
+  "_diag_carrier",
+  "_diag_category",
+  "_diag_master_product",
+  "_diag_product",
+  "_diag_product_line",
+  "_diag_scope",
+  "_diag_shop",
+  "assert_period",
+  "assert_rank_args",
+  "check_mapping_period_conflict",
+  "detect_anomalies",
+  "detect_growth_opportunities",
+  "diagnose_anomaly",
+  "diagnose_entity",
+  "format_percent_2",
+  "generate_daily_action_items",
+  "get_business_contribution",
+  "get_diagnostic_entity_metrics",
+  "get_master_product_period_summary",
+  "get_masterdata_quality",
+  "get_product_line_members",
+  "get_product_line_period_summary",
+  "period_scope_rule",
+  "previous_period",
+  "rank_master_products",
+  "resolve_diagnostic_period",
+  "resolve_scope",
+  "scope_daily"
+ ],
+ "tables": [
+  {
+   "schema": "audit",
+   "table": "ai_diagnosis_run"
+  },
+  {
+   "schema": "audit",
+   "table": "import_batch"
+  },
+  {
+   "schema": "audit",
+   "table": "masterdata_change_log"
+  },
+  {
+   "schema": "core",
+   "table": "douyin_account_daily"
+  },
+  {
+   "schema": "core",
+   "table": "douyin_audience_daily"
+  },
+  {
+   "schema": "core",
+   "table": "douyin_carrier_daily"
+  },
+  {
+   "schema": "core",
+   "table": "douyin_category_daily"
+  },
+  {
+   "schema": "core",
+   "table": "douyin_content_daily"
+  },
+  {
+   "schema": "core",
+   "table": "douyin_deal_daily"
+  },
+  {
+   "schema": "core",
+   "table": "douyin_price_band_daily"
+  },
+  {
+   "schema": "core",
+   "table": "douyin_product_daily"
+  },
+  {
+   "schema": "core",
+   "table": "douyin_terminal_daily"
+  },
+  {
+   "schema": "meta",
+   "table": "database_object_dictionary"
+  },
+  {
+   "schema": "meta",
+   "table": "field_mapping"
+  },
+  {
+   "schema": "meta",
+   "table": "master_product"
+  },
+  {
+   "schema": "meta",
+   "table": "master_product_alias"
+  },
+  {
+   "schema": "meta",
+   "table": "master_sku"
+  },
+  {
+   "schema": "meta",
+   "table": "master_sku_alias"
+  },
+  {
+   "schema": "meta",
+   "table": "metric_formula_rule"
+  },
+  {
+   "schema": "meta",
+   "table": "platform"
+  },
+  {
+   "schema": "meta",
+   "table": "platform_product_mapping"
+  },
+  {
+   "schema": "meta",
+   "table": "platform_sku_mapping"
+  },
+  {
+   "schema": "meta",
+   "table": "product_line"
+  },
+  {
+   "schema": "meta",
+   "table": "shop"
+  },
+  {
+   "schema": "meta",
+   "table": "source_sheet_mapping"
+  }
+ ],
+ "backend_endpoints": [
+  "/health",
+  "/ready",
+  "/data-status",
+  "/shops",
+  "/business/summary",
+  "/business/compare",
+  "/business/products/top",
+  "/master-data/product-lines",
+  "/master-data/products",
+  "/master-data/resolve",
+  "/priorities/risks",
+  "/priorities/opportunities",
+  "/priorities/watchlist",
+  "/business/rankings",
+  "/diagnostics/snapshot",
+  "/diagnostics/anomalies",
+  "/opportunities",
+  "/advertising/summary",
+  "/business/trend",
+  "/business/shop-contribution",
+  "/diagnostics/results",
+  "/diagnostics/funnel",
+  "/diagnostics/decomposition",
+  "/risks/detail",
+  "/opportunities/detail",
+  "/master-data/product-line-members",
+  "/accounts/summary",
+  "/accounts/top",
+  "/accounts/contribution"
+ ],
+ "frontend_pages": [
+  "/accounts",
+  "/advertising",
+  "/ai",
+  "/data-center",
+  "/data-status",
+  "/diagnosis",
+  "/live",
+  "/master-products",
+  "/materials",
+  "/opportunities",
+  "/priorities",
+  "/product-card",
+  "/product-lines",
+  "/products",
+  "/refund",
+  "/risks",
+  "/search",
+  "/smart-operation",
+  "/store",
+  "/system-status",
+  "/today",
+  "/video"
+ ],
+ "raw_files": [
+  "D:\\ecommerce-data-system\\raw_files\\douyin\\弹动个人护理旗舰店\\2026\\2026-06\\抖音电商罗盘-成交分析-20260601-20260630.xlsx",
+  "D:\\ecommerce-data-system\\raw_files\\douyin\\弹动官方旗舰店\\2026\\2026-06\\抖音电商罗盘-成交分析-20260601-20260630.xlsx"
+ ],
+ "importer_sheets": [
+  "人群构成",
+  "价格带构成",
+  "单载体构成",
+  "合作成交",
+  "品类构成",
+  "商品构成",
+  "成交概览",
+  "终端构成",
+  "自营成交",
+  "账号构成",
+  "载体构成"
+ ]
+}

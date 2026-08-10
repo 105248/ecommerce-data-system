@@ -1,0 +1,20 @@
+# Source Profile: material
+
+| 项 | 值 |
+|---|---|
+| file | 全域数据_素材分析_视频_2026-07-09...xlsx |
+| sheets | Sheet1 |
+| shop | 弹动官方旗舰店 |
+| platform | douyin |
+| headers | ['素材ID', '素材名称', '素材评估', '整体消耗', '整体展现次数', '整体点击次数', '整体支付ROI', '整体成交金额', '用户实际支付金额', '整体千次展现费用'] |
+| null_ratio | 低 |
+| unique_values | 素材ID 2185 |
+| min_date | 2026-07-09 |
+| max_date | 2026-07-09 |
+| dup_key_candidate | period+material_id |
+| total_structure | 无TOTAL行 |
+| time_semantics | PERIOD_SNAPSHOT |
+| ratio_fields | ['整体点击率', '整体支付ROI'] |
+| id_fields | ['素材ID'] |
+| parent_child | 无 |
+| cumulative | 单日快照 |

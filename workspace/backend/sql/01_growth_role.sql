@@ -1,5 +1,12 @@
 -- F0.5-B：growth_workspace_reader 动态授权（按 04 白名单 54 接口，pg_proc 真实签名）
 -- 避免手写签名错误；只读消费
+-- 密码安全（P1-10）：必须通过 psql 变量 -v growth_pw=... 提供，禁止占位符创建；未提供直接 FAIL
+\if :{?growth_pw}
+\else
+\echo 'ERROR: 必须通过 -v growth_pw=<密码> 提供 growth_workspace_reader 密码（禁止使用 [REDACTED] 占位创建角色）'
+\quit 1
+\endif
+
 DO $$
 DECLARE
     fn_name text;
@@ -24,7 +31,7 @@ DECLARE
     ];
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'growth_workspace_reader') THEN
-        EXECUTE 'CREATE ROLE growth_workspace_reader LOGIN PASSWORD ''[REDACTED]''';
+        EXECUTE format('CREATE ROLE growth_workspace_reader LOGIN PASSWORD %L', :'growth_pw');
     END IF;
     EXECUTE 'GRANT CONNECT ON DATABASE ecommerce_db TO growth_workspace_reader';
     EXECUTE 'GRANT USAGE ON SCHEMA mart, meta, audit TO growth_workspace_reader';

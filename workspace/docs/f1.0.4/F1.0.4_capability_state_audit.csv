@@ -1,0 +1,19 @@
+﻿page,capability_state,notes
+今日经营,READY,全部指标可用
+店铺,READY,
+经营优先级,READY,STALE 提示
+品线,READY,结构+汇总
+Master Product,READY,排名+主档
+商品,READY,仅 user_pay；结算/投放 UNSUPPORTED_METRIC
+商品卡,READY,整体+快照；来源 SOURCE_NOT_AVAILABLE
+投放,READY,计划级 SOURCE_NOT_AVAILABLE
+退款,READY,原因 SOURCE_NOT_AVAILABLE
+达人/账号,READY,
+直播,READY,场次/日数据；分钟级 SOURCE_NOT_AVAILABLE
+短视频,READY,快照；单视频日趋势不提供
+搜索,SOURCE_NOT_AVAILABLE,无源文件
+素材,READY,快照排名
+智能经营,READY,STALE 提示
+风险中心,READY,完整 Anomaly
+问题诊断,READY,平台级
+增长机会,READY,完整列表

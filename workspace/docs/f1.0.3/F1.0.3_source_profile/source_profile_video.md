@@ -1,0 +1,20 @@
+# Source Profile: video
+
+| 项 | 值 |
+|---|---|
+| file | [周期]_{自营/合作}_{挂车/非挂车}_...视频详情数据.xlsx (7文件) |
+| sheets | 按类型命名(自营_挂车等) |
+| shop | 弹动官方旗舰店 |
+| platform | douyin |
+| headers | ['视频ID', '视频标题', '发布时间', '达人昵称', '视频观看次数', '用户支付金额(元)', '退款金额(元)', '带货商品ID', '点赞数', '完播率'] |
+| null_ratio | 低 |
+| unique_values | 视频ID 336~7636/文件 |
+| min_date | 2026-06-30 |
+| max_date | 2026-07-31 |
+| dup_key_candidate | period+video_id+selling+carrier |
+| total_structure | 无TOTAL行 |
+| time_semantics | PERIOD_SNAPSHOT |
+| ratio_fields | ['完播率'] |
+| id_fields | ['视频ID', '带货商品ID'] |
+| parent_child | 视频→商品(带货商品ID) |
+| cumulative | 区间累计快照(禁按发布时间日趋势) |

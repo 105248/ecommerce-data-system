@@ -1,0 +1,16 @@
+﻿page,ui_label,frontend_field,api_field,db_cn_name,result
+今日经营,成交金额,transaction_amount,transaction_amount,成交金额,OK
+今日经营,用户支付金额,user_pay_amount,user_pay_amount,用户支付金额,OK
+今日经营,成交退款金额,transaction_refund_amount_pay_time,transaction_refund_amount_pay_time,成交退款金额(支付时间),OK
+今日经营,退款率,refund_rate,refund_rate_pay_time,退款率(支付时间),OK
+今日经营,结算金额,settlement_amount,settlement_amount,结算金额,OK
+今日经营,投放消耗,ad_spend_shop_bound,ad_spend_shop_bound,投放消耗(店铺绑定),OK
+今日经营,投放费比,ad_spend_rate_net_refund_shop_bound,ad_spend_rate_net_refund_shop_bound,投放费比,OK
+店铺,贡献率,contribution,contribution,贡献率,OK
+商品,用户支付金额,current_value,user_pay_amount,用户支付金额,OK
+商品卡,成交金额,transaction_amount,transaction_amount,成交金额,OK
+投放,投放消耗(被投),ad_spend_shop_promoted,ad_spend_shop_promoted,投放消耗(店铺被投),OK
+退款,退款金额(支付时间),refund_amount_pay_time,refund_amount_pay_time,退款金额(支付时间),OK
+账号,用户支付金额,current_value,user_pay_amount,用户支付金额,OK
+品线,用户支付金额,user_pay_amount,user_pay_amount,用户支付金额,OK
+MP,用户支付金额,current_value,user_pay_amount,用户支付金额,OK

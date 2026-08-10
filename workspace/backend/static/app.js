@@ -79,14 +79,14 @@ const PAGE_META = {
   '/product-card':    {title:'商品卡经营', supports_shop:true, supports_scope:false},
   '/advertising':     {title:'投放经营', supports_shop:true,  supports_scope:true},
   '/refund':          {title:'退款分析', supports_shop:true,  supports_scope:true},
-  '/accounts':        {title:'达人 / 账号', supports_shop:false, supports_scope:false},
+  '/accounts':        {title:'达人 / 账号', supports_shop:true, supports_scope:false},
   '/live':            {title:'直播经营', supports_shop:true,  supports_scope:false},
   '/video':           {title:'短视频经营', supports_shop:true, supports_scope:false},
   '/search':          {title:'搜索', supports_shop:false, supports_scope:false},
   '/materials':       {title:'素材', supports_shop:false, supports_scope:false},
   '/smart-operation': {title:'智能经营', supports_shop:false, supports_scope:false},
   '/risks':           {title:'风险中心', supports_shop:false, supports_scope:false},
-  '/diagnosis':       {title:'问题诊断', supports_shop:true,  supports_scope:false},
+  '/diagnosis':       {title:'问题诊断', supports_shop:false, supports_scope:false},
   '/opportunities':   {title:'增长机会', supports_shop:false, supports_scope:false},
   '/data-center':     {title:'数据中心', supports_shop:false, supports_scope:false},
   '/system-status':   {title:'系统状态', supports_shop:false, supports_scope:false},
@@ -107,13 +107,14 @@ async function api(path, params){
 // 共享组件（共享 UI 组件 ≠ 共享业务查询）
 // ============================================================================
 // goodWhen: 'high' 涨=好绿跌=坏红；'low'（退款率/费比等）跌=好绿涨=坏红
-function MetricCard(label, cur, prev, opts){
+function MetricCard(label, cur, opts){
+  // QA 重建(P1-07)：环比 chg 直接来自正式接口（compare.absolute_change / percentage_point_change），前端不做 cur-prev
   opts = opts || {};
   const v = opts.isRate ? pct(cur) : yuan(cur);
-  if (prev == null || cur == null) return `<div class="kpi"><div class="l">${label}</div><div class="v">${v}</div></div>`;
-  const d = cur - prev;
+  if (opts.chg == null || cur == null) return `<div class="kpi"><div class="l">${label}</div><div class="v">${v}</div></div>`;
+  const d = opts.chg;
   const up = d > (opts.isRate ? 0.0001 : 0.0001), dn = d < -(opts.isRate ? 0.0001 : 0.0001);
-  const good = opts.goodWhen === 'low' ? dn : up;   // 低优指标下跌=好
+  const good = opts.goodWhen === 'low' ? dn : up;
   const cls = up || dn ? (good ? 'good' : 'bad') : 'flat';
   const txt = opts.isRate ? (d >= 0 ? '+' : '') + (d*100).toFixed(2) + ' pp' : (d >= 0 ? '+' : '') + fmt(d);
   return `<div class="kpi"><div class="l">${label}</div><div class="v">${v}</div><div class="c ${cls}">较上期 ${txt}</div></div>`;
@@ -128,9 +129,21 @@ function covBadge(meta){
   const label = ok ? '覆盖完整' : '覆盖不完整';
   return `<span class="badge ${cls}">${label} ${meta.coverage_days}/${meta.expected_days}天</span>`;
 }
+const GAP_CN = {
+  NO_DATA: '当前区间无数据',
+  PARTIAL_DATA: '部分数据可用',
+  WHITELIST_GAP: '数据库能力已存在，正式接口待开放',
+  WRAPPER_GAP: '正式数据库能力已存在，工作台接口待接入',
+  DATA_ONBOARDING_GAP: '已有原始数据，尚未进入正式经营数据层',
+  UNSUPPORTED_METRIC: '当前数据粒度不支持该指标',
+  SOURCE_NOT_AVAILABLE: '当前没有对应源数据',
+  REFRESH_STALE: '最新经营数据已更新，智能分析尚未刷新',
+};
 function StateNotice(state, text){
-  if (state === 'NOT_READY') return `<div class="notice amber"><b>NOT_READY</b> ｜ ${esc(text)}</div>`;
-  if (state === 'NO_DATA')   return `<div class="empty">${esc(text)}（当前区间无数据）</div>`;
+  const cn = GAP_CN[state] || '能力未就绪';
+  if (state === 'NO_DATA') return `<div class="empty">${esc(text)}（当前区间无数据）</div>`;
+  if (state === 'SOURCE_NOT_AVAILABLE' || state === 'UNSUPPORTED_METRIC' || state === 'WHITELIST_GAP' || state === 'WRAPPER_GAP' || state === 'DATA_ONBOARDING_GAP' || state === 'REFRESH_STALE' || state === 'PARTIAL_DATA')
+    return `<div class="notice amber"><b>${state}</b> ｜ ${cn}${text ? '：' + esc(text) : ''}</div>`;
   return `<div class="err">${esc(text)}</div>`;
 }
 // 统一错误渲染：NO_DATA（接口存在、查询合法、区间无数据）→ 空态；其余 → 错误
@@ -169,20 +182,20 @@ const PAGES = {
       const c = cur.data;
       let pv = {}, pvr = null;
       try { pv = (await api('/business/compare', {...q, metric_key:'user_pay_amount'})).data; } catch(e){}
-      try { pvr = (await api('/business/compare', {...q, metric_key:'refund_rate_pay_time'})).data.previous_value; } catch(e){}
+      let pvr_pp = null; try { pvr_pp = (await api('/business/compare', {...q, metric_key:'refund_rate_pay_time'})).data.percentage_point_change; } catch(e){}
       html += `<div class="kpis">` +
-        MetricCard('成交金额', c.transaction_amount, null) +
-        MetricCard('用户支付金额', c.user_pay_amount, pv.previous_value) +
-        MetricCard('成交退款金额', c.refund_amount_pay_time, null) +
-        MetricCard('结算金额', c.settlement_amount, null) +
-        MetricCard('退款率', c.refund_rate, pvr, {isRate:true, goodWhen:'low'}) +
-        MetricCard('投放消耗', c.ad_spend_shop_bound, null) +
-        MetricCard('投放费比', c.ad_spend_rate_net_refund_shop_bound, null, {isRate:true, goodWhen:'low'}) +
+        MetricCard('成交金额', c.transaction_amount) +
+        MetricCard('用户支付金额', c.user_pay_amount, {chg: pv.absolute_change}) +
+        MetricCard('退款金额(支付时间)', c.refund_amount_pay_time) +
+        MetricCard('结算金额', c.settlement_amount) +
+        MetricCard('退款率', c.refund_rate, {isRate:true, goodWhen:'low', chg: pvr_pp}) +
+        MetricCard('投放消耗', c.ad_spend_shop_bound) +
+        MetricCard('投放费比', c.ad_spend_rate_net_refund_shop_bound, {isRate:true, goodWhen:'low'}) +
         `</div>`;
       html += `<div class="card"><h3>成交金额趋势 ${covBadge(cur.meta)}</h3>`;
       try {
-        const trend = await api('/business/trend', q);
-        html += TrendSvg(trend.data, 'user_pay_amount');
+        const trend = await api('/business/trend', {...q, metric_key:'transaction_amount'});
+        html += TrendSvg(trend.data, 'metric_value');
       } catch(e){ html += `<div class="err">趋势加载失败：${esc(e.message)}</div>`; }
       html += `</div>`;
     } catch(e){ html += `<div class="err">${esc(e.message)}</div>`; }
@@ -250,15 +263,24 @@ const PAGES = {
     return html;
   },
 
-  // ---- /product-lines 品线：品线结构 + 成员（经营汇总为正式能力缺口）----
+  // ---- /product-lines 品线：结构 + 成员 + 经营汇总（F1.0.2 接入正式白名单函数）----
   '/product-lines': async (f)=>{
     try {
       const pl = await api('/master-data/product-lines');
-      let html = `<h1>品线分析</h1><div class="sub">Product Line → Master Product → 店铺商品（正式跨店聚合，仅 CONFIRMED）</div>`;
-      html += `<div class="notice">品线经营汇总（成交/退款/趋势）在正式接口白名单中尚未提供 → <b>NOT_READY</b>；当前展示品线结构与成员。</div>`;
+      let html = `<h1>品线分析</h1><div class="sub">Product Line → Master Product → 店铺商品（正式跨店聚合，仅 CONFIRMED）｜ ${f.sd} ～ ${f.ed}</div>`;
       for (const line of pl.data){
         const members = await api('/master-data/product-line-members', {product_line_code: line.product_line_code});
-        html += `<div class="card"><h3>${esc(line.product_line_name)} <span class="badge blue">${esc(line.product_line_code)}</span> <span class="badge gray">${members.data.length} 个 Master Product</span></h3>` +
+        let s = '';
+        try {
+          const sum = await api('/product-lines/summary', {product_line_name: line.product_line_name, start_date:f.sd, end_date:f.ed});
+          s = `<div class="kpis" style="margin:6px 0">` +
+            MetricCard('用户支付金额', sum.data.user_pay_amount) +
+            MetricCard('退款金额(支付时间)', sum.data.refund_amount_pay_time) +
+            MetricCard('映射 Master Product', sum.data.mapped_member_count) +
+            MetricCard('覆盖店铺', sum.data.covered_shop_count) + `</div>` +
+            `<div class="trend-note">映射完整性：${sum.data.mapping_complete?'完整':'不完整'}（${sum.data.mapped_member_count}/${sum.data.expected_member_count}）｜ 数据覆盖：${sum.data.data_coverage_complete?'完整':'不完整'}｜ 结算/投放/成交为品线粒度未支持指标</div>`;
+        } catch(e){ s = `<div class="notice">${esc(e.message)}</div>`; }
+        html += `<div class="card"><h3>${esc(line.product_line_name)} <span class="badge blue">${esc(line.product_line_code)}</span> <span class="badge gray">${members.data.length} 个 Master Product</span></h3>${s}` +
           `<table><tr><th>Master Product</th><th>编码</th><th>状态</th></tr>` +
           (members.data.length ? members.data.map(m=>`<tr><td><a href="#/master-products">${esc(m.master_product_name)}</a></td><td>${esc(m.master_product_code)}</td><td><span class="badge ${m.enabled?'green':'gray'}">${m.enabled?'启用':'停用'}</span></td></tr>`).join('') : `<tr><td colspan="3" class="empty">暂无成员</td></tr>`) + `</table></div>`;
       }
@@ -266,29 +288,33 @@ const PAGES = {
     } catch(e){ return `<h1>品线分析</h1><div class="err">${esc(e.message)}</div>`; }
   },
 
-  // ---- /master-products Master Product：主档列表 + 映射状态（经营排名 NOT_READY）----
+  // ---- /master-products Master Product：主档 + 排名 + 跨店拆解（F1.0.2 接入正式白名单函数）----
   '/master-products': async (f)=>{
     try {
       const r = await api('/master-data/products', {page_size:100});
       const list = r.data || [];
-      const mapped = list.filter(m=>m.master_product_code).length;
-      let html = `<h1>Master Product</h1><div class="sub">公司商品主档（跨店统一主商品；CONFIRMED 映射进入正式跨店汇总）</div>`;
-      html += `<div class="notice">Master Product 经营排名/跨店拆解在正式接口白名单中尚未提供 → <b>NOT_READY</b>；当前展示主档结构与映射状态。</div>`;
-      html += `<div class="card"><table><tr><th>编码</th><th>名称</th><th>状态</th></tr>` +
+      let html = `<h1>Master Product</h1><div class="sub">公司商品主档（跨店统一主商品；CONFIRMED 映射进入正式跨店汇总）｜ ${f.sd} ～ ${f.ed}</div>`;
+      try {
+        const rank = await api('/master-products/rank', {start_date:f.sd, end_date:f.ed, metric_key:'user_pay_amount', limit:50});
+        html += `<div class="card"><h3>Master Product 经营排名（用户支付金额）<span class="badge green">正式接口</span></h3><table><tr><th>#</th><th>Master Product</th><th>品线</th><th>用户支付金额</th><th>映射店</th><th>映射完整</th></tr>` +
+          (rank.data.length ? rank.data.map((x,i)=>`<tr><td>${i+1}</td><td><a href="#/master-products">${esc(x.master_product_name)}</a></td><td>${esc(x.product_line_name||'—')}</td><td class="num">${yuan(x.current_value)}</td><td class="num">${x.mapped_shop_count}</td><td>${x.mapping_complete?'<span class="badge green">完整</span>':'<span class="badge amber">不完整</span>'}</td></tr>`).join('') : `<tr><td colspan="6" class="empty">当前区间无排名数据</td></tr>`) + `</table></div>`;
+      } catch(e){ html += `<div class="card"><h3>经营排名</h3>${errBlock(e, '当前区间无排名数据', 6)}</div>`; }
+      html += `<div class="card"><h3>主档结构</h3><table><tr><th>编码</th><th>名称</th><th>状态</th></tr>` +
         (list.length ? list.map(m=>`<tr><td>${esc(m.master_product_code||'—')}</td><td>${esc(m.master_product_name||'—')}</td><td><span class="badge ${m.enabled?'green':'gray'}">${m.enabled?'启用':'停用'}</span></td></tr>`).join('') : `<tr><td colspan="3" class="empty">暂无主档数据</td></tr>`) + `</table></div>`;
       return html;
     } catch(e){ return `<h1>Master Product</h1><div class="err">${esc(e.message)}</div>`; }
   },
 
-  // ---- /products 商品：平台商品排名（正式 rank_products）----
+  // ---- /products 商品：平台商品排名（正式 rank_products，店铺级能力）----
   '/products': async (f)=>{
-    const shop = f.shop || 'DY_DANDONG_OFFICIAL';
-    const shopName = f.shop ? f.shop_name : '弹动官方旗舰店';
+    // P0-04 修复：整体模式不偷偷默认官方店 → 明确要求选择店铺
+    if (!f.shop) return `<h1>商品分析</h1>` + StateNotice('NOT_READY', '商品排名为店铺级能力（正式接口无平台级商品排名）。请在上方选择店铺（弹动官方旗舰店 / 弹动个人护理旗舰店）后查看。');
+    const shopName = f.shop_name;
     try {
-      const r = await api('/business/products/top', {shop_code:shop, start_date:f.sd, end_date:f.ed, limit:50});
+      const r = await api('/business/products/top', {shop_code:f.shop, start_date:f.sd, end_date:f.ed, limit:50});
       let html = `<h1>商品分析</h1><div class="sub">${shopName} ｜ ${f.sd} ～ ${f.ed} ｜ 按用户支付金额排序（正式 mart 排名）</div>`;
       html += `<div class="notice">商品退款/结算/投放列为正式接口未覆盖指标 → 不补造。</div>`;
-      html += `<div class="card"><table><tr><th>#</th><th>商品</th><th>成交金额</th></tr>` +
+      html += `<div class="card"><table><tr><th>#</th><th>商品</th><th>用户支付金额</th></tr>` +
         (r.data.length ? r.data.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.product_name||x.shop_product_name)}</td><td class="num">${yuan(x.current_value)}</td></tr>`).join('') : `<tr><td colspan="3" class="empty">当前区间无商品数据</td></tr>`) + `</table></div>`;
       return html;
     } catch(e){ return `<h1>商品分析</h1><div class="err">${esc(e.message)}</div>`; }
@@ -302,39 +328,56 @@ const PAGES = {
     try {
       const s = await api('/business/summary', params);
       html += `<div class="kpis">` +
-        MetricCard('商品卡成交金额', s.data.user_pay_amount, null) +
-        MetricCard('商品卡退款率', s.data.refund_rate, null, {isRate:true, goodWhen:'low'}) +
-        MetricCard('商品卡结算金额', s.data.settlement_amount, null) +
-        MetricCard('商品卡投放消耗', s.data.ad_spend_shop_bound, null) + `</div>`;
+        MetricCard('成交金额', s.data.transaction_amount) +
+        MetricCard('用户支付金额', s.data.user_pay_amount) +
+        MetricCard('退款率', s.data.refund_rate, {isRate:true, goodWhen:'low'}) +
+        MetricCard('结算金额', s.data.settlement_amount) +
+        MetricCard('投放消耗', s.data.ad_spend_shop_bound) + `</div>`;
       html += `<div class="card"><h3>商品卡成交金额趋势 ${covBadge(s.meta)}</h3>`;
-      try { const t = await api('/business/trend', params); html += TrendSvg(t.data, 'user_pay_amount'); }
+      try { const t = await api('/business/trend', {...params, metric_key:'transaction_amount'}); html += TrendSvg(t.data, 'metric_value'); }
       catch(e){ html += `<div class="err">${esc(e.message)}</div>`; }
       html += `</div>`;
-      html += `<div class="notice">商品卡来源构成（曝光/点击/转化分解）正式接口未提供 → <b>NOT_READY</b>。</div>`;
+      // F1.0.3：商品卡快照（PERIOD_SNAPSHOT，周期×商品；禁日趋势）
+      html += `<div class="card"><h3>商品卡快照（统计周期 ${f.sd} ～ ${f.ed}）<span class="badge green">PERIOD_SNAPSHOT</span></h3>`;
+      try {
+        const snap = await api('/product-card/snapshot-summary', {shop_code:f.shop||'DY_DANDONG_OFFICIAL', start_date:f.sd, end_date:f.ed});
+        html += `<div class="kpis">` +
+          MetricCard('覆盖商品', snap.data.product_count) +
+          MetricCard('曝光人数', snap.data.exposure_users) +
+          MetricCard('点击人数', snap.data.click_users) +
+          MetricCard('快照用户支付金额', snap.data.user_pay_amount) +
+          MetricCard('成交人数', snap.data.transaction_users) +
+          MetricCard('成交订单', snap.data.transaction_orders) + `</div>`;
+        const rank = await api('/product-card/snapshot-rank', {shop_code:f.shop||'DY_DANDONG_OFFICIAL', start_date:f.sd, end_date:f.ed, metric_key:'user_pay_amount', limit:20});
+        html += `<table><tr><th>#</th><th>商品</th><th>用户支付金额</th></tr>` +
+          (rank.data.length ? rank.data.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.product_title||x.product_id)}</td><td class="num">${yuan(x.current_value)}</td></tr>`).join('') : `<tr><td colspan="3" class="empty">当前周期无商品卡快照数据</td></tr>`) + `</table>`;
+      } catch(e){ html += `<div class="notice">快照暂不可用：${esc(e.message)}（商品卡快照为源文件导出周期，非日粒度）</div>`; }
+      html += `<div class="trend-note">商品卡快照为统计周期导出（PERIOD_SNAPSHOT），不提供日趋势；仅展示周期内商品排名与汇总。</div></div>`;
     } catch(e){ html += `<div class="err">${esc(e.message)}</div>`; }
     return html;
   },
 
-  // ---- /advertising 投放：正式广告口径，费比直接消费 mart 结果（广告摘要按店铺维度提供）----
+  // ---- /advertising 投放：正式广告口径（店铺级能力，费比直接消费 mart 结果）----
   '/advertising': async (f)=>{
-    const shop = f.shop || 'DY_DANDONG_OFFICIAL';
-    const shopName = f.shop ? f.shop_name : '弹动官方旗舰店（整体模式下投放按官方店）';
-    const params = {shop_code:shop, start_date:f.sd, end_date:f.ed, scope_key:f.scope};
+    // P0-05 修复：整体模式不偷偷默认官方店 → 明确要求选择店铺
+    if (!f.shop) return `<h1>投放经营</h1>` + StateNotice('NOT_READY', '投放接口为店铺级能力（get_advertising_period_summary 需指定店铺）。请在上方选择店铺后查看。');
+    const shopName = f.shop_name;
+    const params = {shop_code:f.shop, start_date:f.sd, end_date:f.ed, scope_key:f.scope};
     let html = `<h1>投放经营</h1><div class="sub">${shopName} ｜ ${f.sd} ～ ${f.ed} ｜ ${f.scope} ｜ 费比/效率全部来自正式 mart 口径</div>`;
     try {
       const s = await api('/advertising/summary', params);
       const m = s.data || {};
       html += `<div class="kpis">` +
-        MetricCard('投放消耗(店铺被投)', m.ad_spend_shop_promoted, null) +
-        MetricCard('投放消耗(店铺绑定)', m.ad_spend_shop_bound, null) +
-        MetricCard('投放贡献成交', m.ad_attributed_transaction_amount, null) +
-        MetricCard('投放贡献占比', m.ad_attributed_transaction_share, null, {isRate:true}) +
-        MetricCard('投放费比', m.ad_spend_rate_net_refund_shop_bound, null, {isRate:true, goodWhen:'low'}) +
-        MetricCard('综合费比', m.total_expense_rate_net_refund_shop_bound, null, {isRate:true, goodWhen:'low'}) +
-        MetricCard('投放效率', m.ad_efficiency_shop_bound, null) +
-        MetricCard('全店效率', m.store_efficiency_shop_bound, null) + `</div>`;
+        MetricCard('投放消耗(店铺被投)', m.ad_spend_shop_promoted) +
+        MetricCard('投放消耗(店铺绑定)', m.ad_spend_shop_bound) +
+        MetricCard('投放贡献成交', m.ad_attributed_transaction_amount) +
+        MetricCard('投放贡献占比', m.ad_attributed_transaction_share, {isRate:true}) +
+        MetricCard('投放费比', m.ad_spend_rate_net_refund_shop_bound, {isRate:true, goodWhen:'low'}) +
+        MetricCard('综合费比', m.total_expense_rate_net_refund_shop_bound, {isRate:true, goodWhen:'low'}) +
+        MetricCard('投放效率', m.ad_efficiency_shop_bound) +
+        MetricCard('全店效率', m.store_efficiency_shop_bound) + `</div>`;
       html += `<div class="card"><h3>投放消耗趋势</h3>`;
-      try { const t = await api('/business/trend', params); html += TrendSvg(t.data, 'ad_spend_shop_bound'); }
+      try { const t = await api('/business/trend', params); html += TrendSvg(t.data, 'metric_value'); }
       catch(e){ html += `<div class="err">${esc(e.message)}</div>`; }
       html += `</div>`;
       html += `<div class="notice">计划/单元/预算级投放明细未接入 → <b>KNOWN LIMITATION</b>（不补造）。</div>`;
@@ -350,15 +393,16 @@ const PAGES = {
     try {
       const s = await api('/business/summary', q);
       html += `<div class="kpis">` +
-        MetricCard('成交退款金额', s.data.refund_amount_pay_time, null) +
-        MetricCard('退款率', s.data.refund_rate, null, {isRate:true, goodWhen:'low'}) +
-        MetricCard('成交金额', s.data.user_pay_amount, null) + `</div>`;
+        MetricCard('退款金额(支付时间)', s.data.refund_amount_pay_time) +
+        MetricCard('退款率', s.data.refund_rate, {isRate:true, goodWhen:'low'}) +
+        MetricCard('成交金额', s.data.transaction_amount) +
+        MetricCard('用户支付金额', s.data.user_pay_amount) + `</div>`;
       html += `<div class="card"><h3>退款率趋势（低优指标，上涨为风险）</h3>`;
-      try { const t = await api('/business/trend', q); html += TrendSvg(t.data, 'refund_rate_pay_time'); }
+      try { const t = await api('/business/trend', q); html += TrendSvg(t.data, 'metric_value'); }
       catch(e){ html += `<div class="err">${esc(e.message)}</div>`; }
       html += `</div>`;
       // 两店退款对比（正式接口）
-      html += `<div class="card"><h3>两店退款对比</h3><table><tr><th>店铺</th><th>退款金额</th><th>退款率</th><th>成交金额</th></tr>`;
+      html += `<div class="card"><h3>两店退款对比</h3><table><tr><th>店铺</th><th>退款金额</th><th>退款率</th><th>用户支付金额</th></tr>`;
       for (const [code,name] of [['DY_DANDONG_OFFICIAL','弹动官方旗舰店'],['DY_GERENHULI_OFFICIAL','弹动个人护理旗舰店']]){
         try {
           const r = await api('/business/summary', {shop_code:code, start_date:f.sd, end_date:f.ed, scope_key:f.scope});
@@ -371,28 +415,66 @@ const PAGES = {
     return html;
   },
 
-  // ---- /accounts 达人/账号：正式接口缺口，NOT_READY（不占位首页数据）----
+  // ---- /accounts 达人/账号（P1-06：白名单正式函数；按自营/合作两区展示，'全部'无聚合行）----
   '/accounts': async (f)=>{
-    return `<h1>达人 / 账号</h1>` +
-      StateNotice('NOT_READY', '账号维度明细数据已在数据库（core.douyin_account_daily），但 F1.0 正式接口白名单未暴露账号级查询 API（F1.5 计划）。为避免用全店数据冒充，本页不展示经营摘要。');
+    if (!f.shop) return `<h1>达人 / 账号</h1>` + StateNotice('NOT_READY', '账号分析为店铺级能力（正式函数需指定店铺）。请在上方选择店铺后查看。');
+    let html = `<h1>达人 / 账号</h1><div class="sub">${f.shop_name} ｜ ${f.sd} ～ ${f.ed} ｜ 正式 mart 账号层（自营 / 合作）</div>`;
+    for (const sc of ['自营','合作']){
+      try {
+        const s = await api('/accounts/summary', {shop_code:f.shop, start_date:f.sd, end_date:f.ed, sale_scope:sc});
+        const a = (s.data && s.data[0]) || {};
+        html += `<div class="kpis">` +
+          MetricCard(sc+' 账号成交金额', a.transaction_amount) +
+          MetricCard(sc+' 用户支付', a.user_pay_amount) +
+          MetricCard(sc+' 退款率', a.refund_rate_pay_time, {isRate:true, goodWhen:'low'}) +
+          MetricCard(sc+' 投放消耗', a.ad_spend_shop_bound) + `</div>`;
+        const t = await api('/accounts/top', {shop_code:f.shop, start_date:f.sd, end_date:f.ed, sale_scope:sc, limit:25});
+        html += `<div class="card"><h3>${sc}账号 TOP25（用户支付金额）</h3><table><tr><th>#</th><th>账号</th><th>类型</th><th>金额</th><th>退款率</th></tr>` +
+          (t.data && t.data.length ? t.data.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.account_name||'—')}</td><td>${esc(x.account_type||'—')}</td><td class="num">${yuan(x.current_value)}</td><td class="num">${x.refund_rate_pay_time!=null?pct(x.refund_rate_pay_time):'—'}</td></tr>`).join('') : `<tr><td colspan="5" class="empty">当前区间无${sc}账号数据</td></tr>`) + `</table></div>`;
+      } catch(e){ html += `<div class="card"><h3>${sc}账号</h3><div class="err">${esc(e.message)}</div></div>`; }
+    }
+    return html;
   },
 
   // ---- /live 直播：scope=直播 正式摘要 + 明细 NOT_READY ----
   '/live': async (f)=>{
     const params = {start_date:f.sd, end_date:f.ed, scope_key:'直播'};
     if (f.shop) params.shop_code = f.shop;
-    let html = `<h1>直播经营</h1><div class="sub">${f.shop_name||'抖音整体'} ｜ ${f.sd} ～ ${f.ed} ｜ 口径：直播（正式 Scope）</div>`;
+    let html = `<h1>直播经营</h1><div class="sub">${f.shop_name||'抖音整体'} ｜ ${f.sd} ～ ${f.ed} ｜ 口径：直播（正式 Scope）+ 场次/日数据快照</div>`;
     try {
       const s = await api('/business/summary', params);
       html += `<div class="kpis">` +
-        MetricCard('直播成交金额', s.data.user_pay_amount, null) +
-        MetricCard('直播退款率', s.data.refund_rate, null, {isRate:true, goodWhen:'low'}) +
-        MetricCard('直播投放消耗', s.data.ad_spend_shop_bound, null) + `</div>`;
+        MetricCard('成交金额', s.data.transaction_amount) +
+        MetricCard('用户支付金额', s.data.user_pay_amount) +
+        MetricCard('退款率', s.data.refund_rate, {isRate:true, goodWhen:'low'}) +
+        MetricCard('投放消耗', s.data.ad_spend_shop_bound) + `</div>`;
       html += `<div class="card"><h3>直播成交金额趋势</h3>`;
-      try { const t = await api('/business/trend', params); html += TrendSvg(t.data, 'user_pay_amount'); }
+      try { const t = await api('/business/trend', {...params, metric_key:'transaction_amount'}); html += TrendSvg(t.data, 'metric_value'); }
       catch(e){ html += `<div class="err">${esc(e.message)}</div>`; }
       html += `</div>`;
-      html += `<div class="notice">直播场次/账号/商品级明细未在正式接口暴露 → <b>NOT_READY</b>（分钟级/时段级不支持）。</div>`;
+      // F1.0.3：直播场次（SESSION_FACT）
+      if (f.shop){
+        try {
+          const sess = await api('/live/sessions', {shop_code:f.shop, limit:200});
+          if (sess.data.length){
+            const pk = sess.data[0].period_key;
+            html += `<div class="card"><h3>直播场次（${pk}，SESSION_FACT）<span class="badge green">真实场次</span></h3><table><tr><th>直播间</th><th>开始</th><th>结束</th><th>时长(分)</th><th>账号类型</th><th>达人</th></tr>` +
+              sess.data.slice(0,30).map(x=>`<tr><td>${esc(x.live_room_name||x.live_room_id)}</td><td>${esc(x.start_time)}</td><td>${esc(x.end_time)}</td><td class="num">${x.duration_minutes!=null?fmt(x.duration_minutes):'—'}</td><td>${esc(x.account_type||'')}</td><td>${esc(x.creator_nickname||'')}</td></tr>`).join('') + `</table>` +
+              (sess.data.length>30?`<div class="trend-note">共 ${sess.data.length} 场（前 30 场展示）</div>`:'') + `</div>`;
+          } else html += `<div class="notice">当前区间无直播场次数据（场次为源文件导出周期）</div>`;
+        } catch(e){ html += `<div class="notice">场次数据暂不可用：${esc(e.message)}</div>`; }
+      }
+      // F1.0.3：直播日数据（DAILY_FACT）
+      if (f.shop){
+        try {
+          const daily = await api('/live/daily', {shop_code:f.shop});
+          if (daily.data.length){
+            html += `<div class="card"><h3>直播日数据（DAILY_FACT）</h3><table><tr><th>日期</th><th>成交金额</th><th>消耗</th><th>净成交ROI</th><th>GPM</th></tr>` +
+              daily.data.map(x=>`<tr><td>${esc(x.biz_date||'周期汇总')}</td><td class="num">${yuan(x.transaction_amount)}</td><td class="num">${yuan(x.ad_spend)}</td><td class="num">${x.net_roi!=null?fmt(x.net_roi):'—'}</td><td class="num">${x.gpm!=null?fmt(x.gpm):'—'}</td></tr>`).join('') + `</table></div>`;
+          }
+        } catch(e){}
+      }
+      html += `<div class="notice">分钟级/时段级/直播商品级：当前源数据不支持 → <b>SOURCE_NOT_AVAILABLE</b>（不推算）。</div>`;
     } catch(e){ html += `<div class="err">${esc(e.message)}</div>`; }
     return html;
   },
@@ -405,24 +487,55 @@ const PAGES = {
     try {
       const s = await api('/business/summary', params);
       html += `<div class="kpis">` +
-        MetricCard('短视频成交金额', s.data.user_pay_amount, null) +
-        MetricCard('短视频退款率', s.data.refund_rate, null, {isRate:true, goodWhen:'low'}) +
-        MetricCard('短视频投放消耗', s.data.ad_spend_shop_bound, null) + `</div>`;
+        MetricCard('成交金额', s.data.transaction_amount) +
+        MetricCard('用户支付金额', s.data.user_pay_amount) +
+        MetricCard('退款率', s.data.refund_rate, {isRate:true, goodWhen:'low'}) +
+        MetricCard('投放消耗', s.data.ad_spend_shop_bound) + `</div>`;
       html += `<div class="card"><h3>短视频成交金额趋势</h3>`;
-      try { const t = await api('/business/trend', params); html += TrendSvg(t.data, 'user_pay_amount'); }
+      try { const t = await api('/business/trend', {...params, metric_key:'transaction_amount'}); html += TrendSvg(t.data, 'metric_value'); }
       catch(e){ html += `<div class="err">${esc(e.message)}</div>`; }
       html += `</div>`;
-      html += `<div class="notice">内容级（单载体构成）明细未在正式接口暴露 → <b>NOT_READY</b>（仅区间快照，不伪装逐日内容趋势）。</div>`;
+      // F1.0.3：视频详情快照（PERIOD_SNAPSHOT）
+      if (f.shop){
+        try {
+          const vs = await api('/video/snapshot-summary', {shop_code:f.shop, start_date:f.sd, end_date:f.ed});
+          if (vs.data){
+            html += `<div class="card"><h3>视频快照（周期 ${f.sd} ～ ${f.ed}）<span class="badge green">PERIOD_SNAPSHOT</span></h3>` +
+              `<div class="kpis">` +
+              MetricCard('覆盖视频', vs.data.video_count) +
+              MetricCard('观看次数', vs.data.view_count) +
+              MetricCard('视频用户支付金额', vs.data.user_pay_amount) +
+              MetricCard('视频退款金额', vs.data.refund_amount) +
+              MetricCard('成交订单', vs.data.transaction_orders) + `</div>`;
+            const vr = await api('/video/snapshot-rank', {shop_code:f.shop, start_date:f.sd, end_date:f.ed, metric_key:'user_pay_amount', limit:20});
+            html += `<table><tr><th>#</th><th>视频</th><th>类型</th><th>用户支付金额</th></tr>` +
+              (vr.data.length ? vr.data.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.video_title||x.video_id)}</td><td>${esc((x.selling_type||'')+(x.carrier_type||''))}</td><td class="num">${yuan(x.current_value)}</td></tr>`).join('') : `<tr><td colspan="4" class="empty">当前周期无视频快照</td></tr>`) + `</table>` +
+              `<div class="trend-note">视频快照为统计周期导出（PERIOD_SNAPSHOT），不按发布时间做日趋势；视频按周期排名。</div></div>`;
+          }
+        } catch(e){ html += `<div class="notice">视频快照暂不可用：${esc(e.message)}</div>`; }
+      }
+      html += `<div class="notice">单视频日趋势/内容级拆解：源数据为区间快照 → <b>PERIOD_SNAPSHOT</b>（不伪装逐日内容趋势）。</div>`;
     } catch(e){ html += `<div class="err">${esc(e.message)}</div>`; }
     return html;
   },
 
-  // ---- /search 搜索 / /materials 素材：正式能力缺口 ----
+  // ---- /search 搜索（无源）/ /materials 素材（F1.0.3 接入快照） ----
   '/search': async (f)=>{
-    return `<h1>搜索</h1>` + StateNotice('NOT_READY', '搜索独立数据源尚未接入正式接口白名单（关键词粒度缺失 → 不出现"关键词排行榜"；F1.5 计划）。');
+    return `<h1>搜索</h1>` + StateNotice('SOURCE_NOT_AVAILABLE', '平台尚未导出搜索核心数据（无源文件、无正式表）');
   },
   '/materials': async (f)=>{
-    return `<h1>素材</h1>` + StateNotice('NOT_READY', '素材数据源尚未接入正式接口白名单（素材指标不完整 → 不用视频表冒充素材分析；F1.5 计划）。');
+    let html = `<h1>素材</h1><div class="sub">素材分析快照（PERIOD_SNAPSHOT）｜ ${f.sd} ～ ${f.ed}</div>`;
+    if (!f.shop){
+      html += `<div class="notice">素材分析为店铺级数据，请选择店铺后查看。</div>`;
+      return html;
+    }
+    try {
+      const r = await api('/materials/snapshot-rank', {shop_code:f.shop, start_date:f.sd, end_date:f.ed, metric_key:'user_pay_amount', limit:50});
+      html += `<div class="card"><h3>素材排名（用户实际支付金额）<span class="badge green">PERIOD_SNAPSHOT</span></h3><table><tr><th>#</th><th>素材</th><th>评估</th><th>用户实际支付金额</th></tr>` +
+        (r.data.length ? r.data.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.material_name||x.material_id)}</td><td>${esc(x.material_evaluation||'')}</td><td class="num">${yuan(x.current_value)}</td></tr>`).join('') : `<tr><td colspan="4" class="empty">当前周期无素材快照数据</td></tr>`) + `</table>` +
+        `<div class="trend-note">素材为统计周期导出（PERIOD_SNAPSHOT），不做日趋势；ROI/效率仅用源值，不推算。</div></div>`;
+    } catch(e){ html += `<div class="err">${esc(e.message)}</div>`; }
+    return html;
   },
 
   // ---- /smart-operation 智能经营总入口：决策中心（风险/机会/Action 摘要 + AI 入口）----
@@ -453,20 +566,23 @@ const PAGES = {
   '/risks': async (f)=>{
     let html = `<h1>风险中心</h1><div class="sub">V1.1 异常检测正式结果 ｜ ${f.sd} ～ ${f.ed} ｜ 完整列表（支持按级别/域/店铺筛选见下方）</div>`;
     try {
-      const r = await api('/priorities/risks', {start_date:f.sd, end_date:f.ed, limit:50});
-      html += `<div class="card"><table><tr><th>对象</th><th>域</th><th>类型</th><th>级别</th><th>得分</th><th>影响金额</th><th>持续</th><th>链路</th></tr>` +
-        (r.data.length ? r.data.map(x=>`<tr><td><a href="#/diagnosis">${esc(x.entity_name)}</a></td><td>${esc(x.entity_level||'')}</td><td>${esc(x.source_anomaly_code||'')}</td><td><span class="badge red">${esc(x.risk_level)}</span></td><td class="num">${fmt(x.risk_priority_score)}</td><td class="num">${yuan(x.business_impact)}</td><td class="num">${x.occurrence_count||''}天</td><td style="font-size:11px">${esc((x.diagnostic_chain_id||'').slice(0,30))}</td></tr>`).join('') : `<tr><td colspan="8" class="empty">当前区间无风险</td></tr>`) + `</table></div>`;
+      const r = await api('/risks/complete', {start_date:f.sd, end_date:f.ed, limit:200});
+      html += `<div class="card"><table><tr><th>对象</th><th>域</th><th>级别</th><th>类型</th><th>当前值</th><th>变化</th><th>持续</th><th>覆盖率</th></tr>` +
+        (r.data.length ? r.data.map(x=>`<tr><td><a href="#/diagnosis">${esc(x.entity_name)}</a></td><td>${esc(x.domain_key||'')}</td><td><span class="badge red">${esc(x.severity||'')}</span></td><td>${esc(x.anomaly_name_cn||x.anomaly_type||'')}</td><td class="num">${fmt(x.current_value)}</td><td class="num">${x.absolute_change!=null?((x.absolute_change>0?'+':'')+fmt(x.absolute_change)):'—'}</td><td class="num">${x.consecutive_day_count||''}天</td><td>${x.coverage_complete?'<span class="badge green">完整</span>':'<span class="badge amber">不完整</span>'}</td></tr>`).join('') : `<tr><td colspan="8" class="empty">当前区间无风险（Anomaly）</td></tr>`) + `</table></div>`;
+      try {
+        const s = await api('/risks/summary', {start_date:f.sd, end_date:f.ed});
+        html += `<div class="card"><h3>异常摘要</h3><table><tr><th>域</th><th>类型</th><th>事件数</th><th>级别</th><th>影响金额</th></tr>` +
+          (s.data.length ? s.data.map(x=>`<tr><td>${esc(x.domain_key)}</td><td>${esc(x.anomaly_name_cn||x.anomaly_type)}</td><td class="num">${x.event_count}</td><td><span class="badge red">${esc(x.severity)}</span></td><td class="num">${yuan(x.total_materiality)}</td></tr>`).join('') : `<tr><td colspan="5" class="empty">无</td></tr>`) + `</table></div>`;
+      } catch(e){}
     } catch(e){ html += `<div class="card">${errBlock(e, '当前区间无风险（V1.1 检测未覆盖新月份数据）', 8)}</div>`; }
     return html;
   },
 
   // ---- /diagnosis 问题诊断：数据定位（非因果）----
   '/diagnosis': async (f)=>{
-    let html = `<h1>问题诊断</h1><div class="sub">V1.1 诊断正式结果 ｜ ${f.sd} ～ ${f.ed} ｜ 数据定位，非因果结论</div>`;
+    let html = `<h1>问题诊断</h1><div class="sub">V1.1 诊断正式结果 ｜ ${f.sd} ～ ${f.ed} ｜ 数据定位，非因果结论 ｜ 平台级诊断（正式接口无店铺维度）</div>`;
     try {
-      const params = {start_date:f.sd, end_date:f.ed, domain_key:'shop'};
-      if (f.shop) params.shop_code = f.shop;
-      const r = await api('/diagnostics/results', params);
+      const r = await api('/diagnostics/results', {start_date:f.sd, end_date:f.ed, domain_key:'shop'});
       html += `<div class="card"><table><tr><th>诊断类型</th><th>Primary Stage</th><th>置信度</th><th>当前值</th><th>变化</th><th>证据</th></tr>` +
         (r.data.length ? r.data.map(x=>`<tr><td>${esc(x.diagnostic_code)}</td><td><span class="badge blue">${esc(x.primary_stage)}</span></td><td class="num">${pct(x.confidence_score)}</td><td class="num">${fmt(x.current_value)}</td><td class="num">${fmt(x.absolute_change)}</td><td style="font-size:11px;color:var(--muted)">${esc((x.evidence_json||'').slice(0,60))}</td></tr>`).join('') : `<tr><td colspan="6" class="empty">当前区间无诊断结果</td></tr>`) + `</table></div>`;
     } catch(e){ html += `<div class="card">${errBlock(e, '当前区间无诊断结果（V1.1 检测未覆盖新月份数据）', 6)}</div>`; }
@@ -483,10 +599,15 @@ const PAGES = {
   '/opportunities': async (f)=>{
     let html = `<h1>增长机会</h1><div class="sub">V1.1 机会正式结果 ｜ ${f.sd} ～ ${f.ed} ｜ Opportunity Score 是机会质量排序，不是未来成功概率</div>`;
     try {
-      const o = await api('/priorities/opportunities', {start_date:f.sd, end_date:f.ed, limit:50});
-      html += `<div class="card"><table><tr><th>对象</th><th>类型</th><th>级别</th><th>得分</th><th>机会分</th><th>可用权重</th></tr>` +
-        (o.data.length ? o.data.map(x=>`<tr><td><a href="#/opportunities">${esc(x.entity_name)}</a></td><td>${esc(x.source_opportunity_code||'')}</td><td><span class="badge green">${esc(x.opportunity_level)}</span></td><td class="num">${fmt(x.opportunity_priority_score)}</td><td class="num">${fmt(x.opportunity_score)}</td><td class="num">${x.available_weight!=null?pct(x.available_weight):'—'}</td></tr>`).join('') : `<tr><td colspan="6" class="empty">当前区间无机会</td></tr>`) + `</table></div>`;
-    } catch(e){ html += `<div class="card">${errBlock(e, '当前区间无机会（V1.1 检测未覆盖新月份数据）', 6)}</div>`; }
+      const o = await api('/opportunities/complete', {start_date:f.sd, end_date:f.ed, limit:200});
+      html += `<div class="card"><table><tr><th>对象</th><th>域</th><th>机会分</th><th>级别</th><th>当前值</th><th>相对变化</th><th>Peer基准</th><th>可用权重</th></tr>` +
+        (o.data.length ? o.data.map(x=>`<tr><td><a href="#/opportunities">${esc(x.entity_name)}</a></td><td>${esc(x.domain_key||'')}</td><td class="num">${fmt(x.opportunity_score)}</td><td><span class="badge green">${esc(x.opportunity_level)}</span></td><td class="num">${fmt(x.current_value)}</td><td class="num">${x.relative_change!=null?((x.relative_change>0?'+':'')+(x.relative_change*100).toFixed(1)+'%'):'—'}</td><td class="num">${x.benchmark_p50!=null?fmt(x.benchmark_p50):'—'}</td><td class="num">${x.available_weight!=null?fmt(x.available_weight)+' 分':'—'}</td></tr>`).join('') : `<tr><td colspan="8" class="empty">当前区间无机会</td></tr>`) + `</table></div>`;
+      try {
+        const s = await api('/opportunities/summary', {start_date:f.sd, end_date:f.ed});
+        html += `<div class="card"><h3>机会摘要</h3><table><tr><th>域</th><th>类型</th><th>事件数</th><th>最高分</th><th>平均分</th></tr>` +
+          (s.data.length ? s.data.map(x=>`<tr><td>${esc(x.domain_key)}</td><td>${esc(x.opportunity_name_cn||x.opportunity_code)}</td><td class="num">${x.event_count}</td><td class="num">${fmt(x.max_score)}</td><td class="num">${fmt(x.avg_score)}</td></tr>`).join('') : `<tr><td colspan="5" class="empty">无</td></tr>`) + `</table></div>`;
+      } catch(e){}
+    } catch(e){ html += `<div class="card">${errBlock(e, '当前区间无机会（V1.1 检测未覆盖新月份数据）', 8)}</div>`; }
     return html;
   },
 
@@ -539,7 +660,9 @@ PAGES['/shop'] = PAGES['/store'];
 function renderSide(){
   const cur = G.page;
   $('#side').innerHTML = `<div class="logo">抖音智能<br>经营工作台</div>` + MENU.map(m =>
-    m[1] ? `<a href="#${m[1]}" class="${cur===m[1]?'active':''}">${m[1]}</a>` : `<div class="grp">${m[0]}</div>`
+    (m[0] && m[0].startsWith('/'))
+      ? `<a href="#${m[0]}" class="${cur===m[0]?'active':''}">${m[1]}</a>`
+      : `<div class="grp">${m[1]}</div>`
   ).join('');
 }
 function renderFilters(){
@@ -554,11 +677,11 @@ function renderFilters(){
     <div class="field"><label>日期</label><select id="f_mode">${Object.keys(PRESET_CN).map(k=>`<option ${G.preset===k?'selected':''}>${PRESET_CN[k]}</option>`).join('')}</select></div>
     ${G.preset==='custom' ? `<div class="field"><label>开始</label><input type="date" id="f_sd" value="${G.sd}"></div><div class="field"><label>结束</label><input type="date" id="f_ed" value="${G.ed}"></div>` : `<div class="field"><label>区间</label><input type="date" value="${G.sd}" disabled style="background:#f9fafb"></div><div class="field"><label>～</label><input type="date" value="${G.ed}" disabled style="background:#f9fafb"></div>`}
     ${meta.supports_scope ? `<div class="field"><label>Scope</label><select id="f_scope">${SCOPES.map(s=>`<option ${s===G.scope?'selected':''}>${s}</option>`).join('')}</select></div>` : `<div class="field"><label>Scope</label><select disabled><option>${G.scope}（当前模块不适用）</option></select></div>`}`;
-  if (meta.supports_shop){ $('#f_shop').value = G.shop; $('#f_shop').onchange = e=>{ G.shop = e.target.value; saveG(); location.hash = G.page; }; }
-  if (meta.supports_scope){ $('#f_scope').value = G.scope; $('#f_scope').onchange = e=>{ G.scope = e.target.value; saveG(); location.hash = G.page; }; }
+  if (meta.supports_shop){ $('#f_shop').value = G.shop; $('#f_shop').onchange = e=>{ G.shop = e.target.value; saveG(); renderFilters(); renderPage(); }; }
+  if (meta.supports_scope){ $('#f_scope').value = G.scope; $('#f_scope').onchange = e=>{ G.scope = e.target.value; saveG(); renderFilters(); renderPage(); }; }
   $('#f_mode').onchange = e=>{
     const k = Object.keys(PRESET_CN).find(x=>PRESET_CN[x]===e.target.value);
-    applyPreset(k); saveG(); location.hash = G.page;
+    applyPreset(k); saveG(); renderFilters(); renderPage();
   };
   const fd = $('#f_sd'), fe = $('#f_ed');
   if (fd) fd.onchange = e=>{ G.sd = e.target.value; G.preset = 'custom'; saveG(); location.hash = G.page; };
@@ -577,6 +700,17 @@ async function renderPage(){
   $('#page').innerHTML = `<div class="loading">加载中…</div>`;
   try { $('#page').innerHTML = await fn(G); }
   catch(e){ $('#page').innerHTML = `<div class="err">加载失败：${esc(e.message)}</div>`; }
+  // F1.0.2 九：智能经营/风险/机会/优先级页注入 intelligence_status（STALE 显示"智能分析尚未刷新"，禁止显示"无风险"）
+  if (['/smart-operation','/risks','/opportunities','/priorities','/diagnosis'].includes(G.page)){
+    try {
+      const st = await api('/intelligence-status');
+      const d = st.data;
+      if (d.intelligence_status === 'STALE'){
+        const bar = `<div class="notice amber" style="margin-bottom:12px"><b>REFRESH_STALE</b> ｜ 智能分析尚未刷新：最新经营数据 ${esc(d.latest_fact_date)} 晚于智能结果 ${esc(d.latest_anomaly_generated_date||'—')}。本页显示的是最近一次智能检测结果，不代表"当前无风险/无机会"。</div>`;
+        $('#page h1').after(bar);
+      }
+    } catch(e){ /* 状态不可用时静默 */ }
+  }
   // CSV 导出（数字直接来自当前 API 返回，前端不聚合）
   const t = $('#page table');
   if (t){

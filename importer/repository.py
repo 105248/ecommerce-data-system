@@ -141,17 +141,3 @@ class Repository:
         cols = [c.strip() for c in m.group(1).split(",")]
         return cols
 
-    def find_duplicate_keys(self, table: str, key_columns: List[str],
-                            rows: List[tuple]) -> List[Dict[str, Any]]:
-        """检查待插入数据内部的重复业务键（同表内）。"""
-        seen = {}
-        dups = []
-        for i, row in enumerate(rows):
-            key = tuple(row[c] for c in key_columns) if isinstance(key_columns, list) else None
-            if key is None:
-                continue
-            if key in seen:
-                dups.append({"table": table, "key": key, "dup_rows": [seen[key], i]})
-            else:
-                seen[key] = i
-        return dups

@@ -1,0 +1,32 @@
+{
+ "file": "2026-08-05日直播间修正报表导出.xlsx",
+ "sheets": "Sheet1",
+ "shop": "弹动官方旗舰店",
+ "platform": "douyin",
+ "headers": [
+  "统计日期",
+  "直播间ID",
+  "直播间名称",
+  "直播开始时间",
+  "直播结束时间",
+  "直播时长",
+  "达人ID",
+  "账号类型"
+ ],
+ "null_ratio": "低",
+ "unique_values": "直播间ID 2587",
+ "min_date": "2026-07-23(周期20260723-20260729)",
+ "max_date": "2026-07-29",
+ "dup_key_candidate": "period_key+live_room_id+start_time",
+ "total_structure": "无TOTAL行",
+ "time_semantics": "SESSION_FACT",
+ "ratio_fields": [
+  "-"
+ ],
+ "id_fields": [
+  "直播间ID",
+  "达人ID"
+ ],
+ "parent_child": "无",
+ "cumulative": "否(场次级)"
+}

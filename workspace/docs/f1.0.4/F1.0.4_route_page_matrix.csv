@@ -1,0 +1,19 @@
+﻿route,page_title,component,capability_status
+/today,今日经营,dashboard.TodayPage,READY
+/store,店铺经营,store.StorePage,READY
+/priorities,经营优先级,priorities.PrioritiesPage,READY
+/product-lines,品线分析,product-lines.ProductLinesPage,READY
+/master-products,Master Product,master-products.MasterProductsPage,READY
+/products,商品分析,pages.ProductsPage,READY
+/product-card,商品卡经营,product-card.ProductCardPage,READY
+/advertising,投放经营,pages.AdvertisingPage,READY
+/refunds,退款分析,pages.RefundsPage,READY
+/accounts,达人/账号,pages.AccountsPage,READY
+/live,直播经营,live.LivePage,READY
+/videos,短视频经营,videos.VideosPage,READY
+/search,搜索,pages.SearchPage,SOURCE_NOT_AVAILABLE
+/materials,素材,materials.MaterialsPage,READY
+/smart-operation,智能经营,pages.SmartOperationPage,READY
+/risks,风险中心,pages.RisksPage,READY
+/diagnostics,问题诊断,pages.DiagnosticsPage,READY
+/opportunities,增长机会,pages.OpportunitiesPage,READY

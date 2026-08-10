@@ -38,25 +38,30 @@ def feishu_auth(open_id: str = ""):
     return {"success": True, "data": {"open_id": open_id, "role": user["role"], "shops": user["shops"]}}
 
 
-# ===== 静态 Web（同源，零 CORS） =====
+# ===== 静态 Web（同源，零 CORS）；no-cache 保证前端迭代后刷新即最新 =====
+def _fresh(resp):
+    resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    resp.headers["Pragma"] = "no-cache"
+    return resp
+
 @app.get("/")
 def index():
-    return FileResponse(STATIC / "index.html")
+    return _fresh(FileResponse(STATIC / "index.html"))
 
 
 @app.get("/app.js")
 def app_js():
-    return FileResponse(STATIC / "app.js")
+    return _fresh(FileResponse(STATIC / "app.js"))
 
 
 @app.get("/system-status")
 def system_status():
-    return FileResponse(STATIC / "system-status.html")
+    return _fresh(FileResponse(STATIC / "system-status.html"))
 
 
 @app.get("/data-status")
 def data_status_page():
-    return FileResponse(STATIC / "data-status.html")
+    return _fresh(FileResponse(STATIC / "data-status.html"))
 
 
 @app.exception_handler(ApiError)

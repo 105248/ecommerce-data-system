@@ -1,0 +1,21 @@
+﻿report,source_header,target_column,target_type,transform_rule,value_unit,is_business_key
+商品卡列表,商品ID,product_id,text,原值,-,是
+商品卡列表,商品卡曝光人数,exposure_users,numeric,Decimal 去逗号,人,否
+商品卡列表,商品卡用户支付金额,user_pay_amount,numeric,Decimal 去逗号,元,否
+商品卡列表,商品卡点击率(人数),click_rate_users,numeric,原值保留(0.0258),比例,否
+商品卡列表,销量,sales_quantity,numeric,仅6/16-7/15版,-,否
+商品卡流量来源,一级渠道,channel_l1,text,原值,-,是
+商品卡流量来源,二级渠道,channel_l2,text,原值/空为-,-,是
+商品卡流量来源,用户支付金额(元),user_pay_amount,numeric,Decimal 去逗号,元,否
+视频详情,视频ID,video_id,text,原值,-,是
+视频详情,用户支付金额(元),user_pay_amount,numeric,Decimal 去逗号,元,否
+视频详情,完播率,completion_rate,numeric,原值保留,比例,否
+视频详情,预估佣金支出(元),estimated_commission,numeric,合作挂车版,元,否
+直播场次,直播间ID,live_room_id,text,原值,-,是
+直播场次,直播开始时间,start_time,text,原值文本(不解析),-,是
+直播场次,直播时长,duration_minutes,numeric,Decimal,分钟,否
+素材分析,素材ID,material_id_src,text,原值,-,是
+素材分析,用户实际支付金额,user_pay_amount,numeric,Decimal 去逗号,元,否
+素材分析,整体支付ROI,pay_roi,numeric,原值保留,倍数,否
+直播日数据,日期,biz_date,date,ISO解析;'全部'→NULL,-,是
+直播日数据,整体成交金额,transaction_amount,numeric,Decimal 去逗号,元,否

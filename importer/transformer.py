@@ -2,6 +2,7 @@
 """数据转换：日期解析、百分比归一化、ID 文本化、空值处理。"""
 import re
 from datetime import date, datetime, timedelta
+from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
 # 百分比字段关键字（源字段名含以下词视为百分比）
@@ -110,18 +111,23 @@ def to_text_id(value: Any) -> Optional[str]:
     return s if s else None
 
 
-def to_numeric(value: Any) -> Optional[float]:
-    """普通数值：空白 -> NULL，其他尽力转 float。"""
+def to_numeric(value: Any) -> Optional[Decimal]:
+    """普通数值：空白 -> NULL，其他转 Decimal（P2-05：金融/比例导入避免二进制浮点中间态）。
+    psycopg2 原生适配 Decimal → NUMERIC 列。"""
     if value is None:
         return None
-    if isinstance(value, (int, float)):
-        return float(value)
+    if isinstance(value, Decimal):
+        return value
+    if isinstance(value, (int,)):
+        return Decimal(value)
+    if isinstance(value, float):
+        return Decimal(str(value))
     s = str(value).strip().replace(",", "")
     if not s or s.lower() in ("-", "--", "null", "none"):
         return None
     try:
-        return float(s)
-    except ValueError:
+        return Decimal(s)
+    except (ValueError, ArithmeticError):
         return None
 
 

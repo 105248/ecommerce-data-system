@@ -1,0 +1,34 @@
+{
+ "file": "全域数据_直播分析_弹动官方旗舰店_2026-07-09...xlsx",
+ "sheets": "Sheet1",
+ "shop": "弹动官方旗舰店",
+ "platform": "douyin",
+ "headers": [
+  "抖音号名称",
+  "日期",
+  "净成交ROI",
+  "净成交金额",
+  "整体消耗",
+  "整体支付ROI",
+  "整体成交金额",
+  "整体成交订单数",
+  "GPM",
+  "直播间整体曝光次数"
+ ],
+ "null_ratio": "低",
+ "unique_values": "日期 3(全部+2天)",
+ "min_date": "2026-07-08",
+ "max_date": "2026-07-09",
+ "dup_key_candidate": "shop+biz_date+account",
+ "total_structure": "'全部'行=周期汇总",
+ "time_semantics": "DAILY_FACT",
+ "ratio_fields": [
+  "净成交ROI",
+  "1小时内退款率"
+ ],
+ "id_fields": [
+  "抖音号名称"
+ ],
+ "parent_child": "无",
+ "cumulative": "否(日级事实)"
+}

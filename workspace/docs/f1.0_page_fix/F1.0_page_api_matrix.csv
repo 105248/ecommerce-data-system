@@ -8,7 +8,7 @@ Master Product,/master-products,Master Product,MasterProductPage(独立),date,ap
 商品卡,/product-card,商品卡经营,ProductCardPage(独立),shop+date(scope固定商品卡),api('/business/summary')+api('/business/trend'),/business/summary?scope=商品卡 /business/trend?scope=商品卡,get_business_period_summary(scope=商品卡),READY(构成NOT_READY),是,是,否,否,否,否,PASS
 投放,/advertising,投放经营,AdvertisingPage(独立),shop+date+scope,api('/advertising/summary')+api('/business/trend'),/advertising/summary /business/trend,get_advertising_period_summary(白名单),READY,是,是,否,否,否,否,PASS
 退款,/refund,退款分析,RefundPage(独立),shop+date+scope,api('/business/summary')+api('/business/trend'),/business/summary /business/trend(refund_rate) /business/summary(两店),get_business_period_summary,READY(原因NOT_READY),是,是,否,否,否,否,PASS
-达人/账号,/accounts,达人 / 账号,AccountPage(NOT_READY),date,无,无,无(白名单未暴露),NOT_READY,是,否,否,否,否,否,PASS
+达人/账号,/accounts,达人 / 账号,AccountPage(NOT_READY),date,api('/accounts/*'),/accounts/summary /accounts/top /accounts/contribution,mart.get_account_period_summary/mart.rank_accounts/mart.get_account_contribution,READY,是,是,否,否,否,否,PASS
 直播,/live,直播经营,LivePage(独立),shop+date(scope固定直播),api('/business/summary')+api('/business/trend'),/business/summary?scope=直播 /business/trend?scope=直播,get_business_period_summary(scope=直播),READY(明细NOT_READY),是,是,否,否,否,否,PASS
 短视频,/video,短视频经营,VideoPage(独立),shop+date(scope固定短视频),api('/business/summary')+api('/business/trend'),/business/summary?scope=短视频 /business/trend?scope=短视频,get_business_period_summary(scope=短视频),READY(明细NOT_READY),是,是,否,否,否,否,PASS
 搜索,/search,搜索,SearchPage(NOT_READY),date,无,无,无,NOT_READY,是,否,否,否,否,否,PASS

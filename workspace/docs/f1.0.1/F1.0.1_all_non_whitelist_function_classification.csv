@@ -1,0 +1,30 @@
+﻿function,signature,classification,f1_relevance,public_candidate,reason,next_action
+_diag_account,"p_shop_name text, p_cs date, p_ce date, p_ps date, p_pe date, p_scope_key text",INTERNAL_HELPER,诊断内部辅助(账号域),否,诊断内部辅助(账号域),不对外
+_diag_carrier,"p_shop_name text, p_cs date, p_ce date, p_ps date, p_pe date, p_scope_key text",INTERNAL_HELPER,诊断内部辅助(载体域),否,诊断内部辅助(载体域),不对外
+_diag_category,"p_shop_name text, p_cs date, p_ce date, p_ps date, p_pe date, p_category_level integer",INTERNAL_HELPER,诊断内部辅助(品类域),否,诊断内部辅助(品类域),不对外
+_diag_master_product,"p_shop_name text, p_cs date, p_ce date, p_ps date, p_pe date, p_entity_id text, p_entity_name text",INTERNAL_HELPER,诊断内部辅助(MP域),否,诊断内部辅助(MP域),不对外
+_diag_product,"p_shop_name text, p_cs date, p_ce date, p_ps date, p_pe date, p_entity_id text, p_entity_name text",INTERNAL_HELPER,诊断内部辅助(商品域),否,诊断内部辅助(商品域),不对外
+_diag_product_line,"p_shop_name text, p_cs date, p_ce date, p_ps date, p_pe date, p_entity_name text",INTERNAL_HELPER,诊断内部辅助(品线域),否,诊断内部辅助(品线域),不对外
+_diag_scope,"p_shop_name text, p_cs date, p_ce date, p_ps date, p_pe date, p_scope_key text",INTERNAL_HELPER,诊断内部辅助(Scope域),否,诊断内部辅助(Scope域),不对外
+_diag_shop,"p_shop_name text, p_cs date, p_ce date, p_ps date, p_pe date",INTERNAL_HELPER,诊断内部辅助(店铺域),否,诊断内部辅助(店铺域),不对外
+assert_period,"p_start_date date, p_end_date date",INTERNAL_HELPER,周期参数校验,否,周期参数校验,不对外
+assert_rank_args,"p_domain_key text, p_metric_key text, p_sort_by text, p_sort_direction text, p_limit integer",INTERNAL_HELPER,排名参数校验,否,排名参数校验,不对外
+check_mapping_period_conflict,"p_platform_code text, p_shop_id bigint, p_platform_product_id text, p_valid_from date, p_valid_to date, p_exclude_mapping_id bigint",INTERNAL_HELPER,主数据映射期间冲突校验（写流程辅助，secdef=false）,否,主数据映射期间冲突校验（写流程辅助，secdef=false）,不对外；主数据维护内部使用
+detect_anomalies,"p_platform_code text, p_start_date date, p_end_date date, p_domain_key text, p_shop_name text",WRITE_JOB_FUNCTION,异常检测写库,否,异常检测写库,保留仅 postgres；调度链 Job 触发
+detect_growth_opportunities,"p_platform_code text, p_start_date date, p_end_date date, p_domain_key text, p_shop_name text",WRITE_JOB_FUNCTION,机会检测写库,否,机会检测写库,保留仅 postgres；调度链 Job 触发
+diagnose_anomaly,p_anomaly_event_id bigint,WRITE_JOB_FUNCTION,异常诊断写库,否,异常诊断写库,保留仅 postgres；调度链 Job 触发
+diagnose_entity,"p_domain_key text, p_entity_name text, p_start_date date, p_end_date date, p_shop_name text, p_scope_key text, p_anomaly_event_id bigint",WRITE_JOB_FUNCTION,实体诊断写库,否,实体诊断写库,保留仅 postgres；调度链 Job 触发
+format_percent_2,value_decimal numeric,LEGACY_REVIEW,百分比格式化；历史脚本弱依赖,否,百分比格式化；历史脚本弱依赖,评估脚本依赖后清理或保留
+generate_daily_action_items,"p_platform_code text, p_start_date date, p_end_date date",WRITE_JOB_FUNCTION,优先级/Action 写库,否,优先级/Action 写库,保留仅 postgres；调度链 Job 触发
+get_business_contribution,"p_shop_name text, p_start_date date, p_end_date date, p_scope_key text, p_metric_key text",NOT_REQUIRED_F1,经营范围贡献度（单店内 Scope 占全店比例）；V1.0 Stage3 正式验收、ACL 已授权；F1.0 无页面消费,否,经营范围贡献度（单店内 Scope 占全店比例）；V1.0 Stage3 正式验收、ACL 已授权；F1.0 无页面消费,保留；F1.5 若做 Scope 贡献分析页再开放
+get_diagnostic_entity_metrics,p_domain_key text,PUBLIC_CANDIDATE,诊断域支持指标清单（只读元数据）；被 detect_anomalies 内部引用,是,诊断域支持指标清单（只读元数据）；被 detect_anomalies 内部引用,评估纳入 F1.0 公共接口（诊断页指标清单）；暂不入白名单
+get_master_product_period_summary,"p_master_product_id bigint, p_start_date date, p_end_date date, p_shop_name text",PUBLIC_CANDIDATE,MP 经营汇总；整体=两店之和验证通过,是,MP 经营汇总；整体=两店之和验证通过,验收后纳入白名单
+get_masterdata_quality,"p_start_date date, p_end_date date",PUBLIC_CANDIDATE,主数据质量（销售×映射覆盖率）只读查询；无内部调用者,是,主数据质量（销售×映射覆盖率）只读查询；无内部调用者,主数据质量页可选用；暂不入白名单
+get_product_line_members,p_product_line_name text,PUBLIC_CANDIDATE,品线结构成员查询；验证通过,是,品线结构成员查询；验证通过,验收后纳入正式接口治理
+get_product_line_period_summary,"p_product_line_name text, p_start_date date, p_end_date date",PUBLIC_CANDIDATE,品线经营汇总；鱼子酱30日881万验证通过,是,品线经营汇总；鱼子酱30日881万验证通过,验收后纳入白名单
+period_scope_rule,p_scope_key text,INTERNAL_HELPER,Scope 周期规则解析,否,Scope 周期规则解析,不对外
+previous_period,"p_start_date date, p_end_date date",INTERNAL_HELPER,上期计算辅助,否,上期计算辅助,不对外
+rank_master_products,"p_start_date date, p_end_date date, p_metric_key text, p_sort_by text, p_sort_direction text, p_limit integer",PUBLIC_CANDIDATE,MP 排名；**metric_key 假契约**（仅算 user_pay）,是,MP 排名；**metric_key 假契约**（仅算 user_pay）,先修契约（支持真实多指标或收紧声明）再入白名单
+resolve_diagnostic_period,"p_period_key text, p_end_date date, p_current_days integer",INTERNAL_HELPER,诊断周期解析（period_key→天数，secdef=false）,否,诊断周期解析（period_key→天数，secdef=false）,不对外
+resolve_scope,p_scope character varying,INTERNAL_HELPER,Scope 归并解析,否,Scope 归并解析,不对外
+scope_daily,"p_scope character varying, p_date_from date, p_date_to date",INTERNAL_HELPER,Scope 日层过滤辅助,否,Scope 日层过滤辅助,不对外

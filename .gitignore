@@ -31,3 +31,5 @@ desktop.ini
 
 # ===== 含历史密码检测模式的 QA 脚本（仅本地使用） =====
 qa/v11_v13_critical/s8_final_check.py
+*.tmp
+*.tmp*

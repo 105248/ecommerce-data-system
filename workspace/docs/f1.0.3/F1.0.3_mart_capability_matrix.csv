@@ -1,0 +1,11 @@
+﻿domain,mart_object,type,time_semantics,supported_filters,supported_metrics,unsupported,status
+商品卡,mart.product_card_snapshot,VIEW,PERIOD_SNAPSHOT,shop/period/product,曝光/点击/支付/成交/加购/收藏,日趋势,READY
+商品卡,mart.rank_product_card_snapshot,FUNCTION,PERIOD_SNAPSHOT,shop/period/metric,user_pay/transaction_users/exposure/click/orders,settlement/ad_spend,READY
+商品卡,mart.product_card_snapshot_summary,FUNCTION,PERIOD_SNAPSHOT,shop/period,商品数/曝光/点击/支付/成交,-,READY
+商品卡,mart.product_card_traffic_snapshot,VIEW,PERIOD_SNAPSHOT,shop/period/channel,曝光/点击/支付/成交/渠道,日趋势,READY
+视频,mart.video_snapshot,VIEW,PERIOD_SNAPSHOT,shop/period/type/video,观看/支付/退款/订单/互动,日趋势(发布时间),READY
+视频,mart.rank_video_snapshot,FUNCTION,PERIOD_SNAPSHOT,shop/period/type/metric,user_pay/view/orders/users,结算/投放,READY
+素材,mart.material_snapshot,VIEW,PERIOD_SNAPSHOT,shop/period/material,消耗/曝光/点击/ROI/成交/支付,日趋势,READY
+素材,mart.rank_material_snapshot,FUNCTION,PERIOD_SNAPSHOT,shop/period/metric,user_pay/ad_spend/exposure/orders,ROI排名(源值仅展示),READY
+直播,mart.live_session_snapshot,VIEW,SESSION_FACT,shop/period/room,场次/时长/达人/类型,分钟级/时段级,READY
+直播,mart.live_daily,VIEW,DAILY_FACT,shop/date,成交/消耗/ROI/GPM/曝光,场次内明细,READY

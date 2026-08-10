@@ -1,0 +1,80 @@
+# -*- coding: utf-8 -*-
+"""F1.0.4 Page→API→DB 正式契约（18 页每页回答明确业务问题）"""
+import csv
+from pathlib import Path
+
+rows = [
+    ["今日经营", "/today", "当前所选区间经营结果如何？变化在哪里？最值得先看什么？", "经营驾驶舱 KPI/趋势/贡献/风险机会Top5", "READY",
+     "DAILY_FACT", "shop/日期/scope", "TodayPage(React)", "getSummary/getTrend/getRiskTop/getOpportunityTop/getShopContribution",
+     "/business/summary /business/trend /business/compare /business/shop-contribution /priorities/risks /priorities/opportunities",
+     "get_business_period_summary/get_platform_business_period_summary/get_business_daily_trend/get_daily_risk_priorities/get_daily_opportunity_priorities/get_shop_contribution",
+     "transaction/user_pay/refund/settlement/ad_spend/refund_rate", "-", "是", "是", "标题随区间：今日经营/单日经营/经营概览"],
+    ["店铺经营", "/store", "两家店分别贡献多少？哪家推动/拖累变化？", "两店对比/贡献/环比", "READY",
+     "DAILY_FACT", "日期/scope", "StorePage(React)", "getShopContribution", "/business/shop-contribution",
+     "get_shop_contribution", "贡献/当前值/上期/变化", "-", "是", "是", "平台比例数据库重算，前端不AVG"],
+    ["经营优先级", "/priorities", "今天/当前周期最优先处理什么？", "风险/机会/Action 优先级", "READY",
+     "PERIOD_SNAPSHOT", "日期", "PrioritiesPage(React)", "getRiskTop/getOpportunityTop/getIntelligenceStatus",
+     "/priorities/risks /priorities/opportunities /intelligence-status", "get_daily_risk_priorities/get_daily_opportunity_priorities",
+     "risk_priority_score/opportunity_priority_score", "-", "否", "否", "STALE 时顶部提示智能分析尚未刷新"],
+    ["品线", "/product-lines", "各品线经营表现与成员结构如何？", "品线结构+成员+经营汇总", "READY",
+     "DAILY_FACT(汇总)/PERIOD_SNAPSHOT", "日期", "ProductLinesPage(React)", "api('/master-data/*')+api('/product-lines/summary')",
+     "/master-data/product-lines /master-data/product-line-members /product-lines/summary",
+     "get_product_line_period_summary/get_product_line_members(白名单)", "user_pay/refund/成员/覆盖", "结算/投放/成交(无交叉事实)", "否", "否", "品线投放比例分摊禁止"],
+    ["Master Product", "/master-products", "跨店同款商品整体表现如何？由哪家店贡献？", "主档+经营排名+映射", "READY",
+     "DAILY_FACT(汇总)", "日期", "MasterProductsPage(React)", "api('/master-products/rank')+api('/master-data/products')",
+     "/master-products/rank /master-data/products", "rank_master_products(白名单,契约收紧user_pay)", "user_pay/映射店/映射完整", "transaction/settlement(无事实)", "否", "否", "SUGGESTED/UNMAPPED/CONFLICT 不入总数"],
+    ["商品", "/products", "具体店铺商品表现如何？", "商品排名(用户支付)", "READY",
+     "DAILY_FACT", "shop/日期", "ProductsPage(React)", "api('/business/products/top')", "/business/products/top",
+     "rank_products", "user_pay_amount", "settlement/ad_spend/transaction(商品无事实)", "否", "否", "整体模式→SELECT_SHOP_REQUIRED"],
+    ["商品卡", "/product-card", "商品卡渠道整体与商品快照表现？", "商品卡整体+快照", "READY",
+     "DAILY_FACT(整体)+PERIOD_SNAPSHOT(快照)", "shop/日期/scope", "ProductCardPage(React)", "getSummary/getTrend+api('/product-card/*')",
+     "/business/summary?scope=商品卡 /product-card/snapshot-summary /product-card/snapshot-rank",
+     "get_business_period_summary(scope)/product_card_snapshot_summary/rank_product_card_snapshot", "曝光/点击/支付/成交/商品数", "来源构成(SOURCE_NOT_AVAILABLE)", "是", "是", "快照禁日趋势；来源榜不造"],
+    ["投放", "/advertising", "店铺投放花了多少、贡献多少、效率如何？", "投放经营 8 指标", "READY",
+     "DAILY_FACT", "shop/日期/scope", "AdvertisingPage(React)", "api('/advertising/summary')", "/advertising/summary",
+     "get_advertising_period_summary", "ad_spend(被投/绑定)/归因/费比/综合费比/效率", "计划级(SOURCE_NOT_AVAILABLE)", "否", "是", "整体→SELECT_SHOP_REQUIRED；计划级不推算"],
+    ["退款", "/refunds", "退款金额/率/订单表现如何？", "退款 KPI", "READY",
+     "DAILY_FACT", "shop/日期/scope", "RefundsPage(React)", "getSummary", "/business/summary",
+     "get_business_period_summary", "refund_amount_pay_time/refund_rate", "退款原因(SOURCE_NOT_AVAILABLE)", "是", "是", "AI 不推测退款原因"],
+    ["达人/账号", "/accounts", "哪些账号贡献最大？", "账号排名(自营+合作)", "READY",
+     "DAILY_FACT", "shop/日期", "AccountsPage(React)", "api('/accounts/top')", "/accounts/top",
+     "rank_accounts(白名单)", "user_pay/账号/类型", "佣金(函数未返回不显示)", "否", "否", "F1.0.2 正式 wrapper"],
+    ["直播", "/live", "直播渠道经营与真实场次表现？", "直播整体+场次+日数据", "READY",
+     "DAILY_FACT(整体/日数据)+SESSION_FACT(场次)", "shop/日期/scope", "LivePage(React)", "getSummary/getTrend+api('/live/*')",
+     "/business/summary?scope=直播 /live/sessions /live/daily", "get_business_period_summary(scope)/live_session_snapshot/live_daily",
+     "成交/支付/退款/场次/时长/日数据", "分钟级/时段级/直播商品(SOURCE_NOT_AVAILABLE)", "是", "是", "不拆分钟；不生成主播场次排行榜"],
+    ["短视频", "/videos", "短视频渠道经营与视频快照表现？", "短视频整体+视频快照", "READY",
+     "DAILY_FACT(整体)+PERIOD_SNAPSHOT(快照)", "shop/日期/scope", "VideosPage(React)", "getSummary/getTrend+api('/video/*')",
+     "/business/summary?scope=短视频 /video/snapshot-summary /video/snapshot-rank",
+     "get_business_period_summary(scope)/video_snapshot_summary/rank_video_snapshot", "成交/支付/视频数/观看/支付", "单视频日趋势(快照禁日)", "是", "是", "不用 content_daily 冒充视频明细"],
+    ["搜索", "/search", "搜索成交/搜索词表现？", "无源", "SOURCE_NOT_AVAILABLE",
+     "-", "-", "SearchPage(React)", "无", "无", "无", "-", "全部", "否", "否", "页面明确：暂无搜索核心数据源"],
+    ["素材", "/materials", "素材表现与排名？", "素材快照排名", "READY",
+     "PERIOD_SNAPSHOT", "shop/日期", "MaterialsPage(React)", "api('/materials/snapshot-rank')", "/materials/snapshot-rank",
+     "rank_material_snapshot(白名单)", "user_pay/ad_spend/exposure/orders", "ROI排名(源值仅展示)", "否", "否", "ROI/效率仅用源值"],
+    ["智能经营", "/smart-operation", "智能层结果集中视图？", "决策中心", "READY",
+     "PERIOD_SNAPSHOT", "日期", "SmartOperationPage(React)", "getRiskTop/getOpportunityTop/getIntelligenceStatus",
+     "/priorities/* /intelligence-status", "get_daily_*_priorities", "风险/机会摘要+freshness", "-", "否", "否", "非另一个今日经营页"],
+    ["风险中心", "/risks", "当前有哪些风险？完整列表", "完整 Anomaly", "READY",
+     "EVENT", "日期", "RisksPage(React)", "api('/risks/complete')", "/risks/complete",
+     "get_anomalies(白名单)", "anomaly/severity/entity/evidence", "-", "否", "否", "STALE 提示；Top5 只在首页"],
+    ["问题诊断", "/diagnostics", "哪里出现问题？", "诊断结果", "READY",
+     "EVENT", "日期", "DiagnosticsPage(React)", "api('/diagnostics/results')", "/diagnostics/results",
+     "get_diagnostic_result(白名单)", "diagnostic_code/stage/confidence", "-", "否", "否", "平台级诊断，无假店铺筛选"],
+    ["增长机会", "/opportunities", "有哪些增长机会？完整列表", "完整 Opportunity", "READY",
+     "EVENT", "日期", "OpportunitiesPage(React)", "api('/opportunities/complete')", "/opportunities/complete",
+     "get_growth_opportunities(白名单)", "opportunity_score/level/entity", "-", "否", "否", "STALE 提示；Top5 只在首页"],
+]
+
+out = Path(r"D:/ecommerce-data-system/workspace/docs/f1.0.4/F1.0.4_page_api_contract.csv")
+out.parent.mkdir(parents=True, exist_ok=True)
+with out.open("w", newline="", encoding="utf-8-sig") as f:
+    w = csv.writer(f)
+    w.writerow(["page", "route", "business_question", "capability", "capability_status",
+                "source_time_semantics", "supported_filters", "frontend_component", "frontend_service",
+                "backend_endpoint", "official_db_interface", "supported_metrics", "unsupported_metrics",
+                "overall_supported", "scope_supported", "notes"])
+    w.writerows(rows)
+print("page_api_contract: {} 页".format(len(rows)))
+from collections import Counter
+print(dict(Counter(r[4] for r in rows)))

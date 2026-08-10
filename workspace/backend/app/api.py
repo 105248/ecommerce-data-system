@@ -4,16 +4,13 @@ from fastapi import APIRouter, Query, Request
 
 import db
 from errors import ApiError, ok
+from services import VALID_SCOPES, TREND_METRICS, check_period, resolve_shop_name
 
 router = APIRouter(prefix="/api/v1", tags=["f0.5"])
 
-# 参数校验（Backend 只做校验与包装，不计算）
-VALID_SCOPES = {"全店", "自营", "合作", "商品卡", "短视频", "直播", "图文", "其他",
-                "自营商品卡", "合作商品卡", "自营短视频", "合作短视频", "自营直播", "合作直播",
-                "自营图文", "合作图文", "自营其他", "合作其他"}
 
 
-def _check_period(start_date: str, end_date: str):
+def check_period(start_date: str, end_date: str):
     import datetime
     try:
         s = datetime.date.fromisoformat(start_date)
@@ -25,19 +22,6 @@ def _check_period(start_date: str, end_date: str):
     return s, e
 
 
-def _shop_name(shop_code):
-    """shop_code → shop_name（经 meta.shop 映射；shop_code 缺省=整体）"""
-    if not shop_code:
-        return None
-    rows, _ = db.query("SELECT shop_name, enabled FROM meta.shop WHERE shop_code = %s", (shop_code,))
-    if not rows:
-        # 兼容 shop_code=shop_name
-        rows, _ = db.query("SELECT shop_name, enabled FROM meta.shop WHERE shop_name = %s", (shop_code,))
-    if not rows:
-        raise ApiError("UNKNOWN_SHOP", "未知店铺: {}".format(shop_code))
-    if not rows[0]["enabled"]:
-        raise ApiError("FORBIDDEN", "店铺未启用: {}".format(shop_code))
-    return rows[0]["shop_name"]
 
 
 # ===== health / ready =====
@@ -50,14 +34,21 @@ def health():
 def ready(request: Request):
     r = db.health_check_db()
     if r["database"] == "OK":
-        return ok(r)
-    raise ApiError("DATABASE_UNAVAILABLE", r.get("detail"), status_code=503)
+        return ok({k: v for k, v in r.items() if k != "detail"})
+    # P2-04：错误细节只写服务日志，不暴露给客户端
+    request.state.status_code = 503
+    raise ApiError("DATABASE_UNAVAILABLE", "数据库不可用", status_code=503)
 
 
 # ===== data-status =====
 @router.get("/data-status")
 def data_status(platform_code: str = Query("douyin"), shop_code: str = Query(None)):
-    rows, _ = db.query("SELECT * FROM mart.get_data_coverage(%s)", (shop_code,))
+    # P1-04 修复：get_data_coverage 参数是 shop_name（NULL=平台），shop_code 必须先转换
+    # F1.0.2 4.6：platform_code 显式校验（当前仅支持 douyin，假参数一律拒绝）
+    if platform_code != "douyin":
+        raise ApiError("UNSUPPORTED_PLATFORM", "当前仅支持平台: douyin")
+    shop_name = resolve_shop_name(shop_code) if shop_code else None
+    rows, _ = db.query("SELECT * FROM mart.get_data_coverage(%s)", (shop_name,))
     if not rows:
         raise ApiError("NO_DATA")
     return ok(rows)
@@ -77,10 +68,10 @@ def shops(platform_code: str = Query("douyin")):
 def business_summary(platform_code: str = Query("douyin"), shop_code: str = Query(None),
                      start_date: str = Query(...), end_date: str = Query(...),
                      scope_key: str = Query("全店")):
-    _check_period(start_date, end_date)
+    check_period(start_date, end_date)
     if scope_key not in VALID_SCOPES:
         raise ApiError("UNKNOWN_SCOPE", "未知经营口径: {}".format(scope_key))
-    shop_name = _shop_name(shop_code)
+    shop_name = resolve_shop_name(shop_code)
     request_db_ms = {}
     if shop_name:
         rows, ms = db.query(
@@ -102,6 +93,7 @@ def business_summary(platform_code: str = Query("douyin"), shop_code: str = Quer
         "transaction_amount": r.get("transaction_amount"),
         "user_pay_amount": r.get("user_pay_amount"),
         "refund_amount_pay_time": r.get("refund_amount_pay_time"),
+        "transaction_refund_amount_pay_time": r.get("transaction_refund_amount_pay_time"),
         "settlement_amount": r.get("settlement_amount"),
         "refund_rate": r.get("refund_rate_pay_time"),
         "ad_spend_shop_bound": r.get("ad_spend_shop_bound"),
@@ -125,8 +117,8 @@ def business_summary(platform_code: str = Query("douyin"), shop_code: str = Quer
 def business_compare(platform_code: str = Query("douyin"), shop_code: str = Query(None),
                      start_date: str = Query(...), end_date: str = Query(...),
                      scope_key: str = Query("全店"), metric_key: str = Query("user_pay_amount")):
-    _check_period(start_date, end_date)
-    shop_name = _shop_name(shop_code)
+    check_period(start_date, end_date)
+    shop_name = resolve_shop_name(shop_code)
     if shop_name:
         rows, _ = db.query(
             "SELECT * FROM mart.compare_business_period(%s, %s::date, %s::date, %s, %s)",
@@ -144,8 +136,8 @@ def business_compare(platform_code: str = Query("douyin"), shop_code: str = Quer
 @router.get("/business/products/top")
 def products_top(shop_code: str = Query(...), start_date: str = Query(...), end_date: str = Query(...),
                  metric_key: str = Query("user_pay_amount"), limit: int = Query(10, ge=1, le=100)):
-    _check_period(start_date, end_date)
-    shop_name = _shop_name(shop_code)  # rank 按店铺，必须指定
+    check_period(start_date, end_date)
+    shop_name = resolve_shop_name(shop_code)  # rank 按店铺，必须指定
     # rank_products(p_shop_name, p_sd, p_ed, p_metric, p_sort_by, p_sort_direction, p_limit, p_product_id, p_product_name)
     rows, _ = db.query(
         "SELECT * FROM mart.rank_products(%s, %s::date, %s::date, %s, %s, %s, %s, %s, %s)",
@@ -161,7 +153,8 @@ def product_lines():
 
 
 @router.get("/master-data/products")
-def master_products(shop_code: str = Query(None), page: int = Query(1, ge=1), page_size: int = Query(50, ge=1, le=200)):
+def master_products(page: int = Query(1, ge=1), page_size: int = Query(50, ge=1, le=200)):
+    # P2-03：移除无实际作用的 shop_code 参数（避免契约误导）
     rows, _ = db.query(
         "SELECT master_product_code, master_product_name, enabled FROM meta.master_product ORDER BY master_product_id LIMIT %s OFFSET %s",
         (page_size, (page - 1) * page_size))
@@ -170,7 +163,7 @@ def master_products(shop_code: str = Query(None), page: int = Query(1, ge=1), pa
 
 @router.get("/master-data/resolve")
 def resolve(shop_code: str = Query(...), platform_product_id: str = Query(...)):
-    shop_name = _shop_name(shop_code)
+    shop_name = resolve_shop_name(shop_code)
     # resolve_master_product(p_platform_code, p_shop_name, p_platform_product_id, p_biz_date)
     rows, _ = db.query(
         "SELECT * FROM mart.resolve_master_product(%s, %s, %s, CURRENT_DATE)",
@@ -182,7 +175,7 @@ def resolve(shop_code: str = Query(...), platform_product_id: str = Query(...)):
 
 # ===== priorities =====
 def _priorities(router_fn, fn_name, platform_code, start_date, end_date, limit, item_type=None):
-    _check_period(start_date, end_date)
+    check_period(start_date, end_date)
     # get_daily_action_list 需 item_type；risk/opportunity 无需
     if fn_name == "get_daily_action_list":
         rows, _ = db.query("SELECT * FROM mart.{}(%s, %s::date, %s::date, %s, %s)".format(fn_name),
@@ -217,8 +210,11 @@ def watchlist(platform_code: str = Query("douyin"), start_date: str = Query(...)
 @router.get("/business/rankings")
 def rankings(shop_code: str = Query(None), start_date: str = Query(...), end_date: str = Query(...),
              metric_key: str = Query("user_pay_amount"), limit: int = Query(10, ge=1, le=100)):
-    _check_period(start_date, end_date)
-    shop_name = _shop_name(shop_code) or "douyin"
+    check_period(start_date, end_date)
+    # P1-05 修复：rank_products 为店铺级能力，禁止用伪 'douyin' 代表整体
+    shop_name = resolve_shop_name(shop_code)
+    if not shop_name:
+        raise ApiError("SELECT_SHOP_REQUIRED", "商品排名为店铺级能力，请选择店铺（正式接口无平台级商品排名）")
     rows, _ = db.query(
         "SELECT * FROM mart.rank_products(%s, %s::date, %s::date, %s, %s, %s, %s, %s, %s)",
         (shop_name, start_date, end_date, metric_key, "current_value", "DESC", limit, None, None))
@@ -228,8 +224,8 @@ def rankings(shop_code: str = Query(None), start_date: str = Query(...), end_dat
 @router.get("/diagnostics/snapshot")
 def diag_snapshot(shop_code: str = Query(None), start_date: str = Query(...), end_date: str = Query(...),
                   domain_key: str = Query("shop")):
-    _check_period(start_date, end_date)
-    shop_name = _shop_name(shop_code)
+    check_period(start_date, end_date)
+    shop_name = resolve_shop_name(shop_code)
     if shop_name:
         rows, _ = db.query(
             "SELECT * FROM mart.get_diagnostic_snapshot(%s, %s::date, %s::date, %s, %s, %s, %s, %s)",
@@ -244,14 +240,14 @@ def diag_snapshot(shop_code: str = Query(None), start_date: str = Query(...), en
 
 @router.get("/diagnostics/anomalies")
 def anomalies(start_date: str = Query(...), end_date: str = Query(...)):
-    _check_period(start_date, end_date)
+    check_period(start_date, end_date)
     rows, _ = db.query("SELECT * FROM mart.get_anomalies(%s, %s::date, %s::date)", ("douyin", start_date, end_date))
     return ok(rows)
 
 
 @router.get("/opportunities")
 def opportunities_list(start_date: str = Query(...), end_date: str = Query(...)):
-    _check_period(start_date, end_date)
+    check_period(start_date, end_date)
     rows, _ = db.query("SELECT * FROM mart.get_growth_opportunities(%s, %s::date, %s::date, %s, %s)",
                        ("douyin", start_date, end_date, None, None))
     return ok(rows)
@@ -260,8 +256,8 @@ def opportunities_list(start_date: str = Query(...), end_date: str = Query(...))
 @router.get("/advertising/summary")
 def advertising_summary(shop_code: str = Query(None), start_date: str = Query(...), end_date: str = Query(...),
                         scope_key: str = Query("全店")):
-    _check_period(start_date, end_date)
-    shop_name = _shop_name(shop_code)
+    check_period(start_date, end_date)
+    shop_name = resolve_shop_name(shop_code)
     if not shop_name:
         raise ApiError("INVALID_ARGUMENT", "广告摘要需指定 shop_code")
     rows, _ = db.query("SELECT * FROM mart.get_advertising_period_summary(%s, %s::date, %s::date, %s)",

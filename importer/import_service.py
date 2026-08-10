@@ -86,12 +86,22 @@ class ImportService:
             seen_hdr[h] = True
 
         # V1.0.1: legacy_51 / current_61 兼容判定 (仅前三张成交表)
+        # P0-06 修复：严格按"实际有效列数 + 缺失新字段集合"判定，禁止 52~60 列异常文件被误放行
         result["schema_profile"] = "current_61"
+        result["schema_drift_reason"] = ""
         if sheet.source_sheet_name in ("成交概览", "自营成交", "合作成交"):
-            missing_wo_optional = [n for n in result["missing_fields"] if n not in OPTIONAL_NEW_HEADERS]
-            if not missing_wo_optional and result["missing_fields"] and not result["extra_fields"]:
-                result["schema_profile"] = "legacy_51"  # 缺的恰好是10个新字段 -> 旧51列文件
-            result["missing_fields_core"] = missing_wo_optional
+            actual_cols = len(nonempty_headers)
+            missing_set = set(result["missing_fields"])
+            optional_set = set(OPTIONAL_NEW_HEADERS)
+            if not result["missing_fields"] and not result["extra_fields"] and actual_cols == 61:
+                result["schema_profile"] = "current_61"          # 严格 61 列
+            elif missing_set == optional_set and actual_cols == 51 and not result["extra_fields"]:
+                result["schema_profile"] = "legacy_51"           # 严格 51 列（恰好缺 10 个新字段）
+            else:
+                result["schema_profile"] = "SCHEMA_DRIFT"        # 52~60 / 62+ 等未确认结构 → 阻止
+                result["schema_drift_reason"] = "实际 {} 列（期望 51 legacy 或 61 current），缺失 {} / 多余 {}".format(
+                    actual_cols, sorted(missing_set - optional_set)[:5] or list(missing_set)[:5], result["extra_fields"][:5])
+            result["missing_fields_core"] = [n for n in result["missing_fields"] if n not in OPTIONAL_NEW_HEADERS]
 
         col_index = {h: i for i, h in enumerate(headers) if h}
         sale_scope = sheet.sale_scope_override  # 三表合一用
@@ -194,6 +204,13 @@ class ImportService:
         # 读取 Excel
         reader = ExcelReader(file_path).open()
         try:
+            # P2-06：未知额外工作表检测（平台新增 sheet 不允许静默忽略）
+            expected_sheets = set(self.mapping.sheets.keys())
+            actual_sheets = set(reader.sheet_names())
+            unknown_sheets = sorted(actual_sheets - expected_sheets)
+            if unknown_sheets:
+                report["unknown_sheets"] = unknown_sheets
+                report["reasons"].append("发现未知额外工作表: {}".format(unknown_sheets))
             for sheet_name, sheet in self.mapping.sheets.items():
                 fields = self.mapping.get_fields(sheet_name)
                 result = self.process_sheet(sheet, reader, fields, shop_id, None if dry_run else 0)
@@ -241,6 +258,9 @@ class ImportService:
         for s in report["sheets"]:
             if not s["exists"]:
                 block_reasons.append(f"缺工作表:{s['sheet']}")
+            # P0-06：51/61 之外的结构（52~60/62+ 列）必须阻止，禁止按 legacy_51 放行
+            if s.get("schema_profile") == "SCHEMA_DRIFT":
+                block_reasons.append(f"{s['sheet']}结构异常(SCHEMA_DRIFT):{s.get('schema_drift_reason','')}")
             # V1.0.1: legacy_51 兼容——成交表缺失恰好10个新字段时允许；其余缺失阻止
             miss = s.get("missing_fields_core", s["missing_fields"])
             if miss:
@@ -257,6 +277,8 @@ class ImportService:
             block_reasons.append(f"共{total_errors}条转换异常")
         if dup_total > 0:
             block_reasons.append(f"共{dup_total}条重复业务键")
+        if report.get("unknown_sheets"):
+            block_reasons.append(f"发现未知额外工作表:{report['unknown_sheets']}（需人工确认，禁止静默忽略）")
         if report["duplicate"]:
             block_reasons.append("检测到重复文件")
 

@@ -1,0 +1,48 @@
+# -*- coding: utf-8 -*-
+"""F1.0.2 existing function validation CSV（基于现场验真结果）"""
+import csv
+from pathlib import Path
+
+rows = [
+    # function, exists, active, security_definer, search_path_fixed, agent_readonly_execute, public_execute_revoked,
+    # parameters, returned_fields, actual_supported_metrics, single_shop_test, two_shop_test, 7d_test, 30d_test,
+    # mapping_incomplete_test, contract_match, decision
+    ["get_product_line_members", "true", "true", "true", "true", "true", "true",
+     "p_product_line_name text", "product_line_id/name/master_product_code/name/mapping_count/covered_shop_count",
+     "结构（成员/映射数/覆盖店数）", "PASS(鱼子酱3成员)", "PASS(covered_shop_count=1)",
+     "PASS", "PASS", "PASS(mapping_count 正确)", "true", "PROMOTE_WHITELIST"],
+    ["get_product_line_period_summary", "true", "true", "true", "true", "true", "true",
+     "p_product_line_name text, p_start_date date, p_end_date date",
+     "product_line_id/name/expected_member_count/mapped/unmapped/enabled_shop/covered_shop/mapping_complete/data_coverage_complete/user_pay_amount/refund_amount_pay_time",
+     "user_pay_amount/refund_amount_pay_time（RETURNS 无 transaction/settlement/ad_spend/refund_rate）",
+     "PASS", "PASS(2店覆盖)", "PASS(7d=1,793,652.45)", "PASS(30d=8,813,486.86)",
+     "PASS(18/18 映射, unmapped=0)", "true(RETURNS 与实际一致)", "PROMOTE_WHITELIST"],
+    ["get_master_product_period_summary", "true", "true", "true", "true", "true", "true",
+     "p_master_product_id bigint, p_start_date date, p_end_date date, p_shop_name text",
+     "master_product_id/code/name/product_line/start/end/mapped_shop_count/unmapped_member_count/mapping_complete/user_pay_amount/refund_amount_pay_time/refund_rate_pay_time",
+     "user_pay_amount/refund_amount_pay_time/refund_rate_pay_time（RETURNS 真实）",
+     "PASS(官方=5,653,849.01)", "PASS(整体=NULL=官方之和, 护理0映射→空)",
+     "PASS", "PASS(30d)", "PASS(mapping_complete=f 当 1/2 店)", "true", "PROMOTE_WHITELIST"],
+    ["rank_master_products", "true", "true", "true", "true", "true", "true",
+     "p_start_date date, p_end_date date, p_metric_key text, p_sort_by text, p_sort_direction text, p_limit integer",
+     "master_product_id/code/name/product_line_name/metric_key/current_value/mapped_shop_count/mapping_complete",
+     "**user_pay_amount 唯一**（F1.0.2 已收紧契约：其他 metric_key → UNSUPPORTED_METRIC）",
+     "PASS(TOP3 正常)", "PASS(mapped_shop_count)", "PASS", "PASS(30d TOP3)",
+     "PASS(mapping_complete 语义)", "true(已修复: transaction→UNSUPPORTED_METRIC)", "PROMOTE_WHITELIST(契约已收紧)"],
+    ["decompose_master_product_by_shop_product", "true", "true", "true", "true", "true", "true",
+     "p_master_product_id bigint, p_start_date date, p_end_date date",
+     "master_product_id/name/shop_name/platform_product_id/name/current_value/previous_value/absolute_change/relative_change/net_change/gross_negative/gross_positive/negative_impact_share",
+     "user_pay 拆解（shop_product 粒度）", "PASS(官方1条拆解)", "PASS", "PASS", "PASS(30d)",
+     "PASS", "true", "已在白名单(46/54)"],
+]
+
+p = Path(r"D:/ecommerce-data-system/workspace/docs/f1.0.2/F1.0.2_existing_function_validation.csv")
+p.parent.mkdir(parents=True, exist_ok=True)
+with p.open("w", newline="", encoding="utf-8-sig") as f:
+    w = csv.writer(f)
+    w.writerow(["function", "exists", "active", "security_definer", "search_path_fixed",
+                "agent_readonly_execute", "public_execute_revoked", "parameters", "returned_fields",
+                "actual_supported_metrics", "single_shop_test", "two_shop_test", "7d_test", "30d_test",
+                "mapping_incomplete_test", "contract_match", "decision"])
+    w.writerows(rows)
+print("validation CSV 生成:", p, "| 5 函数")
