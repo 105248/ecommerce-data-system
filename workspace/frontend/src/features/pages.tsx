@@ -80,7 +80,7 @@ export function RefundsPage({ f }: { f: Filters }) {
   const [err, setErr] = useState('')
   useEffect(() => {
     setErr('')
-    getSummary({ shop: f.shop, sd: f.sd, ed: f.ed, scope: f.scope }).then(r => setS(r.data)).catch(e => setErr(e.message))
+    getSummary({ shop: f.shop, sd: f.sd, ed: f.ed, scope: f.scope }).then(r => setS(r.data as unknown as Record<string, number | null>)).catch(e => setErr(e.message))
   }, [f.shop, f.sd, f.ed, f.scope])
   return (
     <div>
@@ -269,23 +269,23 @@ export function SmartOperationPage({ f }: { f: Filters }) {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
         <div className="card">
           <h3>当前风险摘要</h3>
-          {risks.map((x, i) => (
+          {Array.isArray(risks) && risks.map((x, i) => (
             <div key={i} style={{ padding: '6px 0', borderBottom: '1px solid #f3f4f6', fontSize: 13 }}>
               <a href="#/risks">{esc(x.entity_name)}</a> <span className="badge red">{esc(x.risk_level)}</span>
               <span className="num" style={{ float: 'right' }}>{x.risk_priority_score != null ? fmt(x.risk_priority_score) : ''}</span>
             </div>
           ))}
-          {!risks.length && <div className="empty">无</div>}
+          {!Array.isArray(risks) || !risks.length ? <div className="empty">无</div> : null}
         </div>
         <div className="card">
           <h3>当前机会摘要</h3>
-          {opps.map((x, i) => (
+          {Array.isArray(opps) && opps.map((x, i) => (
             <div key={i} style={{ padding: '6px 0', borderBottom: '1px solid #f3f4f6', fontSize: 13 }}>
               <a href="#/opportunities">{esc(x.entity_name)}</a> <span className="badge green">{esc(x.opportunity_level)}</span>
               <span className="num" style={{ float: 'right' }}>{x.opportunity_priority_score != null ? fmt(x.opportunity_priority_score) : ''}</span>
             </div>
           ))}
-          {!opps.length && <div className="empty">无</div>}
+          {!Array.isArray(opps) || !opps.length ? <div className="empty">无</div> : null}
         </div>
       </div>
     </div>

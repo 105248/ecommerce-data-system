@@ -47,6 +47,9 @@ export interface RiskRow {
   absolute_change: number | null
   consecutive_day_count: number
   coverage_complete: boolean
+  business_impact?: number | null
+  risk_priority_score?: number | null
+  risk_level?: string | null
   [k: string]: unknown
 }
 
@@ -61,6 +64,8 @@ export interface OpportunityRow {
   relative_change: number | null
   benchmark_p50: number | null
   available_weight: number | null
+  opportunity_priority_score?: number | null
+  business_impact?: number | null
   [k: string]: unknown
 }
 
@@ -81,6 +86,7 @@ export interface Filters {
   ed: string
   scope: string
   preset: string
+  today?: string
 }
 
 export interface PageMeta {

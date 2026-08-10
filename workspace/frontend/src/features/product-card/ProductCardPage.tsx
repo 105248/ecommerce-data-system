@@ -1,12 +1,12 @@
 // F1.0.4 /product-card（渠道整体 + 快照 PERIOD_SNAPSHOT + 来源 SOURCE_NOT_AVAILABLE）
 import { useEffect, useState } from 'react'
-import type { Filters, BusinessSummary, TrendPoint } from '../types'
-import { getSummary, getTrend } from '../services/api'
-import { api } from '../services/api'
-import { MetricCard } from '../components/MetricCard'
-import { TrendChart } from '../components/TrendChart'
-import { CapabilityNotice } from '../components/CapabilityNotice'
-import { yuan, esc } from '../lib/format'
+import type { Filters, BusinessSummary, TrendPoint } from '../../types'
+import { getSummary, getTrend } from '../../services/api'
+import { api } from '../../services/api'
+import { MetricCard } from '../../components/MetricCard'
+import { TrendChart } from '../../components/TrendChart'
+import { CapabilityNotice } from '../../components/CapabilityNotice'
+import { yuan, esc } from '../../lib/format'
 
 interface SnapSummary { product_count: number; exposure_users: number; click_users: number; user_pay_amount: number; transaction_users: number; transaction_orders: number }
 interface SnapRank { product_title: string; product_id: string; current_value: number }
@@ -16,17 +16,26 @@ export function ProductCardPage({ f }: { f: Filters }) {
   const [trend, setTrend] = useState<TrendPoint[]>([])
   const [snap, setSnap] = useState<SnapSummary | null>(null)
   const [rank, setRank] = useState<SnapRank[]>([])
+  const [snapErr, setSnapErr] = useState('')
   const [err, setErr] = useState('')
   useEffect(() => {
+    let ignore = false
     setErr('')
     const q = { shop: f.shop, sd: f.sd, ed: f.ed, scope: '商品卡' }
-    getSummary(q).then(r => setS(r.data)).catch(e => setErr(e.message))
-    getTrend(q, 'transaction_amount').then(r => setTrend(r.data)).catch(() => setTrend([]))
-    const shop = f.shop || 'DY_DANDONG_OFFICIAL'
+    getSummary(q).then(r => { if (!ignore) setS(r.data) }).catch(e => { if (!ignore) setErr(e.message) })
+    getTrend(q, 'transaction_amount').then(r => { if (!ignore) setTrend(r.data) }).catch(() => {})
+    // F1.0.4-R2：商品卡快照为单店粒度（PERIOD_SNAPSHOT），不支持全部店铺 → 未选店时明确提示，绝不默认官方店
+    if (!f.shop) {
+      setSnap(null); setRank([]); setSnapErr('SELECT_SHOP_REQUIRED：商品卡快照为单店粒度（PERIOD_SNAPSHOT），不支持全部店铺，请在顶部选择具体店铺')
+      return () => { ignore = true }
+    }
+    const shop = f.shop
+    setSnapErr('')
     api<SnapSummary>('/product-card/snapshot-summary', { shop_code: shop, start_date: f.sd, end_date: f.ed })
-      .then(r => setSnap(r.data)).catch(() => setSnap(null))
+      .then(r => { if (!ignore) setSnap(r.data) }).catch(() => { if (!ignore) setSnap(null) })
     api<SnapRank[]>('/product-card/snapshot-rank', { shop_code: shop, start_date: f.sd, end_date: f.ed, metric_key: 'user_pay_amount', limit: 20 })
-      .then(r => setRank(r.data)).catch(() => setRank([]))
+      .then(r => { if (!ignore) setRank(r.data) }).catch(() => { if (!ignore) setRank([]) })
+    return () => { ignore = true }
   }, [f.sd, f.ed, f.scope, f.shop])
   return (
     <div>
@@ -46,6 +55,7 @@ export function ProductCardPage({ f }: { f: Filters }) {
           <div className="card"><h3>商品卡成交金额趋势</h3><TrendChart points={trend} /><div className="trend-note">数据粒度：日</div></div>
           <div className="card">
             <h3>商品卡快照（统计周期 {f.sd} ～ {f.ed}）<span className="badge green">PERIOD_SNAPSHOT</span></h3>
+            {snapErr && <div className="err" style={{ margin: '8px 0' }}>{esc(snapErr)}</div>}
             {snap && (
               <div className="kpis" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(130px,1fr))', gap: 8, margin: '8px 0' }}>
                 <div className="kpi"><div className="l">覆盖商品</div><div className="v">{snap.product_count}</div></div>

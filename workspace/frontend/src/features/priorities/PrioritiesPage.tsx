@@ -1,9 +1,9 @@
 // F1.0.4 /priorities 经营优先级（风险/机会/Action；不复制首页 7 KPI；STALE 提示）
 import { useEffect, useState } from 'react'
-import type { Filters, RiskRow, OpportunityRow, IntelligenceStatus } from '../types'
-import { getRiskTop, getOpportunityTop, api, getIntelligenceStatus } from '../services/api'
-import { CapabilityNotice } from '../components/CapabilityNotice'
-import { fmt, yuan, esc } from '../lib/format'
+import type { Filters, RiskRow, OpportunityRow, IntelligenceStatus } from '../../types'
+import { getRiskTop, getOpportunityTop, api, getIntelligenceStatus } from '../../services/api'
+import { CapabilityNotice } from '../../components/CapabilityNotice'
+import { fmt, yuan, esc } from '../../lib/format'
 
 export function PrioritiesPage({ f }: { f: Filters }) {
   const [risks, setRisks] = useState<RiskRow[]>([])
@@ -28,7 +28,7 @@ export function PrioritiesPage({ f }: { f: Filters }) {
             <table>
               <thead><tr><th>对象</th><th>级别</th><th className="num">得分</th><th className="num">影响金额</th></tr></thead>
               <tbody>
-                {risks.map((x, i) => (
+                {Array.isArray(risks) && risks.map((x, i) => (
                   <tr key={i}>
                     <td><a href="#/risks">{esc(x.entity_name)}</a></td>
                     <td><span className="badge red">{esc(x.risk_level)}</span></td>
@@ -36,7 +36,7 @@ export function PrioritiesPage({ f }: { f: Filters }) {
                     <td className="num">{x.business_impact != null ? yuan(x.business_impact) : '—'}</td>
                   </tr>
                 ))}
-                {!risks.length && <tr><td colSpan={4} className="empty">当前区间无风险优先级</td></tr>}
+                {(!Array.isArray(risks) || !risks.length) && <tr><td colSpan={4} className="empty">当前区间无风险优先级</td></tr>}
               </tbody>
             </table>
           </div>
@@ -45,7 +45,7 @@ export function PrioritiesPage({ f }: { f: Filters }) {
             <table>
               <thead><tr><th>对象</th><th>级别</th><th className="num">得分</th><th className="num">机会分</th></tr></thead>
               <tbody>
-                {opps.map((x, i) => (
+                {Array.isArray(opps) && opps.map((x, i) => (
                   <tr key={i}>
                     <td><a href="#/opportunities">{esc(x.entity_name)}</a></td>
                     <td><span className="badge green">{esc(x.opportunity_level)}</span></td>
@@ -53,7 +53,7 @@ export function PrioritiesPage({ f }: { f: Filters }) {
                     <td className="num">{fmt(x.opportunity_score)}</td>
                   </tr>
                 ))}
-                {!opps.length && <tr><td colSpan={4} className="empty">当前区间无机会优先级</td></tr>}
+                {(!Array.isArray(opps) || !opps.length) && <tr><td colSpan={4} className="empty">当前区间无机会优先级</td></tr>}
               </tbody>
             </table>
           </div>

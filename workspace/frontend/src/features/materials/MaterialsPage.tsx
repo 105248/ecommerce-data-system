@@ -1,9 +1,9 @@
 // F1.0.4 /materials 素材（F1.0.3 快照排名）
 import { useEffect, useState } from 'react'
-import type { Filters } from '../types'
-import { api } from '../services/api'
-import { CapabilityNotice } from '../components/CapabilityNotice'
-import { yuan, esc } from '../lib/format'
+import type { Filters } from '../../types'
+import { api } from '../../services/api'
+import { CapabilityNotice } from '../../components/CapabilityNotice'
+import { yuan, esc } from '../../lib/format'
 
 interface MRank { material_name: string; material_id: string; material_evaluation: string; current_value: number }
 

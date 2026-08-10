@@ -33,3 +33,5 @@ desktop.ini
 qa/v11_v13_critical/s8_final_check.py
 *.tmp
 *.tmp*
+node_modules/
+tsconfig.tsbuildinfo

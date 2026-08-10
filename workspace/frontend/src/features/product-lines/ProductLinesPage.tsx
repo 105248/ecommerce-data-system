@@ -1,9 +1,9 @@
 // F1.0.4 /product-lines 品线（结构 + 经营汇总；F1.0.2 白名单函数）
 import { useEffect, useState } from 'react'
-import type { Filters } from '../types'
-import { api } from '../services/api'
-import { CapabilityNotice } from '../components/CapabilityNotice'
-import { yuan, esc } from '../lib/format'
+import type { Filters } from '../../types'
+import { api } from '../../services/api'
+import { CapabilityNotice } from '../../components/CapabilityNotice'
+import { yuan, esc } from '../../lib/format'
 
 interface Line { product_line_code: string; product_line_name: string }
 interface Member { master_product_code: string; master_product_name: string; enabled: boolean }

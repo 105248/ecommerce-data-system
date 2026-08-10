@@ -8,20 +8,7 @@ from services import VALID_SCOPES, TREND_METRICS, check_period, resolve_shop_nam
 
 router = APIRouter(prefix="/api/v1", tags=["f0.5"])
 
-
-
-def check_period(start_date: str, end_date: str):
-    import datetime
-    try:
-        s = datetime.date.fromisoformat(start_date)
-        e = datetime.date.fromisoformat(end_date)
-    except ValueError:
-        raise ApiError("INVALID_ARGUMENT", "日期格式须为 YYYY-MM-DD")
-    if s > e:
-        raise ApiError("INVALID_ARGUMENT", "start_date 不能晚于 end_date")
-    return s, e
-
-
+# check_period 统一来自 services（F1.0.4-R2：删除本地重复定义，避免与 services 行为分叉）
 
 
 # ===== health / ready =====

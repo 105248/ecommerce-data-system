@@ -1,9 +1,9 @@
 // F1.0.4 /master-products（主档 + 合法排名，CONFIRMED 映射）
 import { useEffect, useState } from 'react'
-import type { Filters } from '../types'
-import { api } from '../services/api'
-import { CapabilityNotice } from '../components/CapabilityNotice'
-import { yuan, esc } from '../lib/format'
+import type { Filters } from '../../types'
+import { api } from '../../services/api'
+import { CapabilityNotice } from '../../components/CapabilityNotice'
+import { yuan, esc } from '../../lib/format'
 
 interface RankRow { master_product_code: string; master_product_name: string; product_line_name: string; current_value: number; mapped_shop_count: number; mapping_complete: boolean }
 interface MasterRow { master_product_code: string; master_product_name: string; enabled: boolean }

@@ -1,11 +1,11 @@
 // F1.0.4 /live 直播（渠道整体 + 场次 SESSION_FACT + 日数据 DAILY_FACT）
 import { useEffect, useState } from 'react'
-import type { Filters, BusinessSummary, TrendPoint } from '../types'
-import { getSummary, getTrend, api } from '../services/api'
-import { MetricCard } from '../components/MetricCard'
-import { TrendChart } from '../components/TrendChart'
-import { CapabilityNotice } from '../components/CapabilityNotice'
-import { fmt, yuan, esc } from '../lib/format'
+import type { Filters, BusinessSummary, TrendPoint } from '../../types'
+import { getSummary, getTrend, api } from '../../services/api'
+import { MetricCard } from '../../components/MetricCard'
+import { TrendChart } from '../../components/TrendChart'
+import { CapabilityNotice } from '../../components/CapabilityNotice'
+import { fmt, yuan, esc } from '../../lib/format'
 
 interface SessionRow { live_room_name: string; live_room_id: string; start_time: string; end_time: string; duration_minutes: number; account_type: string; creator_nickname: string; period_key: string }
 interface DailyRow { biz_date: string | null; transaction_amount: number; ad_spend: number; net_roi: number; gpm: number }
@@ -22,8 +22,9 @@ export function LivePage({ f }: { f: Filters }) {
     getSummary(q).then(r => setS(r.data)).catch(e => setErr(e.message))
     getTrend(q, 'transaction_amount').then(r => setTrend(r.data)).catch(() => setTrend([]))
     if (f.shop) {
-      api<SessionRow[]>('/live/sessions', { shop_code: f.shop, limit: 100 }).then(r => setSessions(r.data)).catch(() => setSessions([]))
-      api<DailyRow[]>('/live/daily', { shop_code: f.shop }).then(r => setDaily(r.data)).catch(() => setDaily([]))
+      // F1.0.4-R2：场次/日数据也跟随全局日期过滤
+      api<SessionRow[]>('/live/sessions', { shop_code: f.shop, start_date: f.sd, end_date: f.ed, limit: 100 }).then(r => setSessions(r.data)).catch(() => setSessions([]))
+      api<DailyRow[]>('/live/daily', { shop_code: f.shop, start_date: f.sd, end_date: f.ed }).then(r => setDaily(r.data)).catch(() => setDaily([]))
     }
   }, [f.sd, f.ed, f.shop])
   return (

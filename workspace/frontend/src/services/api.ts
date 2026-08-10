@@ -34,7 +34,8 @@ export function getTrend(f: { shop?: string; sd: string; ed: string; scope: stri
 }
 
 export function getShopContribution(f: { sd: string; ed: string; scope: string }) {
-  return api<ShopContributionRow[]>('/business/shop-contribution', {
+  // F1.0.4-R2：端点返回 data:{shops:[...]}（平台层包一层）
+  return api<{ shops: ShopContributionRow[] }>('/business/shop-contribution', {
     start_date: f.sd, end_date: f.ed, scope_key: f.scope,
   })
 }

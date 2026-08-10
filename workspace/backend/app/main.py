@@ -7,6 +7,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 
 import api
 import api_f1
@@ -20,6 +21,8 @@ app.include_router(api.router)
 app.include_router(api_f1.router)
 
 STATIC = Path(__file__).resolve().parent.parent / "static"
+# F1.0.4-R2：正式前端为 React（workspace/frontend/dist），由 / 与 /assets 服务；static 仅保留独立工具页
+DIST = Path(__file__).resolve().parent.parent.parent / "frontend" / "dist"
 
 # ===== 飞书身份映射（F0.5 配置层，不扩张数据库） =====
 # 飞书 open_id → (角色, 可见店铺)。F0.5 演示为内置配置；F1.0 可迁移至 meta.app_user*。
@@ -39,19 +42,27 @@ def feishu_auth(open_id: str = ""):
 
 
 # ===== 静态 Web（同源，零 CORS）；no-cache 保证前端迭代后刷新即最新 =====
+# React 构建产物 assets（JS/CSS），同源加载
+if (DIST / "assets").exists():
+    app.mount("/assets", StaticFiles(directory=DIST / "assets"), name="assets")
+
 def _fresh(resp):
     resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
     resp.headers["Pragma"] = "no-cache"
     return resp
 
+
 @app.get("/")
 def index():
-    return _fresh(FileResponse(STATIC / "index.html"))
+    # F1.0.4-R2：唯一正式前端 = React（frontend/dist）。未构建时明确报错，不回落 legacy。
+    if (DIST / "index.html").exists():
+        return _fresh(FileResponse(DIST / "index.html"))
+    return JSONResponse(status_code=503, content=fail("FRONTEND_NOT_BUILT",
+                                                       "React 前端未构建（workspace/frontend/dist 缺失），请先 npm run build"))
 
 
-@app.get("/app.js")
-def app_js():
-    return _fresh(FileResponse(STATIC / "app.js"))
+# /app.js 已退役（F1.0.4-R2）：legacy 单文件原型不再作为正式入口，请使用 React 前端
+# @app.get("/app.js") 已移除
 
 
 @app.get("/system-status")

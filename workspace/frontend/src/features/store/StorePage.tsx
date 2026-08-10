@@ -1,9 +1,9 @@
 // F1.0.4 /store 店铺经营（两店贡献/环比，全消费正式字段）
 import { useEffect, useState } from 'react'
-import type { Filters, ShopContributionRow } from '../types'
-import { getShopContribution } from '../services/api'
-import { CapabilityNotice } from '../components/CapabilityNotice'
-import { yuan, pct, fmt, esc } from '../lib/format'
+import type { Filters, ShopContributionRow } from '../../types'
+import { getShopContribution } from '../../services/api'
+import { CapabilityNotice } from '../../components/CapabilityNotice'
+import { yuan, pct, fmt, esc } from '../../lib/format'
 
 export function StorePage({ f }: { f: Filters }) {
   const [shops, setShops] = useState<ShopContributionRow[]>([])
@@ -11,7 +11,7 @@ export function StorePage({ f }: { f: Filters }) {
   useEffect(() => {
     setErr('')
     getShopContribution({ sd: f.sd, ed: f.ed, scope: f.scope })
-      .then(r => setShops(r.data)).catch(e => setErr(e.message))
+      .then(r => setShops(r.data.shops || [])).catch(e => setErr(e.message))
   }, [f.sd, f.ed, f.scope])
   return (
     <div>

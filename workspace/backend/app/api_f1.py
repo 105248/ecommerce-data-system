@@ -307,15 +307,22 @@ SELECT
     diagnosis = r.get("diagnosis_max")
     opportunity = r.get("opportunity_max")
     action = r.get("action_max")
-    stale = bool(fact and (not anomaly or fact > anomaly))
+    # F1.0.4-R2：按四能力各自判断 freshness，总体取最旧（任何一项落后事实 → 整体 STALE）
+    caps = {"anomaly": anomaly, "diagnosis": diagnosis, "opportunity": opportunity, "priority": action}
+    capabilities = {}
+    for k, v in caps.items():
+        st = "STALE" if (fact and (not v or fact > v)) else "FRESH"
+        capabilities[k] = {"latest_generated_date": v.isoformat() if v else None, "status": st}
+    overall = "STALE" if any(c["status"] == "STALE" for c in capabilities.values()) else "FRESH"
     return ok({
         "latest_fact_date": fact.isoformat() if fact else None,
         "latest_anomaly_generated_date": anomaly.isoformat() if anomaly else None,
         "latest_diagnosis_generated_date": diagnosis.isoformat() if diagnosis else None,
         "latest_opportunity_generated_date": opportunity.isoformat() if opportunity else None,
         "latest_priority_generated_date": action.isoformat() if action else None,
+        "capabilities": capabilities,
         "last_run_at": r.get("last_run_at").isoformat() if r.get("last_run_at") else None,
-        "intelligence_status": "STALE" if stale else "FRESH",
+        "intelligence_status": overall,
     })
 
 
@@ -324,6 +331,10 @@ SELECT
 def product_card_snapshot_summary(start_date: str = Query(...), end_date: str = Query(...),
                                   shop_code: str = Query(None)):
     check_period(start_date, end_date)
+    # F1.0.4-R2：快照为单店粒度（PERIOD_SNAPSHOT），不支持全部店铺 → 强制选店
+    if not shop_code:
+        raise ApiError("SELECT_SHOP_REQUIRED",
+                       "商品卡快照为单店粒度（PERIOD_SNAPSHOT），不支持全部店铺，请指定 shop_code")
     shop = resolve_shop_name(shop_code)
     rows, _ = db.query("SELECT * FROM mart.product_card_snapshot_summary(%s, %s::date, %s::date)",
                        (shop, start_date, end_date))
@@ -338,6 +349,10 @@ def product_card_snapshot_rank(start_date: str = Query(...), end_date: str = Que
                                metric_key: str = Query("user_pay_amount"),
                                sort_direction: str = Query("DESC"), limit: int = Query(50, ge=1, le=200)):
     check_period(start_date, end_date)
+    # F1.0.4-R2：同 snapshot-summary，单店粒度强制选店
+    if not shop_code:
+        raise ApiError("SELECT_SHOP_REQUIRED",
+                       "商品卡快照为单店粒度（PERIOD_SNAPSHOT），不支持全部店铺，请指定 shop_code")
     shop = resolve_shop_name(shop_code)
     try:
         rows, _ = db.query(
@@ -401,7 +416,12 @@ def material_snapshot_rank(start_date: str = Query(...), end_date: str = Query(.
 
 # ===== F1.0.3 直播场次（SESSION_FACT）与直播日数据（DAILY_FACT） =====
 @router.get("/live/sessions")
-def live_sessions(shop_code: str = Query(None), period_key: str = Query(None), limit: int = Query(200, ge=1, le=500)):
+def live_sessions(shop_code: str = Query(None), period_key: str = Query(None),
+                  start_date: str = Query(None), end_date: str = Query(None),
+                  limit: int = Query(200, ge=1, le=500), offset: int = Query(0, ge=0)):
+    # F1.0.4-R2：支持全局日期过滤（按开播日 start_time）+ offset 分页（全量遍历）
+    if start_date or end_date:
+        check_period(start_date or "1900-01-01", end_date or "2099-12-31")
     shop = resolve_shop_name(shop_code)
     sql = "SELECT * FROM mart.live_session_snapshot WHERE 1=1"
     args = []
@@ -409,18 +429,29 @@ def live_sessions(shop_code: str = Query(None), period_key: str = Query(None), l
         sql += " AND shop_name=%s"; args.append(shop)
     if period_key:
         sql += " AND period_key=%s"; args.append(period_key)
-    sql += " ORDER BY start_time DESC LIMIT %s"; args.append(limit)
+    if start_date:
+        sql += " AND (LEFT(start_time,10))::date >= %s::date"; args.append(start_date)
+    if end_date:
+        sql += " AND (LEFT(start_time,10))::date <= %s::date"; args.append(end_date)
+    sql += " ORDER BY start_time DESC LIMIT %s OFFSET %s"; args += [limit, offset]
     rows, _ = db.query(sql, tuple(args))
     return ok(rows)
 
 
 @router.get("/live/daily")
-def live_daily(shop_code: str = Query(None)):
+def live_daily(shop_code: str = Query(None), start_date: str = Query(None), end_date: str = Query(None)):
+    # F1.0.4-R2：支持全局日期过滤（biz_date；'周期汇总'行 biz_date NULL 不命中，符合预期）
+    if start_date or end_date:
+        check_period(start_date or "1900-01-01", end_date or "2099-12-31")
     shop = resolve_shop_name(shop_code)
-    sql = "SELECT * FROM mart.live_daily"
+    sql = "SELECT * FROM mart.live_daily WHERE 1=1"
     args = []
     if shop:
-        sql += " WHERE shop_name=%s"; args.append(shop)
+        sql += " AND shop_name=%s"; args.append(shop)
+    if start_date:
+        sql += " AND biz_date >= %s::date"; args.append(start_date)
+    if end_date:
+        sql += " AND biz_date <= %s::date"; args.append(end_date)
     sql += " ORDER BY biz_date NULLS LAST"
     rows, _ = db.query(sql, tuple(args) if args else None)
     return ok(rows)

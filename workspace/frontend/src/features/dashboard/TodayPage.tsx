@@ -1,11 +1,11 @@
 // F1.0.4 /today 经营驾驶舱（标题随区间；KPI 绑定正确；环比消费 API 字段）
 import { useEffect, useState } from 'react'
-import type { BusinessSummary, Filters, RiskRow, OpportunityRow, TrendPoint, ShopContributionRow } from '../types'
-import { getSummary, getTrend, getRiskTop, getOpportunityTop, getShopContribution, api } from '../services/api'
-import { MetricCard } from '../components/MetricCard'
-import { TrendChart } from '../components/TrendChart'
-import { CapabilityNotice } from '../components/CapabilityNotice'
-import { fmt, yuan, pct, esc, pageTitleForToday } from '../lib/format'
+import type { BusinessSummary, Filters, RiskRow, OpportunityRow, TrendPoint, ShopContributionRow } from '../../types'
+import { getSummary, getTrend, getRiskTop, getOpportunityTop, getShopContribution, getIntelligenceStatus, api } from '../../services/api'
+import { MetricCard } from '../../components/MetricCard'
+import { TrendChart } from '../../components/TrendChart'
+import { CapabilityNotice } from '../../components/CapabilityNotice'
+import { fmt, yuan, pct, esc, pageTitleForToday } from '../../lib/format'
 
 interface CompareData { previous_value?: number | null; absolute_change?: number | null; percentage_point_change?: number | null }
 
@@ -16,8 +16,9 @@ export function TodayPage({ f }: { f: Filters }) {
   const [opps, setOpps] = useState<OpportunityRow[]>([])
   const [shops, setShops] = useState<ShopContributionRow[]>([])
   const [cmp, setCmp] = useState<CompareData>({})
+  const [stale, setStale] = useState(false)
   const [err, setErr] = useState('')
-  const title = pageTitleForToday(f.sd, f.ed, f.today)
+  const title = pageTitleForToday(f.sd, f.ed, f.today || '')
 
   useEffect(() => {
     setErr('')
@@ -26,9 +27,11 @@ export function TodayPage({ f }: { f: Filters }) {
     getTrend(q, 'transaction_amount').then(r => setTrend(r.data)).catch(() => setTrend([]))
     getRiskTop({ sd: f.sd, ed: f.ed }).then(r => setRisks(r.data)).catch(() => setRisks([]))
     getOpportunityTop({ sd: f.sd, ed: f.ed }).then(r => setOpps(r.data)).catch(() => setOpps([]))
-    getShopContribution({ sd: f.sd, ed: f.ed, scope: f.scope }).then(r => setShops(r.data)).catch(() => setShops([]))
+    getShopContribution({ sd: f.sd, ed: f.ed, scope: f.scope }).then(r => setShops(r.data.shops || [])).catch(() => setShops([]))
     api<CompareData>('/business/compare', { start_date: f.sd, end_date: f.ed, metric_key: 'user_pay_amount' })
       .then(r => setCmp(r.data)).catch(() => setCmp({}))
+    // F1.0.4-R2：智能层 STALE 时禁止用"无风险/无机会"误导（四能力任一落后事实即 STALE）
+    getIntelligenceStatus().then(r => setStale(r.data.intelligence_status === 'STALE')).catch(() => {})
   }, [f.sd, f.ed, f.scope, f.shop])
 
   return (
@@ -37,6 +40,7 @@ export function TodayPage({ f }: { f: Filters }) {
       <div className="sub">{f.sd} ～ {f.ed} ｜ {f.shopName} ｜ {f.scope}</div>
       {err ? <CapabilityNotice state="ERROR" text={err} /> : (
         <>
+          {stale && <CapabilityNotice state="REFRESH_STALE" text={`最新经营数据已更新，智能分析尚未刷新（本页风险/机会 TOP5 显示最近一次检测结果，不代表"当前无风险/无机会"）`} />}
           {s && (
             <div className="kpis" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(160px,1fr))', gap: 10, margin: '12px 0' }}>
               <MetricCard label="成交金额" value={s.transaction_amount} />

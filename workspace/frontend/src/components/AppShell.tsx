@@ -1,5 +1,5 @@
 // F1.0.4 正式 App Shell：路由 / 侧边栏 / 筛选器单一状态源 / 数据状态条
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { PRESET_CN, SCOPE_LIST, type Filters, type PageMeta } from '../types'
 import { api } from '../services/api'
 import { esc } from '../lib/format'
@@ -57,8 +57,9 @@ function todayStr() {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
-function applyPreset(key: string): { sd: string; ed: string } {
-  const t = new Date()
+function applyPreset(key: string, baseStr?: string): { sd: string; ed: string } {
+  // F1.0.4-R2：日期基准优先用系统最新业务数据日（data-status MX），未取到才回退电脑今天
+  const t = baseStr ? new Date(baseStr) : new Date()
   const fmtD = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
   const ed = fmtD(t)
   const add = (days: number) => { const d = new Date(t); d.setDate(d.getDate() - days); return fmtD(d) }
@@ -86,6 +87,7 @@ export function AppShell({ children }: { children: (f: Filters) => React.ReactNo
   const [route, setRoute] = useState<string>(() => location.hash.slice(1) || '/today')
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS)
   const [status, setStatus] = useState<{ fact?: string }>({})
+  const userTouched = useRef(false)
   const today = todayStr()
 
   useEffect(() => {
@@ -93,7 +95,14 @@ export function AppShell({ children }: { children: (f: Filters) => React.ReactNo
     window.addEventListener('hashchange', onHash)
     api<Array<{ max_date: string }>>('/data-status').then(r => {
       const mx = r.data.map(x => x.max_date).sort().pop()
-      if (mx) setStatus({ fact: mx })
+      if (mx) {
+        setStatus({ fact: mx })
+        // 用户未手动改过日期时，默认区间基于系统最新业务数据日而非电脑今天
+        if (!userTouched.current) {
+          const p = applyPreset('last7days', mx)
+          setFilters(prev => ({ ...prev, sd: p.sd, ed: p.ed }))
+        }
+      }
     }).catch(() => {})
     return () => window.removeEventListener('hashchange', onHash)
   }, [])
@@ -102,16 +111,19 @@ export function AppShell({ children }: { children: (f: Filters) => React.ReactNo
   const f: Filters = filters
 
   function changeShop(code: string) {
-    const name = SHOP_OPTIONS.find(s => s.code === code)?.name || '抖音整体'
+    userTouched.current = true
+    const name = SHOP_OPTIONS.find(s => s.code === code)?.name || '全部店铺'
     setFilters({ ...filters, shop: code, shopName: name })
   }
 
   function changePreset(key: string) {
-    const { sd, ed } = applyPreset(key)
+    userTouched.current = true
+    const { sd, ed } = applyPreset(key, status.fact)
     setFilters({ ...filters, preset: key, sd, ed })
   }
 
   function changeScope(scope: string) {
+    userTouched.current = true
     setFilters({ ...filters, scope })
   }
 
@@ -134,10 +146,10 @@ export function AppShell({ children }: { children: (f: Filters) => React.ReactNo
           <select value={filters.preset} onChange={e => changePreset(e.target.value)} style={{ padding: '4px 8px', borderRadius: 6, border: '1px solid #d1d5db' }}>
             {Object.entries(PRESET_CN).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
           </select>
-          <input type="date" value={filters.sd} onChange={e => setFilters({ ...filters, preset: 'custom', sd: e.target.value })}
+          <input type="date" value={filters.sd} onChange={e => { userTouched.current = true; setFilters({ ...filters, preset: 'custom', sd: e.target.value }) }}
             style={{ padding: '4px 8px', borderRadius: 6, border: '1px solid #d1d5db' }} />
           <span style={{ color: '#6b7280' }}>～</span>
-          <input type="date" value={filters.ed} onChange={e => setFilters({ ...filters, preset: 'custom', ed: e.target.value })}
+          <input type="date" value={filters.ed} onChange={e => { userTouched.current = true; setFilters({ ...filters, preset: 'custom', ed: e.target.value }) }}
             style={{ padding: '4px 8px', borderRadius: 6, border: '1px solid #d1d5db' }} />
           <span style={{ fontSize: 13, color: '#6b7280' }}>店铺</span>
           <select value={filters.shop} onChange={e => changeShop(e.target.value)} disabled={!meta.supportsShop}

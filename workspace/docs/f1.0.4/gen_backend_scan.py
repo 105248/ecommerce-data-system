@@ -106,9 +106,16 @@ v = get("/video/snapshot-summary", {"shop_code": "DY_DANDONG_OFFICIAL", "start_d
 check("视频快照-6/30-7/6-pay", v["user_pay_amount"],
       "SELECT sum(user_pay_amount) FROM core.douyin_video_snapshot WHERE shop_id=1 AND period_start='2026-06-30' AND period_end='2026-07-06'", ())
 
-# 直播场次（API 全量 count 对照 mart）
-sess = get("/live/sessions", {"shop_code": "DY_DANDONG_OFFICIAL", "limit": 500})["data"]
-check("直播场次-全量数", len(sess),
+# 直播场次（API 分页遍历全量 count 对照 mart；limit 上限 500/次，F1.0.4-R2 加 offset 分页）
+_sess_total = 0
+while True:
+    _b = get("/live/sessions", {"shop_code": "DY_DANDONG_OFFICIAL", "limit": 500, "offset": _sess_total})["data"]
+    if not _b:
+        break
+    _sess_total += len(_b)
+    if len(_b) < 500:
+        break
+check("直播场次-全量数", _sess_total,
       "SELECT count(*) FROM core.douyin_live_session_snapshot WHERE shop_id=1", ())
 
 DB.close()

@@ -339,8 +339,12 @@ const PAGES = {
       html += `</div>`;
       // F1.0.3：商品卡快照（PERIOD_SNAPSHOT，周期×商品；禁日趋势）
       html += `<div class="card"><h3>商品卡快照（统计周期 ${f.sd} ～ ${f.ed}）<span class="badge green">PERIOD_SNAPSHOT</span></h3>`;
+      // F1.0.4-R2：快照为单店粒度，未选店时不请求（绝不默认官方店）
+      if (!f.shop) {
+        html += `<div class="notice"><b>SELECT_SHOP_REQUIRED</b>：商品卡快照为单店粒度（PERIOD_SNAPSHOT），不支持全部店铺，请先选择具体店铺。</div>`;
+      } else {
       try {
-        const snap = await api('/product-card/snapshot-summary', {shop_code:f.shop||'DY_DANDONG_OFFICIAL', start_date:f.sd, end_date:f.ed});
+        const snap = await api('/product-card/snapshot-summary', {shop_code:f.shop, start_date:f.sd, end_date:f.ed});
         html += `<div class="kpis">` +
           MetricCard('覆盖商品', snap.data.product_count) +
           MetricCard('曝光人数', snap.data.exposure_users) +
@@ -348,10 +352,11 @@ const PAGES = {
           MetricCard('快照用户支付金额', snap.data.user_pay_amount) +
           MetricCard('成交人数', snap.data.transaction_users) +
           MetricCard('成交订单', snap.data.transaction_orders) + `</div>`;
-        const rank = await api('/product-card/snapshot-rank', {shop_code:f.shop||'DY_DANDONG_OFFICIAL', start_date:f.sd, end_date:f.ed, metric_key:'user_pay_amount', limit:20});
+        const rank = await api('/product-card/snapshot-rank', {shop_code:f.shop, start_date:f.sd, end_date:f.ed, metric_key:'user_pay_amount', limit:20});
         html += `<table><tr><th>#</th><th>商品</th><th>用户支付金额</th></tr>` +
           (rank.data.length ? rank.data.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.product_title||x.product_id)}</td><td class="num">${yuan(x.current_value)}</td></tr>`).join('') : `<tr><td colspan="3" class="empty">当前周期无商品卡快照数据</td></tr>`) + `</table>`;
       } catch(e){ html += `<div class="notice">快照暂不可用：${esc(e.message)}（商品卡快照为源文件导出周期，非日粒度）</div>`; }
+      }
       html += `<div class="trend-note">商品卡快照为统计周期导出（PERIOD_SNAPSHOT），不提供日趋势；仅展示周期内商品排名与汇总。</div></div>`;
     } catch(e){ html += `<div class="err">${esc(e.message)}</div>`; }
     return html;

@@ -1,11 +1,11 @@
 // F1.0.4 /videos 短视频（渠道整体 + 视频快照 PERIOD_SNAPSHOT）
 import { useEffect, useState } from 'react'
-import type { Filters, BusinessSummary, TrendPoint } from '../types'
-import { getSummary, getTrend, api } from '../services/api'
-import { MetricCard } from '../components/MetricCard'
-import { TrendChart } from '../components/TrendChart'
-import { CapabilityNotice } from '../components/CapabilityNotice'
-import { yuan, esc } from '../lib/format'
+import type { Filters, BusinessSummary, TrendPoint } from '../../types'
+import { getSummary, getTrend, api } from '../../services/api'
+import { MetricCard } from '../../components/MetricCard'
+import { TrendChart } from '../../components/TrendChart'
+import { CapabilityNotice } from '../../components/CapabilityNotice'
+import { yuan, esc } from '../../lib/format'
 
 interface VSnap { video_count: number; view_count: number; user_pay_amount: number; refund_amount: number; transaction_orders: number }
 interface VRank { video_title: string; video_id: string; selling_type: string; carrier_type: string; current_value: number }
