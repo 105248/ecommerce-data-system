@@ -1,0 +1,90 @@
+Output format is unaligned.
+Field separator is "|".
+mart|_diag_account|FUNCTION|postgres|V1.1 账号域诊断快照（内部函数，不对外授权）。|p_shop_name text, p_cs date, p_ce date, p_ps date, p_pe date, p_scope_key text
+mart|_diag_carrier|FUNCTION|postgres|V1.1 载体域诊断快照（内部函数，不对外授权）。|p_shop_name text, p_cs date, p_ce date, p_ps date, p_pe date, p_scope_key text
+mart|_diag_category|FUNCTION|postgres|V1.1 类目域诊断快照（内部函数，不对外授权）。|p_shop_name text, p_cs date, p_ce date, p_ps date, p_pe date, p_category_level integer
+mart|_diag_master_product|FUNCTION|postgres||p_shop_name text, p_cs date, p_ce date, p_ps date, p_pe date, p_entity_id text, p_entity_name text
+mart|_diag_product|FUNCTION|postgres|V1.1 商品域诊断快照（内部函数，不对外授权）。|p_shop_name text, p_cs date, p_ce date, p_ps date, p_pe date, p_entity_id text, p_entity_name text
+mart|_diag_product_line|FUNCTION|postgres||p_shop_name text, p_cs date, p_ce date, p_ps date, p_pe date, p_entity_name text
+mart|_diag_scope|FUNCTION|postgres|V1.1 经营Scope域诊断快照（内部函数，不对外授权）。|p_shop_name text, p_cs date, p_ce date, p_ps date, p_pe date, p_scope_key text
+mart|_diag_shop|FUNCTION|postgres|V1.1 店铺整体域诊断快照（内部函数，不对外授权）。|p_shop_name text, p_cs date, p_ce date, p_ps date, p_pe date
+mart|assert_period|FUNCTION|postgres|阶段2内部校验函数：验证时间区间非空且开始日期不晚于结束日期。|p_start_date date, p_end_date date
+mart|assert_rank_args|FUNCTION|postgres||p_domain_key text, p_metric_key text, p_sort_by text, p_sort_direction text, p_limit integer
+mart|check_mapping_period_conflict|FUNCTION|postgres|V1.3 映射时间区间重叠检测：同一平台店铺商品在重叠有效期内存在多条启用映射 → CONFLICT（不静默覆盖）。|p_platform_code text, p_shop_id bigint, p_platform_product_id text, p_valid_from date, p_valid_to date, p_exclude_mapping_id bigint
+mart|compare_advertising_period|FUNCTION|postgres|V1.0.1 投放环比：本期N天 vs 紧邻前N天；比例输出百分点+相对，效率只输出绝对+相对（不输出百分点）。|p_shop_name text, p_start_date date, p_end_date date, p_scope_key text
+mart|compare_business_period|FUNCTION|postgres|阶段3A经营环比：固定N天vs紧邻前N天；ratio同时返回percentage_point_change（原始比率差，如0.02=2个百分点）。|p_shop_name text, p_start_date date, p_end_date date, p_scope_key text, p_metric_key text
+mart|compare_platform_business|FUNCTION|postgres|V1.3 平台环比：本期 vs 等长上期（金额/计数可比较；比例返回百分点+相对变化）。|p_platform_code text, p_start_date date, p_end_date date, p_scope_key text, p_metric_key text
+mart|decompose_master_product_by_shop_product|FUNCTION|postgres|V1.3/V1.1 Master Product → 店铺商品拆解：定位哪家店商品拖累（negative_impact_share=单店商品负向/全部负向）。|p_master_product_id bigint, p_start_date date, p_end_date date
+mart|decompose_platform_change_by_shop|FUNCTION|postgres|V1.3 平台变化按店铺拆解：net_change=Σ单店变化；gross_negative_impact=Σ负向绝对值；gross_positive_offset=Σ正向；
+negative_impact_share=单店负向绝对值/全部负向绝对值（文档二十二节：不除以净下降额）。|p_platform_code text, p_start_date date, p_end_date date, p_scope_key text, p_metric_key text
+mart|detect_anomalies|FUNCTION|postgres|V1.1 异常检测（多店兼容）：对指定域全部实体×8类规则检测，幂等写 anomaly_event。
+检测链=快照→支持→coverage→低基数→阈值→持续性→严重度→事件。|p_platform_code text, p_start_date date, p_end_date date, p_domain_key text, p_shop_name text
+mart|detect_growth_opportunities|FUNCTION|postgres|V1.1 机会检测：同域 peer 分池 + 7 维评分（缺失重归一）+ O01-O08 类型判定 + 幂等。|p_platform_code text, p_start_date date, p_end_date date, p_domain_key text, p_shop_name text
+mart|diagnose_anomaly|FUNCTION|postgres|V1.1 从异常事件入口生成诊断（Stage2 异常 → Stage3 定位）。|p_anomaly_event_id bigint
+mart|diagnose_entity|FUNCTION|postgres|V1.1 实体诊断主函数：快照+漏斗环节→primary_stage→diagnostic_code→置信度→证据链→diagnostic_result。
+多因素(MULTI_FACTOR)不强制唯一根因；无数据→NO_CONFIRMED_ANOMALY。|p_domain_key text, p_entity_name text, p_start_date date, p_end_date date, p_shop_name text, p_scope_key text, p_anomaly_event_id bigint
+mart|format_percent_2|FUNCTION|postgres|将比率原始数值格式化为两位小数百分比，输入值可大于1。例如0.1972返回19.72%，9.625返回962.50%。仅用于展示，不用于后续数学计算。|value_decimal numeric
+mart|generate_daily_action_items|FUNCTION|postgres|V1.1 每日行动生成器（后台）：消费异常/机会/观察事件 → RISK/OPPORTUNITY/WATCH 三类行动项；冷却=更新原卡；幂等。|p_platform_code text, p_start_date date, p_end_date date
+mart|get_account_contribution|FUNCTION|postgres|账号贡献度；分母使用deal权威scope TOTAL，自营覆盖缺口明确提示。|p_shop_name text, p_start_date date, p_end_date date, p_sale_scope text, p_metric_key text, p_account_name text, p_include_aggregate_bucket boolean, p_limit integer
+mart|get_account_period_summary|FUNCTION|postgres|账号区间汇总，仅用于具体账号/合作剩余桶拆分，不用于重建全店或自营TOTAL。|p_shop_name text, p_start_date date, p_end_date date, p_sale_scope text, p_account_name text
+mart|get_advertising_diagnosis|FUNCTION|postgres|V1.1 投放诊断（复用快照投放指标；平台=跨店加权，单店=原口径）。|p_domain_key text, p_entity_name text, p_start_date date, p_end_date date, p_shop_name text
+mart|get_advertising_period_summary|FUNCTION|postgres|V1.0.1 投放经营汇总：一次返回10项投放指标+coverage。仅ad_period=不限参与；综合费比/效率为加权源比率，禁止AVG。|p_shop_name text, p_start_date date, p_end_date date, p_scope_key text
+mart|get_anomalies|FUNCTION|postgres|V1.1 异常查询（按平台/区间/域/实体/严重度/状态过滤）。|p_platform_code text, p_start_date date, p_end_date date, p_domain_key text, p_entity_name text, p_severity text, p_status text
+mart|get_anomaly_summary|FUNCTION|postgres|V1.1 异常汇总（按域×类型统计事件数/严重度/影响额）。|p_platform_code text, p_start_date date, p_end_date date, p_status text
+mart|get_audience_period_summary|FUNCTION|postgres|人群区间汇总。默认carrier_type=全部（阶段0.5已验证60/60匹配合法TOTAL）；复购用户复购率缺基础字段，多日返回NULL。|p_shop_name text, p_start_date date, p_end_date date, p_audience_type text, p_carrier_type text
+mart|get_business_contribution|FUNCTION|postgres|经营范围贡献度；分母固定deal全店权威TOTAL。|p_shop_name text, p_start_date date, p_end_date date, p_scope_key text, p_metric_key text
+mart|get_business_period_summary|FUNCTION|postgres||p_shop_name text, p_start_date date, p_end_date date, p_scope_key text
+mart|get_business_report|FUNCTION|postgres|抖音日报/周报数据模板 V1.0 报表：三板块(抖音整体/抖音弹动官方旗舰店/抖音弹动个人护理旗舰店)×六行(整体/自营直播/自营商品/达人直播/达人短视频/橱窗)。
+指标：成交金额=SUM(user_pay_amount)、成交退款金额=SUM(refund_amount_pay_time)、结算金额=SUM(settlement_amount)、
+退款率=退款金额/成交金额、投放消耗=SUM(ad_spend_shop_promoted)、投放费比=SUM(ad_spend_shop_bound)/SUM(settlement_amount)。
+防重口径：仅取 ad_period=不限(平台汇总行)。比率返回小数。无利润计算。|p_start_date date, p_end_date date
+mart|get_carrier_period_summary|FUNCTION|postgres|载体/渠道区间拆分。按account_channel逐桶返回，不承担全店TOTAL；special_overlap行明确禁止与明细混SUM。|p_shop_name text, p_start_date date, p_end_date date, p_sale_scope text, p_carrier_type text, p_account_channel text
+mart|get_category_contribution|FUNCTION|postgres|类目贡献度；类目层级域分母与deal全店分母同时返回，不强行统一平台口径。|p_shop_name text, p_start_date date, p_end_date date, p_category_level integer, p_category_l1 text, p_category_l2 text, p_metric_key text, p_limit integer
+mart|get_category_period_summary|FUNCTION|postgres|类目区间汇总，强制按category_level隔离父子层级，禁止不同层级混SUM。成交笔单价/次数转化率缺基础字段，多日返回NULL。|p_shop_name text, p_start_date date, p_end_date date, p_category_level integer, p_category_l1 text, p_category_l2 text, p_category_l3 text
+mart|get_content_period_summary|FUNCTION|postgres|内容区间拆分；当前真实样本仅验证商品卡载体，不伪造短视频/直播内容数据。|p_shop_name text, p_start_date date, p_end_date date, p_selling_type text, p_carrier_type text, p_content_id text
+mart|get_daily_action_list|FUNCTION|postgres||p_platform_code text, p_start_date date, p_end_date date, p_item_type text, p_limit integer
+mart|get_daily_business_brief|FUNCTION|postgres||p_platform_code text, p_start_date date, p_end_date date
+mart|get_daily_opportunity_priorities|FUNCTION|postgres||p_platform_code text, p_start_date date, p_end_date date, p_limit integer
+mart|get_daily_risk_priorities|FUNCTION|postgres||p_platform_code text, p_start_date date, p_end_date date, p_limit integer
+mart|get_data_coverage|FUNCTION|postgres||p_shop_name text
+mart|get_diagnostic_entity_metrics|FUNCTION|postgres||p_domain_key text
+mart|get_diagnostic_result|FUNCTION|postgres||p_platform_code text, p_start_date date, p_end_date date, p_domain_key text, p_status text
+mart|get_diagnostic_snapshot|FUNCTION|postgres|V1.1 统一诊断快照（SECURITY DEFINER，固定 search_path；agent_readonly 可执行；内部 _diag_* 不对外）。|p_shop_name text, p_start_date date, p_end_date date, p_domain_key text, p_scope_key text, p_entity_id text, p_entity_name text, p_category_level integer
+mart|get_diagnostic_supported_metrics|FUNCTION|postgres|V1.1 支持的诊断指标目录（全部已注册且 diagnostic_enabled=true 的指标）。|
+mart|get_entity_anomalies|FUNCTION|postgres|V1.1 单实体异常查询（域+实体名过滤）。|p_platform_code text, p_domain_key text, p_entity_name text, p_start_date date, p_end_date date
+mart|get_entity_opportunity|FUNCTION|postgres|V1.1 单实体机会（域+实体名过滤）。|p_platform_code text, p_domain_key text, p_entity_name text, p_start_date date, p_end_date date
+mart|get_funnel_diagnosis|FUNCTION|postgres|V1.1 漏斗诊断：曝光→点击→成交→退款 各环节变化（缺字段跳过，不跨domain补数）。|p_domain_key text, p_entity_name text, p_start_date date, p_end_date date, p_shop_name text, p_scope_key text
+mart|get_growth_opportunities|FUNCTION|postgres||p_platform_code text, p_start_date date, p_end_date date, p_domain_key text, p_opportunity_code text, p_min_level text
+mart|get_master_product_members|FUNCTION|postgres|V1.3 Master Product 跨店成员（平台/店铺/平台商品ID/状态/有效期）。|p_master_product_id bigint
+mart|get_master_product_period_summary|FUNCTION|postgres|V1.3 跨店 Master Product 经营汇总（仅 CONFIRMED 成员；返回 mapped_shop_count/unmapped_member_count/mapping_complete）。|p_master_product_id bigint, p_start_date date, p_end_date date, p_shop_name text
+mart|get_masterdata_quality|FUNCTION|postgres|V1.3 主数据质量指标（GMV覆盖率/数量覆盖率/品线归属率/冲突数/高价值未映射数）。|p_start_date date, p_end_date date
+mart|get_opportunity_summary|FUNCTION|postgres||p_platform_code text, p_start_date date, p_end_date date, p_status text
+mart|get_platform_business_period_summary|FUNCTION|postgres|V1.3 平台整体经营汇总：范围=enabled且platform_code匹配的店铺；可加指标SUM、比例分子/分母重算、效率加权；coverage含启用/覆盖/缺失店铺数与日期完整性。成交人数=各店之和（跨店不去重）。|p_platform_code text, p_start_date date, p_end_date date, p_scope_key text
+mart|get_platform_diagnostic_snapshot|FUNCTION|postgres|V1.3 平台整体诊断快照：对象=抖音整体，指标=平台汇总口径（18项），带 shop coverage 与数据状态。|p_platform_code text, p_start_date date, p_end_date date, p_scope_key text
+mart|get_price_band_period_summary|FUNCTION|postgres|价格带区间汇总。6个价格带经阶段0.5验证为互斥分桶，可安全SUM重建店铺用户支付金额。|p_shop_name text, p_start_date date, p_end_date date, p_price_band text
+mart|get_product_contribution|FUNCTION|postgres|商品贡献度；同时返回product域占比与全店占比，明确分母口径。|p_shop_name text, p_start_date date, p_end_date date, p_metric_key text, p_product_id text, p_product_name text, p_limit integer
+mart|get_product_line_members|FUNCTION|postgres|V1.3 品线成员：品线 → Master Product → 已确认映射数/店铺覆盖。|p_product_line_name text
+mart|get_product_line_period_summary|FUNCTION|postgres|V1.3 品线跨店汇总（expected/mapped/unmapped 成员数 + 店铺覆盖 + mapping_complete/data_coverage_complete）。|p_product_line_name text, p_start_date date, p_end_date date
+mart|get_product_period_summary|FUNCTION|postgres|商品区间汇总。默认carrier_type=全部，直接使用平台独立TOTAL；禁止用商品卡/图文/直播/短视频明细重建全部。|p_shop_name text, p_start_date date, p_end_date date, p_product_id text, p_product_name text, p_carrier_type text
+mart|get_shop_contribution|FUNCTION|postgres|V1.3 店铺贡献度：单店值/平台总额/贡献占比（本期+上期+变化）。仅支持可加指标（默认 user_pay_amount）。|p_platform_code text, p_start_date date, p_end_date date, p_scope_key text, p_metric_key text
+mart|get_terminal_period_summary|FUNCTION|postgres|终端区间汇总；terminal_type=整体为合法TOTAL，调用方不得将整体与明细终端再相加。|p_shop_name text, p_start_date date, p_end_date date, p_terminal_type text, p_selling_type text
+mart|period_scope_rule|FUNCTION|postgres|阶段2 Scope稳定适配层。规则来自阶段0/0.5真实数据验证；平台TOTAL优先，不通过父子明细重建。|p_scope_key text
+mart|previous_period|FUNCTION|postgres|阶段3固定环比窗口：本期N天，对比紧邻之前N天。|p_start_date date, p_end_date date
+mart|rank_accounts|FUNCTION|postgres|账号排名；默认排除aggregate_bucket，避免把更多账号聚合桶当具体账号。|p_shop_name text, p_start_date date, p_end_date date, p_sale_scope text, p_metric_key text, p_sort_by text, p_sort_direction text, p_limit integer, p_include_aggregate_bucket boolean, p_account_name text
+mart|rank_audiences|FUNCTION|postgres|人群排名；默认carrier=全部合法TOTAL。|p_shop_name text, p_start_date date, p_end_date date, p_carrier_type text, p_metric_key text, p_sort_by text, p_sort_direction text, p_limit integer
+mart|rank_carriers|FUNCTION|postgres|载体排名；使用deal合法TOTAL Scope，避免carrier_daily层级重叠。|p_shop_name text, p_start_date date, p_end_date date, p_sale_scope text, p_metric_key text, p_sort_by text, p_sort_direction text, p_limit integer
+mart|rank_categories|FUNCTION|postgres|类目排名；强制同一category_level内比较，父子层级不混排。|p_shop_name text, p_start_date date, p_end_date date, p_category_level integer, p_category_l1 text, p_category_l2 text, p_metric_key text, p_sort_by text, p_sort_direction text, p_limit integer
+mart|rank_master_products|FUNCTION|postgres|V1.3 Master Product 跨店排名（仅 CONFIRMED 成员；与店铺内 rank_products 并存）。|p_start_date date, p_end_date date, p_metric_key text, p_sort_by text, p_sort_direction text, p_limit integer
+mart|rank_price_bands|FUNCTION|postgres|价格带排名；6个价格带已验证互斥。|p_shop_name text, p_start_date date, p_end_date date, p_metric_key text, p_sort_by text, p_sort_direction text, p_limit integer
+mart|rank_products|FUNCTION|postgres|商品排名/增长/下降/排名变化；默认carrier=全部的平台独立TOTAL；过滤商品时先全量排名再过滤，保留真实名次。|p_shop_name text, p_start_date date, p_end_date date, p_metric_key text, p_sort_by text, p_sort_direction text, p_limit integer, p_product_id text, p_product_name text
+mart|resolve_diagnostic_period|FUNCTION|postgres|V1.1 诊断周期解析：等长前置对比。previous_end = current_start - 1。|p_period_key text, p_end_date date, p_current_days integer
+mart|resolve_master_product|FUNCTION|postgres|V1.3 查商品归属：平台+店铺+平台商品ID+业务日期 → Master Product/品线/状态。
+当前抖音源无 SKU 维度（SKU_SOURCE_NOT_AVAILABLE），SKU 优先规则在真实 SKU 数据接入后启用。|p_platform_code text, p_shop_name text, p_platform_product_id text, p_biz_date date
+mart|resolve_scope|FUNCTION|postgres|Scope Resolver：将经营语义（全店/自营/合作/载体/组合）解析为真实过滤条件；TOTAL优先平台合法口径，禁止父级+子级SUM。|p_scope character varying
+mart|scope_daily|FUNCTION|postgres|按经营语义查询每日数据（使用deal_daily合法TOTAL/明细口径）。|p_scope character varying, p_date_from date, p_date_to date
+meta|audit_mapping|FUNCTION|postgres||
+meta|audit_masterdata|FUNCTION|postgres||
+meta|check_chinese_coverage|FUNCTION|postgres|中文可读层覆盖率检查：对象/字段覆盖率、冲突数、重名列数。|
+meta|gen_master_product_code|FUNCTION|postgres||
+meta|gen_master_sku_code|FUNCTION|postgres||
+meta|refresh_chinese_views|FUNCTION|postgres|中文View刷新机制：仅读取字典元数据，仅在中文数据Schema内重建View；存在冲突则停止。|

@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>抖音电商日报 / 周报</title>
+<style>
+  :root{
+    --dys-red:#fe2c55; --dys-red-soft:#fff0f3; --ink:#1f2329; --ink-2:#4e5969;
+    --line:#e5e6eb; --bg:#f5f6f8; --card:#ffffff; --head:#2a2f38;
+    --total-bg:#f7f8fa; --hover:#fafbfc;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Segoe UI",sans-serif;font-size:14px;line-height:1.5;padding:24px 20px 60px;}
+  .wrap{max-width:1080px;margin:0 auto;}
+  /* 头部 */
+  .topbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;}
+  .brand{display:flex;align-items:center;gap:12px;}
+  .logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#fe2c55,#ff8a5c);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:17px;}
+  h1{font-size:22px;font-weight:700;letter-spacing:.5px;}
+  .sub{color:var(--ink-2);font-size:12.5px;margin-top:2px;}
+  .tabs{display:flex;gap:8px;}
+  .tab{padding:8px 22px;border-radius:20px;border:1px solid var(--line);background:#fff;cursor:pointer;font-size:14px;color:var(--ink-2);transition:all .15s;user-select:none;}
+  .tab.active{background:var(--dys-red);border-color:var(--dys-red);color:#fff;font-weight:600;}
+  .tab:hover:not(.active){border-color:var(--dys-red);color:var(--dys-red);}
+  /* 工具栏 */
+  .toolbar{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin-bottom:18px;flex-wrap:wrap;}
+  .toolbar label{font-size:13px;color:var(--ink-2);}
+  .toolbar input[type=date],.toolbar select{border:1px solid var(--line);border-radius:8px;padding:7px 10px;font-size:13.5px;font-family:inherit;background:#fff;color:var(--ink);}
+  .period-tag{margin-left:auto;font-size:13px;color:var(--dys-red);font-weight:600;}
+  .period-tag b{font-size:15px;}
+  /* 板块 */
+  .section{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-bottom:18px;box-shadow:0 1px 3px rgba(0,0,0,.03);}
+  .section-head{display:flex;align-items:center;gap:10px;padding:14px 20px;background:var(--head);color:#fff;}
+  .section-head .no{width:24px;height:24px;border-radius:7px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;}
+  .section-head .name{font-size:16px;font-weight:600;letter-spacing:.5px;}
+  .section-head .hint{margin-left:auto;font-size:12px;opacity:.65;}
+  table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;}
+  thead th{background:#fafbfc;color:var(--ink-2);font-size:12.5px;font-weight:600;padding:10px 14px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap;}
+  thead th:first-child{text-align:left;}
+  tbody td{padding:11px 14px;border-bottom:1px solid #f0f1f3;text-align:right;font-size:14px;white-space:nowrap;}
+  tbody td:first-child{text-align:left;color:var(--ink);}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:var(--hover);}
+  tr.total-row{background:var(--total-bg);font-weight:600;}
+  tr.total-row td:first-child{color:var(--ink);}
+  td.num{color:var(--ink);}
+  td.rate{color:var(--dys-red);}
+  .money{font-weight:500;}
+  /* 空态 */
+  .empty{padding:60px 0;text-align:center;color:var(--ink-2);}
+  /* 页脚 */
+  .footer{margin-top:8px;text-align:center;color:#a9aeb8;font-size:12px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand">
+      <div class="logo">抖</div>
+      <div>
+        <h1 id="pageTitle">抖音电商日报</h1>
+        <div class="sub" id="pageSub">数据来源：抖音电商数据系统</div>
+      </div>
+    </div>
+    <div class="tabs">
+      <div class="tab active" data-mode="daily" onclick="switchMode('daily')">日报</div>
+      <div class="tab" data-mode="weekly" onclick="switchMode('weekly')">周报</div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <div id="dailyCtl" style="display:flex;align-items:center;gap:8px;">
+      <label>统计日期</label>
+      <select id="dailyDate"></select>
+    </div>
+    <div id="weeklyCtl" style="display:none;align-items:center;gap:8px;">
+      <label>起始日期</label>
+      <input type="date" id="weekStart">
+      <label>结束日期</label>
+      <input type="date" id="weekEnd">
+    </div>
+    <div class="period-tag" id="periodTag"></div>
+  </div>
+
+  <div id="content"></div>
+
+  <div class="footer">抖音电商日报 / 周报 · 无利润口径</div>
+</div>
+
+<script>
+/* ============ 数据（由生成脚本注入） ============ */
+window.__REPORT_DATA__ = {};
+
+/* ============ 展示配置 ============ */
+const SECTIONS = [
+  { key: "抖音整体",               name: "抖音整体" },
+  { key: "抖音弹动官方旗舰店",     name: "抖音弹动官方旗舰店" },
+  { key: "抖音弹动个人护理旗舰店", name: "抖音弹动个人护理旗舰店" },
+];
+const ROW_ORDER = ["整体", "自营直播", "自营商品", "达人直播", "达人短视频", "橱窗"];
+const ROW_LABEL = {
+  "整体": "抖音整体",
+};
+
+const state = { mode: "daily", dailyDate: null, weekStart: null, weekEnd: null };
+const DATA = window.__REPORT_DATA__;
+
+/* ============ 工具函数 ============ */
+function fmtMoney(v){
+  if (v === null || v === undefined || isNaN(v)) return "—";
+  return Number(v).toLocaleString("zh-CN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function fmtPct(v){
+  if (v === null || v === undefined || isNaN(v)) return "—";
+  return (Number(v) * 100).toFixed(2) + "%";
+}
+function pad(n){ return String(n).padStart(2, "0"); }
+function iso(d){ return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
+
+/* 初始化日期选择 */
+function initDates(){
+  const dates = DATA.dates || [];
+  const sel = document.getElementById("dailyDate");
+  sel.innerHTML = "";
+  dates.forEach(d => {
+    const o = document.createElement("option");
+    o.value = d; o.textContent = d;
+    sel.appendChild(o);
+  });
+  if (dates.length){
+    state.dailyDate = dates[dates.length - 1];          // 默认最近一天
+    sel.value = state.dailyDate;
+    const last = new Date(dates[dates.length - 1]);
+    const first = new Date(dates[0]);
+    state.weekStart = iso(new Date(last.getFullYear(), last.getMonth(), last.getDate() - 6));
+    state.weekEnd = iso(last);
+    document.getElementById("weekStart").value = state.weekStart;
+    document.getElementById("weekEnd").value = state.weekEnd;
+    document.getElementById("weekStart").min = iso(first);
+    document.getElementById("weekStart").max = iso(last);
+    document.getElementById("weekEnd").min = iso(first);
+    document.getElementById("weekEnd").max = iso(last);
+  }
+}
+
+/* 取某天的 18 行，按模板顺序重排为 {section: {business_type: row}} */
+function dayRows(dateStr){
+  const rows = DATA.data[dateStr] || [];
+  const bySec = {};
+  SECTIONS.forEach(s => bySec[s.key] = {});
+  rows.forEach(r => {
+    if (!bySec[r.s]) bySec[r.s] = {};
+    let t = r.t;
+    if (t === r.s) t = "整体";               // 整体行显示为"整体"（周报聚合用）
+    bySec[r.s][t] = r;
+  });
+  return bySec;
+}
+
+/* 周聚合：金额 SUM，比率 = 分子合计 / 分母合计 */
+function weekRows(start, end){
+  const bySec = {};
+  SECTIONS.forEach(s => bySec[s.key] = {});
+  const days = [];
+  const d0 = new Date(start), d1 = new Date(end);
+  for (let d = new Date(d0); d <= d1; d.setDate(d.getDate() + 1)){
+    const k = iso(d);
+    if (DATA.data[k]) days.push(k);
+  }
+  days.forEach(k => {
+    const dr = dayRows(k);
+    Object.keys(dr).forEach(sec => {
+      const rows = dr[sec];
+      Object.keys(rows).forEach(t => {
+        if (!bySec[sec][t]) bySec[sec][t] = { up:0, rf:0, st:0, sp:0, ab:0 };
+        const a = bySec[sec][t], r = rows[t];
+        a.up += r.up; a.rf += r.rf; a.st += r.st; a.sp += r.sp; a.ab += r.ab;
+      });
+    });
+  });
+  // 计算比率
+  SECTIONS.forEach(s => {
+    Object.keys(bySec[s.key]).forEach(t => {
+      const a = bySec[s.key][t];
+      a.rr = a.up ? a.rf / a.up : null;
+      a.fr = a.st ? a.ab / a.st : null;
+    });
+  });
+  return bySec;
+}
+
+/* 渲染 */
+function render(){
+  let bySec;
+  if (state.mode === "daily"){
+    bySec = dayRows(state.dailyDate);
+    document.getElementById("periodTag").innerHTML = "统计日期：<b>" + state.dailyDate + "</b>";
+    document.getElementById("pageTitle").textContent = "抖音电商日报";
+  } else {
+    bySec = weekRows(state.weekStart, state.weekEnd);
+    document.getElementById("periodTag").innerHTML = "统计周期：<b>" + state.weekStart + " ~ " + state.weekEnd + "</b>（共 " + daysInRange() + " 天）";
+    document.getElementById("pageTitle").textContent = "抖音电商周报";
+  }
+  const content = document.getElementById("content");
+  content.innerHTML = "";
+  SECTIONS.forEach((s, idx) => {
+    const sec = document.createElement("div");
+    sec.className = "section";
+    const rows = bySec[s.key] || {};
+    // 表头（仅 7 列展示字段）
+    let html = '<div class="section-head"><div class="no">' + (idx + 1) + '</div><div class="name">' + s.name + '</div><div class="hint">经营日报</div></div>';
+    html += '<table><thead><tr><th>经营类型</th><th>成交金额</th><th>成交退款金额</th><th>结算金额</th><th>退款率</th><th>投放消耗</th><th>投放费比</th></tr></thead><tbody>';
+    ROW_ORDER.forEach((t, ri) => {
+      const r = rows[t];
+      const isTotal = (ri === 0);
+      const label = (t === "整体") ? s.name : t;
+      html += '<tr class="' + (isTotal ? "total-row" : "") + '">'
+            + '<td>' + label + '</td>'
+            + '<td class="num money">' + (r ? fmtMoney(r.up) : "—") + '</td>'
+            + '<td class="num">' + (r ? fmtMoney(r.rf) : "—") + '</td>'
+            + '<td class="num">' + (r ? fmtMoney(r.st) : "—") + '</td>'
+            + '<td class="rate">' + (r ? fmtPct(r.rr) : "—") + '</td>'
+            + '<td class="num">' + (r ? fmtMoney(r.sp) : "—") + '</td>'
+            + '<td class="rate">' + (r ? fmtPct(r.fr) : "—") + '</td>'
+            + '</tr>';
+    });
+    html += '</tbody></table>';
+    sec.innerHTML = html;
+    content.appendChild(sec);
+  });
+}
+
+function daysInRange(){
+  const a = new Date(state.weekStart), b = new Date(state.weekEnd);
+  return Math.round((b - a) / 86400000) + 1;
+}
+
+function switchMode(m){
+  state.mode = m;
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.mode === m));
+  document.getElementById("dailyCtl").style.display = m === "daily" ? "flex" : "none";
+  document.getElementById("weeklyCtl").style.display = m === "weekly" ? "flex" : "none";
+  render();
+}
+
+document.getElementById("dailyDate").addEventListener("change", e => { state.dailyDate = e.target.value; render(); });
+document.getElementById("weekStart").addEventListener("change", e => {
+  state.weekStart = e.target.value;
+  if (state.weekEnd && state.weekStart > state.weekEnd) state.weekEnd = state.weekStart;
+  document.getElementById("weekEnd").value = state.weekEnd;
+  render();
+});
+document.getElementById("weekEnd").addEventListener("change", e => {
+  state.weekEnd = e.target.value;
+  if (state.weekStart && state.weekStart > state.weekEnd) state.weekStart = state.weekEnd;
+  document.getElementById("weekStart").value = state.weekStart;
+  render();
+});
+
+initDates();
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,1 @@
+SELECT user_pay_amount FROM core.douyin_category_daily WHERE biz_date='2026-06-05' AND category_level_3='全部'

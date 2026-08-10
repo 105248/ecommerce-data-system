@@ -1,0 +1,26 @@
+{
+  "_comment": "Stage5 指标别名治理。主口径默认 user_pay_amount；比例按数据库原值展示（0.1972→19.72%）。",
+  "metrics": [
+    {"alias": ["用户支付金额", "支付金额", "用户实付"], "metric_key": "user_pay_amount", "domain": "business", "note": "主经营口径"},
+    {"alias": ["销售额", "GMV", "成交额"], "metric_key": "user_pay_amount", "domain": "business", "note": "泛称按用户支付金额口径回答，需注明口径；未做永久硬映射"},
+    {"alias": ["退款率", "退款率(支付时间)"], "metric_key": "refund_rate_pay_time", "domain": "business", "note": "ratio, 展示为百分比"},
+    {"alias": ["客单价"], "metric_key": "avg_customer_amount", "domain": "business", "note": "均值, 金额"},
+    {"alias": ["件单价"], "metric_key": "avg_item_amount", "domain": "business", "note": "均值, 金额"},
+    {"alias": ["点击成交转化率", "点击-成交转化率"], "metric_key": "click_to_transaction_rate_users", "domain": "business", "note": "ratio(人数), 展示为百分比"},
+    {"alias": ["曝光点击转化率", "曝光-点击转化率"], "metric_key": "exposure_to_click_rate_users", "domain": "business", "note": "ratio(人数), 展示为百分比"},
+    {"alias": ["曝光成交转化率", "曝光-成交转化率"], "metric_key": "exposure_to_transaction_rate_users", "domain": "business", "note": "ratio(人数), 展示为百分比"},
+    {"alias": ["成交订单数", "订单数"], "metric_key": "transaction_order_count", "domain": "business", "note": "count"},
+    {"alias": ["成交人数", "买家数"], "metric_key": "transaction_buyer_count", "domain": "business", "note": "count"},
+    {"alias": ["成交件数", "件数"], "metric_key": "transaction_item_count", "domain": "business", "note": "count"},
+    {"alias": ["成交金额"], "metric_key": "transaction_amount", "domain": "business", "note": "金额"},
+    {"alias": ["结算金额"], "metric_key": "settlement_amount", "domain": "business", "note": "金额, 剔除退款费比分母"},
+    {"alias": ["退款金额"], "metric_key": "refund_amount_pay_time", "domain": "business", "note": "金额(支付时间口径)"},
+    {"alias": ["千次曝光支付金额"], "metric_key": "user_pay_amount_per_1000_exposures", "domain": "business", "note": "均值x1000"}
+  ],
+  "scopes": ["全店", "自营", "合作", "商品卡", "短视频", "直播", "图文", "其他",
+    "自营商品卡", "合作商品卡", "自营短视频", "合作短视频",
+    "自营直播", "合作直播", "自营图文", "合作图文", "自营其他", "合作其他"],
+  "carriers": ["商品卡", "短视频", "直播", "图文", "其他"],
+  "category_levels": {"1": "一级类目", "2": "二级类目", "3": "三级类目", "4": "四级类目"},
+  "account_bucket_terms": ["更多账号", "aggregate_bucket", "合作剩余桶"]
+}

@@ -1,0 +1,153 @@
+Output format is unaligned.
+Field separator is "|".
+meta|trg_audit_master_product|TRIGGER|postgres||table=master_product;event=21
+meta|trg_audit_ppm|TRIGGER|postgres||table=platform_product_mapping;event=21
+meta|trg_audit_psm|TRIGGER|postgres||table=platform_sku_mapping;event=21
+meta|trg_master_product_code|TRIGGER|postgres||table=master_product;event=7
+meta|trg_master_sku_code|TRIGGER|postgres||table=master_sku;event=7
+audit|ai_diagnosis_run_run_id_seq|SEQUENCE|postgres||
+audit|import_batch_batch_id_seq|SEQUENCE|postgres||
+audit|masterdata_change_log_change_id_seq|SEQUENCE|postgres||
+core|douyin_account_daily_row_id_seq|SEQUENCE|postgres||
+core|douyin_audience_daily_row_id_seq|SEQUENCE|postgres||
+core|douyin_carrier_daily_row_id_seq|SEQUENCE|postgres||
+core|douyin_category_daily_row_id_seq|SEQUENCE|postgres||
+core|douyin_content_daily_row_id_seq|SEQUENCE|postgres||
+core|douyin_deal_daily_row_id_seq|SEQUENCE|postgres||
+core|douyin_price_band_daily_row_id_seq|SEQUENCE|postgres||
+core|douyin_product_daily_row_id_seq|SEQUENCE|postgres||
+core|douyin_terminal_daily_row_id_seq|SEQUENCE|postgres||
+mart|anomaly_event_anomaly_event_id_seq|SEQUENCE|postgres||
+mart|daily_action_item_action_item_id_seq|SEQUENCE|postgres||
+mart|diagnostic_result_diagnostic_id_seq|SEQUENCE|postgres||
+mart|mart_dimension_rule_rule_id_seq|SEQUENCE|postgres||
+mart|opportunity_event_opportunity_event_id_seq|SEQUENCE|postgres||
+meta|database_object_dictionary_dictionary_id_seq|SEQUENCE|postgres||
+meta|field_mapping_mapping_id_seq|SEQUENCE|postgres||
+meta|master_product_alias_alias_id_seq|SEQUENCE|postgres||
+meta|master_product_master_product_id_seq|SEQUENCE|postgres||
+meta|master_sku_alias_alias_id_seq|SEQUENCE|postgres||
+meta|master_sku_master_sku_id_seq|SEQUENCE|postgres||
+meta|metric_formula_rule_metric_rule_id_seq|SEQUENCE|postgres||
+meta|platform_product_mapping_mapping_id_seq|SEQUENCE|postgres||
+meta|platform_sku_mapping_mapping_id_seq|SEQUENCE|postgres||
+meta|product_line_product_line_id_seq|SEQUENCE|postgres||
+meta|shop_shop_id_seq|SEQUENCE|postgres||
+psql:D:/ecommerce-data-system/convergence_final/scripts/s03_triggers_sequences.sql:52: ERROR:  missing FROM-clause entry for table "i"
+LINE 6: ...indisprimary || ';definition=' || pg_get_indexdef(i.indexrel...
+                                                             ^
+audit|ai_diagnosis_run_pkey|CONSTRAINT_PRIMARY_KEY|postgres||table=ai_diagnosis_run;definition=PRIMARY KEY (run_id)
+audit|ck_import_period|CONSTRAINT_CHECK|postgres||table=import_batch;definition=CHECK (((period_start IS NULL) OR (period_end IS NULL) OR (period_start <= period_end)))
+audit|ck_inserted_row_count|CONSTRAINT_CHECK|postgres||table=import_batch;definition=CHECK ((inserted_row_count >= 0))
+audit|ck_source_row_count|CONSTRAINT_CHECK|postgres||table=import_batch;definition=CHECK ((source_row_count >= 0))
+audit|fk_import_batch_shop|CONSTRAINT_FOREIGN_KEY|postgres||table=import_batch;definition=FOREIGN KEY (shop_id) REFERENCES meta.shop(shop_id)
+audit|import_batch_pkey|CONSTRAINT_PRIMARY_KEY|postgres||table=import_batch;definition=PRIMARY KEY (batch_id)
+audit|masterdata_change_log_pkey|CONSTRAINT_PRIMARY_KEY|postgres||table=masterdata_change_log;definition=PRIMARY KEY (change_id)
+core|douyin_account_daily_pkey|CONSTRAINT_PRIMARY_KEY|postgres||table=douyin_account_daily;definition=PRIMARY KEY (row_id)
+core|douyin_account_daily_source_row_number_check|CONSTRAINT_CHECK|postgres||table=douyin_account_daily;definition=CHECK ((source_row_number >= 2))
+core|douyin_audience_daily_pkey|CONSTRAINT_PRIMARY_KEY|postgres||table=douyin_audience_daily;definition=PRIMARY KEY (row_id)
+core|douyin_audience_daily_source_row_number_check|CONSTRAINT_CHECK|postgres||table=douyin_audience_daily;definition=CHECK ((source_row_number >= 2))
+core|douyin_carrier_daily_pkey|CONSTRAINT_PRIMARY_KEY|postgres||table=douyin_carrier_daily;definition=PRIMARY KEY (row_id)
+core|douyin_carrier_daily_source_row_number_check|CONSTRAINT_CHECK|postgres||table=douyin_carrier_daily;definition=CHECK ((source_row_number >= 2))
+core|douyin_category_daily_pkey|CONSTRAINT_PRIMARY_KEY|postgres||table=douyin_category_daily;definition=PRIMARY KEY (row_id)
+core|douyin_category_daily_source_row_number_check|CONSTRAINT_CHECK|postgres||table=douyin_category_daily;definition=CHECK ((source_row_number >= 2))
+core|douyin_content_daily_pkey|CONSTRAINT_PRIMARY_KEY|postgres||table=douyin_content_daily;definition=PRIMARY KEY (row_id)
+core|douyin_content_daily_source_row_number_check|CONSTRAINT_CHECK|postgres||table=douyin_content_daily;definition=CHECK ((source_row_number >= 2))
+core|douyin_deal_daily_pkey|CONSTRAINT_PRIMARY_KEY|postgres||table=douyin_deal_daily;definition=PRIMARY KEY (row_id)
+core|douyin_deal_daily_source_row_number_check|CONSTRAINT_CHECK|postgres||table=douyin_deal_daily;definition=CHECK ((source_row_number >= 2))
+core|douyin_price_band_daily_pkey|CONSTRAINT_PRIMARY_KEY|postgres||table=douyin_price_band_daily;definition=PRIMARY KEY (row_id)
+core|douyin_price_band_daily_source_row_number_check|CONSTRAINT_CHECK|postgres||table=douyin_price_band_daily;definition=CHECK ((source_row_number >= 2))
+core|douyin_product_daily_pkey|CONSTRAINT_PRIMARY_KEY|postgres||table=douyin_product_daily;definition=PRIMARY KEY (row_id)
+core|douyin_product_daily_source_row_number_check|CONSTRAINT_CHECK|postgres||table=douyin_product_daily;definition=CHECK ((source_row_number >= 2))
+core|douyin_terminal_daily_pkey|CONSTRAINT_PRIMARY_KEY|postgres||table=douyin_terminal_daily;definition=PRIMARY KEY (row_id)
+core|douyin_terminal_daily_source_row_number_check|CONSTRAINT_CHECK|postgres||table=douyin_terminal_daily;definition=CHECK ((source_row_number >= 2))
+core|fk_douyin_account_daily_batch|CONSTRAINT_FOREIGN_KEY|postgres||table=douyin_account_daily;definition=FOREIGN KEY (batch_id) REFERENCES audit.import_batch(batch_id)
+core|fk_douyin_account_daily_shop|CONSTRAINT_FOREIGN_KEY|postgres||table=douyin_account_daily;definition=FOREIGN KEY (shop_id) REFERENCES meta.shop(shop_id)
+core|fk_douyin_audience_daily_batch|CONSTRAINT_FOREIGN_KEY|postgres||table=douyin_audience_daily;definition=FOREIGN KEY (batch_id) REFERENCES audit.import_batch(batch_id)
+core|fk_douyin_audience_daily_shop|CONSTRAINT_FOREIGN_KEY|postgres||table=douyin_audience_daily;definition=FOREIGN KEY (shop_id) REFERENCES meta.shop(shop_id)
+core|fk_douyin_carrier_daily_batch|CONSTRAINT_FOREIGN_KEY|postgres||table=douyin_carrier_daily;definition=FOREIGN KEY (batch_id) REFERENCES audit.import_batch(batch_id)
+core|fk_douyin_carrier_daily_shop|CONSTRAINT_FOREIGN_KEY|postgres||table=douyin_carrier_daily;definition=FOREIGN KEY (shop_id) REFERENCES meta.shop(shop_id)
+core|fk_douyin_category_daily_batch|CONSTRAINT_FOREIGN_KEY|postgres||table=douyin_category_daily;definition=FOREIGN KEY (batch_id) REFERENCES audit.import_batch(batch_id)
+core|fk_douyin_category_daily_shop|CONSTRAINT_FOREIGN_KEY|postgres||table=douyin_category_daily;definition=FOREIGN KEY (shop_id) REFERENCES meta.shop(shop_id)
+core|fk_douyin_content_daily_batch|CONSTRAINT_FOREIGN_KEY|postgres||table=douyin_content_daily;definition=FOREIGN KEY (batch_id) REFERENCES audit.import_batch(batch_id)
+core|fk_douyin_content_daily_shop|CONSTRAINT_FOREIGN_KEY|postgres||table=douyin_content_daily;definition=FOREIGN KEY (shop_id) REFERENCES meta.shop(shop_id)
+core|fk_douyin_deal_daily_batch|CONSTRAINT_FOREIGN_KEY|postgres||table=douyin_deal_daily;definition=FOREIGN KEY (batch_id) REFERENCES audit.import_batch(batch_id)
+core|fk_douyin_deal_daily_shop|CONSTRAINT_FOREIGN_KEY|postgres||table=douyin_deal_daily;definition=FOREIGN KEY (shop_id) REFERENCES meta.shop(shop_id)
+core|fk_douyin_price_band_daily_batch|CONSTRAINT_FOREIGN_KEY|postgres||table=douyin_price_band_daily;definition=FOREIGN KEY (batch_id) REFERENCES audit.import_batch(batch_id)
+core|fk_douyin_price_band_daily_shop|CONSTRAINT_FOREIGN_KEY|postgres||table=douyin_price_band_daily;definition=FOREIGN KEY (shop_id) REFERENCES meta.shop(shop_id)
+core|fk_douyin_product_daily_batch|CONSTRAINT_FOREIGN_KEY|postgres||table=douyin_product_daily;definition=FOREIGN KEY (batch_id) REFERENCES audit.import_batch(batch_id)
+core|fk_douyin_product_daily_shop|CONSTRAINT_FOREIGN_KEY|postgres||table=douyin_product_daily;definition=FOREIGN KEY (shop_id) REFERENCES meta.shop(shop_id)
+core|fk_douyin_terminal_daily_batch|CONSTRAINT_FOREIGN_KEY|postgres||table=douyin_terminal_daily;definition=FOREIGN KEY (batch_id) REFERENCES audit.import_batch(batch_id)
+core|fk_douyin_terminal_daily_shop|CONSTRAINT_FOREIGN_KEY|postgres||table=douyin_terminal_daily;definition=FOREIGN KEY (shop_id) REFERENCES meta.shop(shop_id)
+mart|anomaly_event_anomaly_type_fkey|CONSTRAINT_FOREIGN_KEY|postgres||table=anomaly_event;definition=FOREIGN KEY (anomaly_type) REFERENCES mart.anomaly_rule(rule_code)
+mart|anomaly_event_parent_anomaly_event_id_fkey|CONSTRAINT_FOREIGN_KEY|postgres||table=anomaly_event;definition=FOREIGN KEY (parent_anomaly_event_id) REFERENCES mart.anomaly_event(anomaly_event_id)
+mart|anomaly_event_pkey|CONSTRAINT_PRIMARY_KEY|postgres||table=anomaly_event;definition=PRIMARY KEY (anomaly_event_id)
+mart|anomaly_event_severity_check|CONSTRAINT_CHECK|postgres||table=anomaly_event;definition=CHECK ((severity = ANY (ARRAY['INFO'::text, 'LOW'::text, 'MEDIUM'::text, 'HIGH'::text, 'CRITICAL'::text])))
+mart|anomaly_event_status_check|CONSTRAINT_CHECK|postgres||table=anomaly_event;definition=CHECK ((status = ANY (ARRAY['OPEN'::text, 'RESOLVED'::text, 'SUPPRESSED'::text])))
+mart|anomaly_rule_metric_direction_check|CONSTRAINT_CHECK|postgres||table=anomaly_rule;definition=CHECK ((metric_direction = ANY (ARRAY['DROP'::text, 'RISE'::text])))
+mart|anomaly_rule_pkey|CONSTRAINT_PRIMARY_KEY|postgres||table=anomaly_rule;definition=PRIMARY KEY (rule_code)
+mart|daily_action_item_item_type_check|CONSTRAINT_CHECK|postgres||table=daily_action_item;definition=CHECK ((item_type = ANY (ARRAY['RISK'::text, 'OPPORTUNITY'::text, 'WATCH'::text])))
+mart|daily_action_item_opportunity_level_check|CONSTRAINT_CHECK|postgres||table=daily_action_item;definition=CHECK ((opportunity_level = ANY (ARRAY['O1_STRONG'::text, 'O2_HIGH'::text, 'O3_MEDIUM'::text, 'O4_WATCH'::text])))
+mart|daily_action_item_pkey|CONSTRAINT_PRIMARY_KEY|postgres||table=daily_action_item;definition=PRIMARY KEY (action_item_id)
+mart|daily_action_item_risk_level_check|CONSTRAINT_CHECK|postgres||table=daily_action_item;definition=CHECK ((risk_level = ANY (ARRAY['P1_URGENT'::text, 'P2_HIGH'::text, 'P3_MEDIUM'::text, 'P4_LOW'::text])))
+mart|daily_action_item_status_check|CONSTRAINT_CHECK|postgres||table=daily_action_item;definition=CHECK ((status = ANY (ARRAY['OPEN'::text, 'WATCHING'::text, 'RESOLVED'::text, 'EXPIRED'::text])))
+mart|diagnostic_entity_rule_pkey|CONSTRAINT_PRIMARY_KEY|postgres||table=diagnostic_entity_rule;definition=PRIMARY KEY (domain_key)
+mart|diagnostic_metric_rule_metric_type_check|CONSTRAINT_CHECK|postgres||table=diagnostic_metric_rule;definition=CHECK ((metric_type = ANY (ARRAY['amount'::text, 'count'::text, 'average'::text, 'ratio'::text, 'efficiency'::text])))
+mart|diagnostic_metric_rule_pkey|CONSTRAINT_PRIMARY_KEY|postgres||table=diagnostic_metric_rule;definition=PRIMARY KEY (metric_key)
+mart|diagnostic_period_rule_pkey|CONSTRAINT_PRIMARY_KEY|postgres||table=diagnostic_period_rule;definition=PRIMARY KEY (period_key)
+mart|diagnostic_result_diagnostic_code_fkey|CONSTRAINT_FOREIGN_KEY|postgres||table=diagnostic_result;definition=FOREIGN KEY (diagnostic_code) REFERENCES mart.diagnostic_type(diagnostic_code)
+mart|diagnostic_result_diagnostic_status_check|CONSTRAINT_CHECK|postgres||table=diagnostic_result;definition=CHECK ((diagnostic_status = ANY (ARRAY['DIAGNOSED'::text, 'MULTI_FACTOR'::text, 'INSUFFICIENT_EVIDENCE'::text, 'NO_CONFIRMED_ANOMALY'::text, 'UNSUPPORTED_DOMAIN'::text, 'UNSUPPORTED_DIAGNOSTIC_PATH'::text, 'COVERAGE_INCOMPLETE'::text, 'MAPPING_INCOMPLETE'::text])))
+mart|diagnostic_result_pkey|CONSTRAINT_PRIMARY_KEY|postgres||table=diagnostic_result;definition=PRIMARY KEY (diagnostic_id)
+mart|diagnostic_result_primary_stage_check|CONSTRAINT_CHECK|postgres||table=diagnostic_result;definition=CHECK ((primary_stage = ANY (ARRAY['traffic'::text, 'click'::text, 'conversion'::text, 'refund'::text, 'advertising'::text, 'mix'::text, 'contribution'::text, 'unknown'::text])))
+mart|diagnostic_result_source_anomaly_event_id_fkey|CONSTRAINT_FOREIGN_KEY|postgres||table=diagnostic_result;definition=FOREIGN KEY (source_anomaly_event_id) REFERENCES mart.anomaly_event(anomaly_event_id)
+mart|diagnostic_type_pkey|CONSTRAINT_PRIMARY_KEY|postgres||table=diagnostic_type;definition=PRIMARY KEY (diagnostic_code)
+mart|mart_dimension_rule_pkey|CONSTRAINT_PRIMARY_KEY|postgres||table=mart_dimension_rule;definition=PRIMARY KEY (rule_id)
+mart|opportunity_event_opportunity_code_fkey|CONSTRAINT_FOREIGN_KEY|postgres||table=opportunity_event;definition=FOREIGN KEY (opportunity_code) REFERENCES mart.opportunity_type(opportunity_code)
+mart|opportunity_event_opportunity_level_check|CONSTRAINT_CHECK|postgres||table=opportunity_event;definition=CHECK ((opportunity_level = ANY (ARRAY['LOW'::text, 'MEDIUM'::text, 'HIGH'::text, 'STRONG'::text])))
+mart|opportunity_event_pkey|CONSTRAINT_PRIMARY_KEY|postgres||table=opportunity_event;definition=PRIMARY KEY (opportunity_event_id)
+mart|opportunity_event_status_check|CONSTRAINT_CHECK|postgres||table=opportunity_event;definition=CHECK ((status = ANY (ARRAY['QUALIFIED'::text, 'COVERAGE_INCOMPLETE'::text, 'MAPPING_INCOMPLETE'::text, 'INSUFFICIENT_PEERS'::text, 'INSUFFICIENT_EVIDENCE'::text, 'NEW_BASE_SIGNAL'::text, 'LOW_BASE'::text])))
+mart|opportunity_rule_pkey|CONSTRAINT_PRIMARY_KEY|postgres||table=opportunity_rule;definition=PRIMARY KEY (rule_code)
+mart|opportunity_type_pkey|CONSTRAINT_PRIMARY_KEY|postgres||table=opportunity_type;definition=PRIMARY KEY (opportunity_code)
+mart|priority_entity_weight_pkey|CONSTRAINT_PRIMARY_KEY|postgres||table=priority_entity_weight;definition=PRIMARY KEY (entity_level)
+mart|uk_dim_rule|CONSTRAINT_UNIQUE|postgres||table=mart_dimension_rule;definition=UNIQUE (source_schema, source_table, dimension_name, dimension_value)
+meta|database_object_dictionary_pkey|CONSTRAINT_PRIMARY_KEY|postgres||table=database_object_dictionary;definition=PRIMARY KEY (dictionary_id)
+meta|field_mapping_pkey|CONSTRAINT_PRIMARY_KEY|postgres||table=field_mapping;definition=PRIMARY KEY (mapping_id)
+meta|fk_field_mapping_sheet|CONSTRAINT_FOREIGN_KEY|postgres||table=field_mapping;definition=FOREIGN KEY (source_sheet_name) REFERENCES meta.source_sheet_mapping(source_sheet_name)
+meta|master_product_alias_alias_type_check|CONSTRAINT_CHECK|postgres||table=master_product_alias;definition=CHECK ((alias_type = ANY (ARRAY['COMMON'::text, 'SHORT_NAME'::text, 'OLD_NAME'::text, 'PLATFORM_SPECIFIC'::text])))
+meta|master_product_alias_master_product_id_fkey|CONSTRAINT_FOREIGN_KEY|postgres||table=master_product_alias;definition=FOREIGN KEY (master_product_id) REFERENCES meta.master_product(master_product_id)
+meta|master_product_alias_pkey|CONSTRAINT_PRIMARY_KEY|postgres||table=master_product_alias;definition=PRIMARY KEY (alias_id)
+meta|master_product_master_product_code_key|CONSTRAINT_UNIQUE|postgres||table=master_product;definition=UNIQUE (master_product_code)
+meta|master_product_merged_into_master_product_id_fkey|CONSTRAINT_FOREIGN_KEY|postgres||table=master_product;definition=FOREIGN KEY (merged_into_master_product_id) REFERENCES meta.master_product(master_product_id)
+meta|master_product_pkey|CONSTRAINT_PRIMARY_KEY|postgres||table=master_product;definition=PRIMARY KEY (master_product_id)
+meta|master_product_product_line_id_fkey|CONSTRAINT_FOREIGN_KEY|postgres||table=master_product;definition=FOREIGN KEY (product_line_id) REFERENCES meta.product_line(product_line_id)
+meta|master_product_product_status_check|CONSTRAINT_CHECK|postgres||table=master_product;definition=CHECK ((product_status = ANY (ARRAY['ACTIVE'::text, 'DISCONTINUED'::text, 'MERGED'::text, 'TEST'::text])))
+meta|master_sku_alias_alias_type_check|CONSTRAINT_CHECK|postgres||table=master_sku_alias;definition=CHECK ((alias_type = ANY (ARRAY['COMMON'::text, 'SHORT_NAME'::text, 'OLD_NAME'::text, 'PLATFORM_SPECIFIC'::text])))
+meta|master_sku_alias_master_sku_id_fkey|CONSTRAINT_FOREIGN_KEY|postgres||table=master_sku_alias;definition=FOREIGN KEY (master_sku_id) REFERENCES meta.master_sku(master_sku_id)
+meta|master_sku_alias_pkey|CONSTRAINT_PRIMARY_KEY|postgres||table=master_sku_alias;definition=PRIMARY KEY (alias_id)
+meta|master_sku_master_product_id_fkey|CONSTRAINT_FOREIGN_KEY|postgres||table=master_sku;definition=FOREIGN KEY (master_product_id) REFERENCES meta.master_product(master_product_id)
+meta|master_sku_master_sku_code_key|CONSTRAINT_UNIQUE|postgres||table=master_sku;definition=UNIQUE (master_sku_code)
+meta|master_sku_pkey|CONSTRAINT_PRIMARY_KEY|postgres||table=master_sku;definition=PRIMARY KEY (master_sku_id)
+meta|metric_formula_rule_pkey|CONSTRAINT_PRIMARY_KEY|postgres||table=metric_formula_rule;definition=PRIMARY KEY (metric_rule_id)
+meta|platform_pkey|CONSTRAINT_PRIMARY_KEY|postgres||table=platform;definition=PRIMARY KEY (platform_code)
+meta|platform_product_mapping_mapping_source_check|CONSTRAINT_CHECK|postgres||table=platform_product_mapping;definition=CHECK ((mapping_source = ANY (ARRAY['MANUAL'::text, 'EXACT_ID_RULE'::text, 'EXACT_NAME_SUGGESTION'::text, 'ALIAS_SUGGESTION'::text, 'AI_SUGGESTION'::text, 'IMPORT_FILE'::text])))
+meta|platform_product_mapping_mapping_status_check|CONSTRAINT_CHECK|postgres||table=platform_product_mapping;definition=CHECK ((mapping_status = ANY (ARRAY['CONFIRMED'::text, 'SUGGESTED'::text, 'UNMAPPED'::text, 'CONFLICT'::text, 'DISABLED'::text])))
+meta|platform_product_mapping_master_product_id_fkey|CONSTRAINT_FOREIGN_KEY|postgres||table=platform_product_mapping;definition=FOREIGN KEY (master_product_id) REFERENCES meta.master_product(master_product_id)
+meta|platform_product_mapping_pkey|CONSTRAINT_PRIMARY_KEY|postgres||table=platform_product_mapping;definition=PRIMARY KEY (mapping_id)
+meta|platform_product_mapping_shop_id_fkey|CONSTRAINT_FOREIGN_KEY|postgres||table=platform_product_mapping;definition=FOREIGN KEY (shop_id) REFERENCES meta.shop(shop_id)
+meta|platform_sku_mapping_mapping_source_check|CONSTRAINT_CHECK|postgres||table=platform_sku_mapping;definition=CHECK ((mapping_source = ANY (ARRAY['MANUAL'::text, 'EXACT_ID_RULE'::text, 'EXACT_NAME_SUGGESTION'::text, 'ALIAS_SUGGESTION'::text, 'AI_SUGGESTION'::text, 'IMPORT_FILE'::text])))
+meta|platform_sku_mapping_mapping_status_check|CONSTRAINT_CHECK|postgres||table=platform_sku_mapping;definition=CHECK ((mapping_status = ANY (ARRAY['CONFIRMED'::text, 'SUGGESTED'::text, 'UNMAPPED'::text, 'CONFLICT'::text, 'DISABLED'::text])))
+meta|platform_sku_mapping_master_product_id_fkey|CONSTRAINT_FOREIGN_KEY|postgres||table=platform_sku_mapping;definition=FOREIGN KEY (master_product_id) REFERENCES meta.master_product(master_product_id)
+meta|platform_sku_mapping_master_sku_id_fkey|CONSTRAINT_FOREIGN_KEY|postgres||table=platform_sku_mapping;definition=FOREIGN KEY (master_sku_id) REFERENCES meta.master_sku(master_sku_id)
+meta|platform_sku_mapping_pkey|CONSTRAINT_PRIMARY_KEY|postgres||table=platform_sku_mapping;definition=PRIMARY KEY (mapping_id)
+meta|platform_sku_mapping_shop_id_fkey|CONSTRAINT_FOREIGN_KEY|postgres||table=platform_sku_mapping;definition=FOREIGN KEY (shop_id) REFERENCES meta.shop(shop_id)
+meta|product_line_pkey|CONSTRAINT_PRIMARY_KEY|postgres||table=product_line;definition=PRIMARY KEY (product_line_id)
+meta|product_line_product_line_code_key|CONSTRAINT_UNIQUE|postgres||table=product_line;definition=UNIQUE (product_line_code)
+meta|product_line_product_line_name_key|CONSTRAINT_UNIQUE|postgres||table=product_line;definition=UNIQUE (product_line_name)
+meta|shop_pkey|CONSTRAINT_PRIMARY_KEY|postgres||table=shop;definition=PRIMARY KEY (shop_id)
+meta|source_sheet_mapping_pkey|CONSTRAINT_PRIMARY_KEY|postgres||table=source_sheet_mapping;definition=PRIMARY KEY (source_sheet_name)
+meta|source_sheet_mapping_source_sheet_code_key|CONSTRAINT_UNIQUE|postgres||table=source_sheet_mapping;definition=UNIQUE (source_sheet_code)
+meta|uk_dict_obj_col|CONSTRAINT_UNIQUE|postgres||table=database_object_dictionary;definition=UNIQUE (schema_name, object_name, column_name)
+meta|uk_field_mapping_sheet_column|CONSTRAINT_UNIQUE|postgres||table=field_mapping;definition=UNIQUE (source_sheet_name, source_column_name)
+meta|uk_field_mapping_sheet_order|CONSTRAINT_UNIQUE|postgres||table=field_mapping;definition=UNIQUE (source_sheet_name, source_column_order)
+meta|uk_metric_formula_rule|CONSTRAINT_UNIQUE|postgres||table=metric_formula_rule;definition=UNIQUE (target_schema, target_table, target_column_name)
+meta|uk_shop_code|CONSTRAINT_UNIQUE|postgres||table=shop;definition=UNIQUE (platform_code, shop_code)

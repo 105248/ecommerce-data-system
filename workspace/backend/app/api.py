@@ -1,0 +1,271 @@
+# -*- coding: utf-8 -*-
+"""F0.5 Backend API 路由：系统健康/数据状态/店铺/经营/主数据/优先级"""
+from fastapi import APIRouter, Query, Request
+
+import db
+from errors import ApiError, ok
+
+router = APIRouter(prefix="/api/v1", tags=["f0.5"])
+
+# 参数校验（Backend 只做校验与包装，不计算）
+VALID_SCOPES = {"全店", "自营", "合作", "商品卡", "短视频", "直播", "图文", "其他",
+                "自营商品卡", "合作商品卡", "自营短视频", "合作短视频", "自营直播", "合作直播",
+                "自营图文", "合作图文", "自营其他", "合作其他"}
+
+
+def _check_period(start_date: str, end_date: str):
+    import datetime
+    try:
+        s = datetime.date.fromisoformat(start_date)
+        e = datetime.date.fromisoformat(end_date)
+    except ValueError:
+        raise ApiError("INVALID_ARGUMENT", "日期格式须为 YYYY-MM-DD")
+    if s > e:
+        raise ApiError("INVALID_ARGUMENT", "start_date 不能晚于 end_date")
+    return s, e
+
+
+def _shop_name(shop_code):
+    """shop_code → shop_name（经 meta.shop 映射；shop_code 缺省=整体）"""
+    if not shop_code:
+        return None
+    rows, _ = db.query("SELECT shop_name, enabled FROM meta.shop WHERE shop_code = %s", (shop_code,))
+    if not rows:
+        # 兼容 shop_code=shop_name
+        rows, _ = db.query("SELECT shop_name, enabled FROM meta.shop WHERE shop_name = %s", (shop_code,))
+    if not rows:
+        raise ApiError("UNKNOWN_SHOP", "未知店铺: {}".format(shop_code))
+    if not rows[0]["enabled"]:
+        raise ApiError("FORBIDDEN", "店铺未启用: {}".format(shop_code))
+    return rows[0]["shop_name"]
+
+
+# ===== health / ready =====
+@router.get("/health")
+def health():
+    return ok({"status": "OK", "service": "growth-workspace-backend"})
+
+
+@router.get("/ready")
+def ready(request: Request):
+    r = db.health_check_db()
+    if r["database"] == "OK":
+        return ok(r)
+    raise ApiError("DATABASE_UNAVAILABLE", r.get("detail"), status_code=503)
+
+
+# ===== data-status =====
+@router.get("/data-status")
+def data_status(platform_code: str = Query("douyin"), shop_code: str = Query(None)):
+    rows, _ = db.query("SELECT * FROM mart.get_data_coverage(%s)", (shop_code,))
+    if not rows:
+        raise ApiError("NO_DATA")
+    return ok(rows)
+
+
+# ===== shops =====
+@router.get("/shops")
+def shops(platform_code: str = Query("douyin")):
+    rows, _ = db.query(
+        "SELECT platform_code, shop_code, shop_name, enabled FROM meta.shop WHERE platform_code=%s ORDER BY shop_id",
+        (platform_code,))
+    return ok(rows)
+
+
+# ===== business summary =====
+@router.get("/business/summary")
+def business_summary(platform_code: str = Query("douyin"), shop_code: str = Query(None),
+                     start_date: str = Query(...), end_date: str = Query(...),
+                     scope_key: str = Query("全店")):
+    _check_period(start_date, end_date)
+    if scope_key not in VALID_SCOPES:
+        raise ApiError("UNKNOWN_SCOPE", "未知经营口径: {}".format(scope_key))
+    shop_name = _shop_name(shop_code)
+    request_db_ms = {}
+    if shop_name:
+        rows, ms = db.query(
+            "SELECT * FROM mart.get_business_period_summary(%s, %s::date, %s::date, %s)",
+            (shop_name, start_date, end_date, scope_key))
+    else:
+        rows, ms = db.query(
+            "SELECT * FROM mart.get_platform_business_period_summary(%s, %s::date, %s::date, %s)",
+            (platform_code, start_date, end_date, scope_key))
+    if not rows:
+        raise ApiError("NO_DATA")
+    r = rows[0]
+    data = {
+        "platform_code": platform_code,
+        "shop_code": shop_code,
+        "shop_name": shop_name,
+        "scope_key": scope_key,
+        "start_date": start_date, "end_date": end_date,
+        "transaction_amount": r.get("transaction_amount"),
+        "user_pay_amount": r.get("user_pay_amount"),
+        "refund_amount_pay_time": r.get("refund_amount_pay_time"),
+        "settlement_amount": r.get("settlement_amount"),
+        "refund_rate": r.get("refund_rate_pay_time"),
+        "ad_spend_shop_bound": r.get("ad_spend_shop_bound"),
+        "ad_spend_rate_net_refund_shop_bound": r.get("ad_spend_rate_net_refund_shop_bound"),
+    }
+    meta = {
+        "current_period": {"start_date": start_date, "end_date": end_date},
+        "coverage_complete": r.get("coverage_complete"),
+        "expected_days": r.get("expected_days"),
+        "coverage_days": r.get("coverage_days"),
+        "enabled_shop_count": r.get("enabled_shop_count"),
+        "covered_shop_count": r.get("covered_shop_count"),
+        "data_max_date": r.get("data_max_date"),
+        "source_function": "mart.get_business_period_summary" if shop_name else "mart.get_platform_business_period_summary",
+    }
+    return ok(data, meta)
+
+
+# ===== business compare =====
+@router.get("/business/compare")
+def business_compare(platform_code: str = Query("douyin"), shop_code: str = Query(None),
+                     start_date: str = Query(...), end_date: str = Query(...),
+                     scope_key: str = Query("全店"), metric_key: str = Query("user_pay_amount")):
+    _check_period(start_date, end_date)
+    shop_name = _shop_name(shop_code)
+    if shop_name:
+        rows, _ = db.query(
+            "SELECT * FROM mart.compare_business_period(%s, %s::date, %s::date, %s, %s)",
+            (shop_name, start_date, end_date, scope_key, metric_key))
+    else:
+        rows, _ = db.query(
+            "SELECT * FROM mart.compare_platform_business(%s, %s::date, %s::date, %s, %s)",
+            (platform_code, start_date, end_date, scope_key, metric_key))
+    if not rows:
+        raise ApiError("NO_DATA")
+    return ok(rows[0])
+
+
+# ===== products top =====
+@router.get("/business/products/top")
+def products_top(shop_code: str = Query(...), start_date: str = Query(...), end_date: str = Query(...),
+                 metric_key: str = Query("user_pay_amount"), limit: int = Query(10, ge=1, le=100)):
+    _check_period(start_date, end_date)
+    shop_name = _shop_name(shop_code)  # rank 按店铺，必须指定
+    # rank_products(p_shop_name, p_sd, p_ed, p_metric, p_sort_by, p_sort_direction, p_limit, p_product_id, p_product_name)
+    rows, _ = db.query(
+        "SELECT * FROM mart.rank_products(%s, %s::date, %s::date, %s, %s, %s, %s, %s, %s)",
+        (shop_name, start_date, end_date, metric_key, "current_value", "DESC", limit, None, None))
+    return ok(rows)
+
+
+# ===== master-data =====
+@router.get("/master-data/product-lines")
+def product_lines():
+    rows, _ = db.query("SELECT product_line_code, product_line_name, enabled FROM meta.product_line ORDER BY product_line_id")
+    return ok(rows)
+
+
+@router.get("/master-data/products")
+def master_products(shop_code: str = Query(None), page: int = Query(1, ge=1), page_size: int = Query(50, ge=1, le=200)):
+    rows, _ = db.query(
+        "SELECT master_product_code, master_product_name, enabled FROM meta.master_product ORDER BY master_product_id LIMIT %s OFFSET %s",
+        (page_size, (page - 1) * page_size))
+    return ok(rows, {"page": page, "page_size": page_size})
+
+
+@router.get("/master-data/resolve")
+def resolve(shop_code: str = Query(...), platform_product_id: str = Query(...)):
+    shop_name = _shop_name(shop_code)
+    # resolve_master_product(p_platform_code, p_shop_name, p_platform_product_id, p_biz_date)
+    rows, _ = db.query(
+        "SELECT * FROM mart.resolve_master_product(%s, %s, %s, CURRENT_DATE)",
+        ("douyin", shop_name, platform_product_id))
+    if not rows:
+        raise ApiError("NO_DATA", "该商品无映射")
+    return ok(rows[0])
+
+
+# ===== priorities =====
+def _priorities(router_fn, fn_name, platform_code, start_date, end_date, limit, item_type=None):
+    _check_period(start_date, end_date)
+    # get_daily_action_list 需 item_type；risk/opportunity 无需
+    if fn_name == "get_daily_action_list":
+        rows, _ = db.query("SELECT * FROM mart.{}(%s, %s::date, %s::date, %s, %s)".format(fn_name),
+                           (platform_code, start_date, end_date, item_type, limit))
+    else:
+        rows, _ = db.query("SELECT * FROM mart.{}(%s, %s::date, %s::date, %s)".format(fn_name),
+                           (platform_code, start_date, end_date, limit))
+    if not rows:
+        raise ApiError("NO_DATA")
+    return ok(rows)
+
+
+@router.get("/priorities/risks")
+def risks(platform_code: str = Query("douyin"), start_date: str = Query(...), end_date: str = Query(...),
+          limit: int = Query(5, ge=1, le=50)):
+    return _priorities("risks", "get_daily_risk_priorities", platform_code, start_date, end_date, limit)
+
+
+@router.get("/priorities/opportunities")
+def opportunities(platform_code: str = Query("douyin"), start_date: str = Query(...), end_date: str = Query(...),
+                  limit: int = Query(5, ge=1, le=50)):
+    return _priorities("opps", "get_daily_opportunity_priorities", platform_code, start_date, end_date, limit)
+
+
+@router.get("/priorities/watchlist")
+def watchlist(platform_code: str = Query("douyin"), start_date: str = Query(...), end_date: str = Query(...),
+              item_type: str = Query(None), limit: int = Query(20, ge=1, le=100)):
+    return _priorities("watch", "get_daily_action_list", platform_code, start_date, end_date, limit, item_type)
+
+
+# ===== P2 骨架（READY / NOT_READY 明确返回） =====
+@router.get("/business/rankings")
+def rankings(shop_code: str = Query(None), start_date: str = Query(...), end_date: str = Query(...),
+             metric_key: str = Query("user_pay_amount"), limit: int = Query(10, ge=1, le=100)):
+    _check_period(start_date, end_date)
+    shop_name = _shop_name(shop_code) or "douyin"
+    rows, _ = db.query(
+        "SELECT * FROM mart.rank_products(%s, %s::date, %s::date, %s, %s, %s, %s, %s, %s)",
+        (shop_name, start_date, end_date, metric_key, "current_value", "DESC", limit, None, None))
+    return ok(rows)
+
+
+@router.get("/diagnostics/snapshot")
+def diag_snapshot(shop_code: str = Query(None), start_date: str = Query(...), end_date: str = Query(...),
+                  domain_key: str = Query("shop")):
+    _check_period(start_date, end_date)
+    shop_name = _shop_name(shop_code)
+    if shop_name:
+        rows, _ = db.query(
+            "SELECT * FROM mart.get_diagnostic_snapshot(%s, %s::date, %s::date, %s, %s, %s, %s, %s)",
+            (shop_name, start_date, end_date, domain_key, None, None, None, None))
+    else:
+        rows, _ = db.query("SELECT * FROM mart.get_platform_diagnostic_snapshot(%s, %s::date, %s::date)",
+                           ("douyin", start_date, end_date))
+    if not rows:
+        raise ApiError("NO_DATA")
+    return ok(rows)
+
+
+@router.get("/diagnostics/anomalies")
+def anomalies(start_date: str = Query(...), end_date: str = Query(...)):
+    _check_period(start_date, end_date)
+    rows, _ = db.query("SELECT * FROM mart.get_anomalies(%s, %s::date, %s::date)", ("douyin", start_date, end_date))
+    return ok(rows)
+
+
+@router.get("/opportunities")
+def opportunities_list(start_date: str = Query(...), end_date: str = Query(...)):
+    _check_period(start_date, end_date)
+    rows, _ = db.query("SELECT * FROM mart.get_growth_opportunities(%s, %s::date, %s::date, %s, %s)",
+                       ("douyin", start_date, end_date, None, None))
+    return ok(rows)
+
+
+@router.get("/advertising/summary")
+def advertising_summary(shop_code: str = Query(None), start_date: str = Query(...), end_date: str = Query(...),
+                        scope_key: str = Query("全店")):
+    _check_period(start_date, end_date)
+    shop_name = _shop_name(shop_code)
+    if not shop_name:
+        raise ApiError("INVALID_ARGUMENT", "广告摘要需指定 shop_code")
+    rows, _ = db.query("SELECT * FROM mart.get_advertising_period_summary(%s, %s::date, %s::date, %s)",
+                       (shop_name, start_date, end_date, scope_key))
+    if not rows:
+        raise ApiError("NO_DATA")
+    return ok(rows[0])

@@ -1,0 +1,953 @@
+{
+  "version": "F0.5-A",
+  "generated_at": "2026-08-08 18:34:11",
+  "database_baseline": "convergence_final 04 whitelist 54",
+  "capabilities": [
+    {
+      "capability_code": "01",
+      "capability_name": "system_status",
+      "frontend_module": "系统状态",
+      "source_schema": "mart/meta",
+      "source_object": "(backend) health/ready",
+      "source_function": [
+        "(backend) health/ready"
+      ],
+      "required_parameters": [
+        "platform_code",
+        "shop_code",
+        "start_date",
+        "end_date",
+        "scope_key",
+        "page",
+        "page_size"
+      ],
+      "supported_domains": [
+        "backend"
+      ],
+      "supported_scopes": [
+        "全店",
+        "自营",
+        "合作",
+        "商品卡",
+        "直播",
+        "短视频",
+        "图文",
+        "其他"
+      ],
+      "data_grain": "BACKEND",
+      "time_grain": "分钟",
+      "coverage_supported": false,
+      "mapping_coverage_supported": true,
+      "security_role": "growth_workspace_reader",
+      "status": "READY"
+    },
+    {
+      "capability_code": "02",
+      "capability_name": "data_coverage",
+      "frontend_module": "数据覆盖",
+      "source_schema": "mart/meta",
+      "source_object": "mart.get_data_coverage",
+      "source_function": [
+        "mart.get_data_coverage"
+      ],
+      "required_parameters": [
+        "platform_code",
+        "shop_code",
+        "start_date",
+        "end_date",
+        "scope_key",
+        "page",
+        "page_size"
+      ],
+      "supported_domains": [
+        "catalog"
+      ],
+      "supported_scopes": [
+        "全店",
+        "自营",
+        "合作",
+        "商品卡",
+        "直播",
+        "短视频",
+        "图文",
+        "其他"
+      ],
+      "data_grain": "DAILY_FACT",
+      "time_grain": "天",
+      "coverage_supported": true,
+      "mapping_coverage_supported": true,
+      "security_role": "growth_workspace_reader",
+      "status": "READY"
+    },
+    {
+      "capability_code": "03",
+      "capability_name": "shops",
+      "frontend_module": "店铺",
+      "source_schema": "mart/meta",
+      "source_object": "meta.shop",
+      "source_function": [
+        "meta.shop"
+      ],
+      "required_parameters": [
+        "platform_code",
+        "shop_code",
+        "start_date",
+        "end_date",
+        "scope_key",
+        "page",
+        "page_size"
+      ],
+      "supported_domains": [
+        "masterdata"
+      ],
+      "supported_scopes": [
+        "全店",
+        "自营",
+        "合作",
+        "商品卡",
+        "直播",
+        "短视频",
+        "图文",
+        "其他"
+      ],
+      "data_grain": "VERSION",
+      "time_grain": "即时",
+      "coverage_supported": true,
+      "mapping_coverage_supported": true,
+      "security_role": "growth_workspace_reader",
+      "status": "READY"
+    },
+    {
+      "capability_code": "04",
+      "capability_name": "platform_overview",
+      "frontend_module": "抖音整体",
+      "source_schema": "mart/meta",
+      "source_object": "mart.get_platform_business_period_summary",
+      "source_function": [
+        "mart.get_platform_business_period_summary",
+        "mart.compare_platform_business",
+        "mart.decompose_platform_change_by_shop",
+        "mart.get_platform_diagnostic_snapshot"
+      ],
+      "required_parameters": [
+        "platform_code",
+        "shop_code",
+        "start_date",
+        "end_date",
+        "scope_key",
+        "page",
+        "page_size"
+      ],
+      "supported_domains": [
+        "platform"
+      ],
+      "supported_scopes": [
+        "全店",
+        "自营",
+        "合作",
+        "商品卡",
+        "直播",
+        "短视频",
+        "图文",
+        "其他"
+      ],
+      "data_grain": "DAILY_FACT",
+      "time_grain": "天",
+      "coverage_supported": true,
+      "mapping_coverage_supported": true,
+      "security_role": "growth_workspace_reader",
+      "status": "READY"
+    },
+    {
+      "capability_code": "05",
+      "capability_name": "business_summary",
+      "frontend_module": "经营摘要",
+      "source_schema": "mart/meta",
+      "source_object": "mart.get_business_period_summary",
+      "source_function": [
+        "mart.get_business_period_summary",
+        "mart.get_business_report",
+        "mart.analysis_metric_whitelist"
+      ],
+      "required_parameters": [
+        "platform_code",
+        "shop_code",
+        "start_date",
+        "end_date",
+        "scope_key",
+        "page",
+        "page_size"
+      ],
+      "supported_domains": [
+        "business"
+      ],
+      "supported_scopes": [
+        "全店",
+        "自营",
+        "合作",
+        "商品卡",
+        "直播",
+        "短视频",
+        "图文",
+        "其他"
+      ],
+      "data_grain": "DAILY_FACT",
+      "time_grain": "天",
+      "coverage_supported": true,
+      "mapping_coverage_supported": true,
+      "security_role": "growth_workspace_reader",
+      "status": "READY"
+    },
+    {
+      "capability_code": "06",
+      "capability_name": "period_compare",
+      "frontend_module": "周期比较",
+      "source_schema": "mart/meta",
+      "source_object": "mart.compare_business_period",
+      "source_function": [
+        "mart.compare_business_period",
+        "mart.compare_platform_business",
+        "mart.compare_advertising_period"
+      ],
+      "required_parameters": [
+        "platform_code",
+        "shop_code",
+        "start_date",
+        "end_date",
+        "scope_key",
+        "page",
+        "page_size"
+      ],
+      "supported_domains": [
+        "business"
+      ],
+      "supported_scopes": [
+        "全店",
+        "自营",
+        "合作",
+        "商品卡",
+        "直播",
+        "短视频",
+        "图文",
+        "其他"
+      ],
+      "data_grain": "DAILY_FACT",
+      "time_grain": "天",
+      "coverage_supported": true,
+      "mapping_coverage_supported": true,
+      "security_role": "growth_workspace_reader",
+      "status": "READY"
+    },
+    {
+      "capability_code": "07",
+      "capability_name": "ranking",
+      "frontend_module": "排名",
+      "source_schema": "mart/meta",
+      "source_object": "mart.rank_products",
+      "source_function": [
+        "mart.rank_products",
+        "mart.rank_accounts",
+        "mart.rank_categories",
+        "mart.rank_carriers",
+        "mart.rank_price_bands",
+        "mart.rank_audiences"
+      ],
+      "required_parameters": [
+        "platform_code",
+        "shop_code",
+        "start_date",
+        "end_date",
+        "scope_key",
+        "page",
+        "page_size"
+      ],
+      "supported_domains": [
+        "business"
+      ],
+      "supported_scopes": [
+        "全店",
+        "自营",
+        "合作",
+        "商品卡",
+        "直播",
+        "短视频",
+        "图文",
+        "其他"
+      ],
+      "data_grain": "DAILY_FACT",
+      "time_grain": "天",
+      "coverage_supported": true,
+      "mapping_coverage_supported": true,
+      "security_role": "growth_workspace_reader",
+      "status": "READY"
+    },
+    {
+      "capability_code": "08",
+      "capability_name": "contribution",
+      "frontend_module": "贡献",
+      "source_schema": "mart/meta",
+      "source_object": "mart.get_product_contribution",
+      "source_function": [
+        "mart.get_product_contribution",
+        "mart.get_account_contribution",
+        "mart.get_category_contribution",
+        "mart.get_shop_contribution"
+      ],
+      "required_parameters": [
+        "platform_code",
+        "shop_code",
+        "start_date",
+        "end_date",
+        "scope_key",
+        "page",
+        "page_size"
+      ],
+      "supported_domains": [
+        "business"
+      ],
+      "supported_scopes": [
+        "全店",
+        "自营",
+        "合作",
+        "商品卡",
+        "直播",
+        "短视频",
+        "图文",
+        "其他"
+      ],
+      "data_grain": "DAILY_FACT",
+      "time_grain": "天",
+      "coverage_supported": true,
+      "mapping_coverage_supported": true,
+      "security_role": "growth_workspace_reader",
+      "status": "READY"
+    },
+    {
+      "capability_code": "09",
+      "capability_name": "product_lines",
+      "frontend_module": "品线",
+      "source_schema": "mart/meta",
+      "source_object": "meta.product_line",
+      "source_function": [
+        "meta.product_line",
+        "mart.get_master_product_members"
+      ],
+      "required_parameters": [
+        "platform_code",
+        "shop_code",
+        "start_date",
+        "end_date",
+        "scope_key",
+        "page",
+        "page_size"
+      ],
+      "supported_domains": [
+        "masterdata"
+      ],
+      "supported_scopes": [
+        "全店",
+        "自营",
+        "合作",
+        "商品卡",
+        "直播",
+        "短视频",
+        "图文",
+        "其他"
+      ],
+      "data_grain": "VERSION",
+      "time_grain": "即时",
+      "coverage_supported": true,
+      "mapping_coverage_supported": true,
+      "security_role": "growth_workspace_reader",
+      "status": "PARTIAL"
+    },
+    {
+      "capability_code": "10",
+      "capability_name": "master_products",
+      "frontend_module": "Master Product",
+      "source_schema": "mart/meta",
+      "source_object": "meta.master_product",
+      "source_function": [
+        "meta.master_product",
+        "meta.platform_product_mapping",
+        "mart.get_master_product_members",
+        "mart.resolve_master_product",
+        "mart.decompose_master_product_by_shop_product"
+      ],
+      "required_parameters": [
+        "platform_code",
+        "shop_code",
+        "start_date",
+        "end_date",
+        "scope_key",
+        "page",
+        "page_size"
+      ],
+      "supported_domains": [
+        "masterdata"
+      ],
+      "supported_scopes": [
+        "全店",
+        "自营",
+        "合作",
+        "商品卡",
+        "直播",
+        "短视频",
+        "图文",
+        "其他"
+      ],
+      "data_grain": "VERSION",
+      "time_grain": "即时",
+      "coverage_supported": true,
+      "mapping_coverage_supported": true,
+      "security_role": "growth_workspace_reader",
+      "status": "READY"
+    },
+    {
+      "capability_code": "11",
+      "capability_name": "shop_products",
+      "frontend_module": "店铺商品",
+      "source_schema": "mart/meta",
+      "source_object": "mart.get_product_period_summary",
+      "source_function": [
+        "mart.get_product_period_summary",
+        "mart.rank_products",
+        "mart.unmapped_products",
+        "mart.product_mapping_conflicts"
+      ],
+      "required_parameters": [
+        "platform_code",
+        "shop_code",
+        "start_date",
+        "end_date",
+        "scope_key",
+        "page",
+        "page_size"
+      ],
+      "supported_domains": [
+        "product"
+      ],
+      "supported_scopes": [
+        "全店",
+        "自营",
+        "合作",
+        "商品卡",
+        "直播",
+        "短视频",
+        "图文",
+        "其他"
+      ],
+      "data_grain": "DAILY_FACT",
+      "time_grain": "天",
+      "coverage_supported": true,
+      "mapping_coverage_supported": true,
+      "security_role": "growth_workspace_reader",
+      "status": "READY"
+    },
+    {
+      "capability_code": "12",
+      "capability_name": "product_card",
+      "frontend_module": "商品卡",
+      "source_schema": "mart/meta",
+      "source_object": "mart.get_business_period_summary(scope=商品卡)",
+      "source_function": [
+        "mart.get_business_period_summary(scope=商品卡)"
+      ],
+      "required_parameters": [
+        "platform_code",
+        "shop_code",
+        "start_date",
+        "end_date",
+        "scope_key",
+        "page",
+        "page_size"
+      ],
+      "supported_domains": [
+        "business"
+      ],
+      "supported_scopes": [
+        "全店",
+        "自营",
+        "合作",
+        "商品卡",
+        "直播",
+        "短视频",
+        "图文",
+        "其他"
+      ],
+      "data_grain": "DAILY_FACT",
+      "time_grain": "天",
+      "coverage_supported": true,
+      "mapping_coverage_supported": true,
+      "security_role": "growth_workspace_reader",
+      "status": "PARTIAL"
+    },
+    {
+      "capability_code": "13",
+      "capability_name": "search",
+      "frontend_module": "搜索",
+      "source_schema": "-",
+      "source_object": "-",
+      "source_function": [],
+      "required_parameters": [
+        "platform_code",
+        "shop_code",
+        "start_date",
+        "end_date",
+        "scope_key",
+        "page",
+        "page_size"
+      ],
+      "supported_domains": [
+        "-"
+      ],
+      "supported_scopes": [
+        "全店",
+        "自营",
+        "合作",
+        "商品卡",
+        "直播",
+        "短视频",
+        "图文",
+        "其他"
+      ],
+      "data_grain": "-",
+      "time_grain": "-",
+      "coverage_supported": false,
+      "mapping_coverage_supported": true,
+      "security_role": "growth_workspace_reader",
+      "status": "NOT_REQUIRED_IN_F0_5"
+    },
+    {
+      "capability_code": "14",
+      "capability_name": "video",
+      "frontend_module": "视频",
+      "source_schema": "mart/meta",
+      "source_object": "mart.get_content_period_summary",
+      "source_function": [
+        "mart.get_content_period_summary"
+      ],
+      "required_parameters": [
+        "platform_code",
+        "shop_code",
+        "start_date",
+        "end_date",
+        "scope_key",
+        "page",
+        "page_size"
+      ],
+      "supported_domains": [
+        "content"
+      ],
+      "supported_scopes": [
+        "全店",
+        "自营",
+        "合作",
+        "商品卡",
+        "直播",
+        "短视频",
+        "图文",
+        "其他"
+      ],
+      "data_grain": "DAILY_FACT",
+      "time_grain": "天",
+      "coverage_supported": true,
+      "mapping_coverage_supported": true,
+      "security_role": "growth_workspace_reader",
+      "status": "PARTIAL"
+    },
+    {
+      "capability_code": "15",
+      "capability_name": "live",
+      "frontend_module": "直播",
+      "source_schema": "mart/meta",
+      "source_object": "mart.get_carrier_period_summary",
+      "source_function": [
+        "mart.get_carrier_period_summary",
+        "mart.get_content_period_summary"
+      ],
+      "required_parameters": [
+        "platform_code",
+        "shop_code",
+        "start_date",
+        "end_date",
+        "scope_key",
+        "page",
+        "page_size"
+      ],
+      "supported_domains": [
+        "carrier"
+      ],
+      "supported_scopes": [
+        "全店",
+        "自营",
+        "合作",
+        "商品卡",
+        "直播",
+        "短视频",
+        "图文",
+        "其他"
+      ],
+      "data_grain": "DAILY_FACT",
+      "time_grain": "天",
+      "coverage_supported": true,
+      "mapping_coverage_supported": true,
+      "security_role": "growth_workspace_reader",
+      "status": "PARTIAL"
+    },
+    {
+      "capability_code": "16",
+      "capability_name": "accounts",
+      "frontend_module": "达人/账号",
+      "source_schema": "mart/meta",
+      "source_object": "mart.get_account_period_summary",
+      "source_function": [
+        "mart.get_account_period_summary",
+        "mart.rank_accounts",
+        "mart.get_account_contribution"
+      ],
+      "required_parameters": [
+        "platform_code",
+        "shop_code",
+        "start_date",
+        "end_date",
+        "scope_key",
+        "page",
+        "page_size"
+      ],
+      "supported_domains": [
+        "account"
+      ],
+      "supported_scopes": [
+        "全店",
+        "自营",
+        "合作",
+        "商品卡",
+        "直播",
+        "短视频",
+        "图文",
+        "其他"
+      ],
+      "data_grain": "DAILY_FACT",
+      "time_grain": "天",
+      "coverage_supported": true,
+      "mapping_coverage_supported": true,
+      "security_role": "growth_workspace_reader",
+      "status": "READY"
+    },
+    {
+      "capability_code": "17",
+      "capability_name": "material",
+      "frontend_module": "素材",
+      "source_schema": "-",
+      "source_object": "-",
+      "source_function": [],
+      "required_parameters": [
+        "platform_code",
+        "shop_code",
+        "start_date",
+        "end_date",
+        "scope_key",
+        "page",
+        "page_size"
+      ],
+      "supported_domains": [
+        "-"
+      ],
+      "supported_scopes": [
+        "全店",
+        "自营",
+        "合作",
+        "商品卡",
+        "直播",
+        "短视频",
+        "图文",
+        "其他"
+      ],
+      "data_grain": "-",
+      "time_grain": "-",
+      "coverage_supported": false,
+      "mapping_coverage_supported": true,
+      "security_role": "growth_workspace_reader",
+      "status": "NOT_REQUIRED_IN_F0_5"
+    },
+    {
+      "capability_code": "18",
+      "capability_name": "advertising",
+      "frontend_module": "基础投放",
+      "source_schema": "mart/meta",
+      "source_object": "mart.get_advertising_period_summary",
+      "source_function": [
+        "mart.get_advertising_period_summary",
+        "mart.compare_advertising_period"
+      ],
+      "required_parameters": [
+        "platform_code",
+        "shop_code",
+        "start_date",
+        "end_date",
+        "scope_key",
+        "page",
+        "page_size"
+      ],
+      "supported_domains": [
+        "advertising"
+      ],
+      "supported_scopes": [
+        "全店",
+        "自营",
+        "合作",
+        "商品卡",
+        "直播",
+        "短视频",
+        "图文",
+        "其他"
+      ],
+      "data_grain": "DAILY_FACT",
+      "time_grain": "天",
+      "coverage_supported": true,
+      "mapping_coverage_supported": true,
+      "security_role": "growth_workspace_reader",
+      "status": "READY"
+    },
+    {
+      "capability_code": "19",
+      "capability_name": "diag_snapshot",
+      "frontend_module": "Diagnostic Snapshot",
+      "source_schema": "mart/meta",
+      "source_object": "mart.get_diagnostic_snapshot",
+      "source_function": [
+        "mart.get_diagnostic_snapshot",
+        "mart.get_platform_diagnostic_snapshot",
+        "mart.get_diagnostic_supported_metrics"
+      ],
+      "required_parameters": [
+        "platform_code",
+        "shop_code",
+        "start_date",
+        "end_date",
+        "scope_key",
+        "page",
+        "page_size"
+      ],
+      "supported_domains": [
+        "diagnostic"
+      ],
+      "supported_scopes": [
+        "全店",
+        "自营",
+        "合作",
+        "商品卡",
+        "直播",
+        "短视频",
+        "图文",
+        "其他"
+      ],
+      "data_grain": "DAILY_FACT",
+      "time_grain": "天",
+      "coverage_supported": true,
+      "mapping_coverage_supported": true,
+      "security_role": "growth_workspace_reader",
+      "status": "READY"
+    },
+    {
+      "capability_code": "20",
+      "capability_name": "anomaly",
+      "frontend_module": "Anomaly",
+      "source_schema": "mart/meta",
+      "source_object": "mart.get_anomalies",
+      "source_function": [
+        "mart.get_anomalies",
+        "mart.get_anomaly_summary",
+        "mart.get_entity_anomalies"
+      ],
+      "required_parameters": [
+        "platform_code",
+        "shop_code",
+        "start_date",
+        "end_date",
+        "scope_key",
+        "page",
+        "page_size"
+      ],
+      "supported_domains": [
+        "anomaly"
+      ],
+      "supported_scopes": [
+        "全店",
+        "自营",
+        "合作",
+        "商品卡",
+        "直播",
+        "短视频",
+        "图文",
+        "其他"
+      ],
+      "data_grain": "EVENT",
+      "time_grain": "天",
+      "coverage_supported": true,
+      "mapping_coverage_supported": true,
+      "security_role": "growth_workspace_reader",
+      "status": "READY"
+    },
+    {
+      "capability_code": "21",
+      "capability_name": "diagnosis",
+      "frontend_module": "Diagnosis",
+      "source_schema": "mart/meta",
+      "source_object": "mart.get_diagnostic_result",
+      "source_function": [
+        "mart.get_diagnostic_result",
+        "mart.get_funnel_diagnosis",
+        "mart.get_advertising_diagnosis",
+        "mart.get_platform_diagnostic_snapshot"
+      ],
+      "required_parameters": [
+        "platform_code",
+        "shop_code",
+        "start_date",
+        "end_date",
+        "scope_key",
+        "page",
+        "page_size"
+      ],
+      "supported_domains": [
+        "diagnostic"
+      ],
+      "supported_scopes": [
+        "全店",
+        "自营",
+        "合作",
+        "商品卡",
+        "直播",
+        "短视频",
+        "图文",
+        "其他"
+      ],
+      "data_grain": "EVENT",
+      "time_grain": "天",
+      "coverage_supported": true,
+      "mapping_coverage_supported": true,
+      "security_role": "growth_workspace_reader",
+      "status": "READY"
+    },
+    {
+      "capability_code": "22",
+      "capability_name": "opportunity",
+      "frontend_module": "Opportunity",
+      "source_schema": "mart/meta",
+      "source_object": "mart.get_growth_opportunities",
+      "source_function": [
+        "mart.get_growth_opportunities",
+        "mart.get_opportunity_summary",
+        "mart.get_entity_opportunity"
+      ],
+      "required_parameters": [
+        "platform_code",
+        "shop_code",
+        "start_date",
+        "end_date",
+        "scope_key",
+        "page",
+        "page_size"
+      ],
+      "supported_domains": [
+        "opportunity"
+      ],
+      "supported_scopes": [
+        "全店",
+        "自营",
+        "合作",
+        "商品卡",
+        "直播",
+        "短视频",
+        "图文",
+        "其他"
+      ],
+      "data_grain": "EVENT",
+      "time_grain": "天",
+      "coverage_supported": true,
+      "mapping_coverage_supported": true,
+      "security_role": "growth_workspace_reader",
+      "status": "READY"
+    },
+    {
+      "capability_code": "23",
+      "capability_name": "priority",
+      "frontend_module": "Priority",
+      "source_schema": "mart/meta",
+      "source_object": "mart.get_daily_risk_priorities",
+      "source_function": [
+        "mart.get_daily_risk_priorities",
+        "mart.get_daily_opportunity_priorities",
+        "mart.get_daily_action_list"
+      ],
+      "required_parameters": [
+        "platform_code",
+        "shop_code",
+        "start_date",
+        "end_date",
+        "scope_key",
+        "page",
+        "page_size"
+      ],
+      "supported_domains": [
+        "priority"
+      ],
+      "supported_scopes": [
+        "全店",
+        "自营",
+        "合作",
+        "商品卡",
+        "直播",
+        "短视频",
+        "图文",
+        "其他"
+      ],
+      "data_grain": "EVENT",
+      "time_grain": "天",
+      "coverage_supported": true,
+      "mapping_coverage_supported": true,
+      "security_role": "growth_workspace_reader",
+      "status": "READY"
+    },
+    {
+      "capability_code": "24",
+      "capability_name": "daily_brief",
+      "frontend_module": "Daily Brief",
+      "source_schema": "mart/meta",
+      "source_object": "mart.get_daily_business_brief",
+      "source_function": [
+        "mart.get_daily_business_brief"
+      ],
+      "required_parameters": [
+        "platform_code",
+        "shop_code",
+        "start_date",
+        "end_date",
+        "scope_key",
+        "page",
+        "page_size"
+      ],
+      "supported_domains": [
+        "priority"
+      ],
+      "supported_scopes": [
+        "全店",
+        "自营",
+        "合作",
+        "商品卡",
+        "直播",
+        "短视频",
+        "图文",
+        "其他"
+      ],
+      "data_grain": "EVENT",
+      "time_grain": "天",
+      "coverage_supported": true,
+      "mapping_coverage_supported": true,
+      "security_role": "growth_workspace_reader",
+      "status": "READY"
+    }
+  ]
+}

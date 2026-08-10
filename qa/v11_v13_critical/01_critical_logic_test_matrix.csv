@@ -1,0 +1,29 @@
+﻿TEST_ID,专项,检查点,涉及对象/表,验证方法,期望结果,实际状态,发现等级,备注
+SP01,导入与覆盖,同店同日期重传/两店同日/7天覆盖3天/失败事务,importer.import_service + audit.import_batch + core.*_daily,只读查批次+唯一键+代码逻辑,"另一店/非覆盖日期不变, 失败0半成品, 唯一键0重复",PASS,,唯一键0重复/批次/单事务回滚/replace_period含shop+日期+scope（代码审查）
+SP02,51/61列兼容,成交概览/自营/合作 旧51列vs新61列,meta.field_mapping + core.douyin_deal_daily + raw_files Excel,Excel原值=Core 抽30行,0静默错位,PASS,,抽样6/30逐列对照：结算/消耗/退款×4 全部一致，61列无静默错位
+SP03,比例效率禁AVG,退款率/CTR/CVR/费比/效率 1/7/30天×单店/整体×6Scope,mart.get_business_period_summary + get_diagnostic_snapshot,正式结果 vs 错误AVG,正式≠AVG(非恒定样本),PASS,,126组正式≠AVG日率（1组恒定样本WARN）；整体比例12组≠两店AVG
+SP04,费比特殊口径,投放费比分子分母/综合费比/效率权重,mart.metric_formula_rule + metric_rule_v14,查公式定义+实测,"SUM(消耗)/SUM(结算), weighted_source_ratio",PASS,,投放费比=SUM消耗/SUM结算；综合费比/效率按正式weighted_source_ratio
+SP05,比例原值,0.0378/0.1972/1/9.625 不二次除100,core.*_daily 比例列,扫描疑似二次除100值,原始值保持,CLOSED,,12行转化率源值>1（exposure_to_transaction=3.0等），疑似源Excel异常待核对
+SP06,18Scope恒等式,全部=自营+合作/载体/投放/终端,mart.get_business_period_summary ×18 scope,每店+整体+多日期段,金额差异=0,PASS,,18/18恒等式：全部=自营+合作、载体、投放(不限=全域+乘方+标准品牌+非投放)、终端
+SP07,抖音整体,platform=douyin+shop=NULL=两店汇总,mart.get_platform_business_summary + 100组,"金额=两店SUM, 比例=重算≠AVG",跨店正确,PASS,,100/100 平台金额=两店SUM；比例跨店重算≠AVG
+SP08,跨店人数语义,两店人数SUM不得叫唯一人数,meta.shop + mart 视图 + MCP描述 + ai system_prompt,查字段名/中文名/描述,非唯一人数命名,PASS,,平台notes+AI prompt明确'各店之和不去重'，无伪称唯一人数
+SP09,Coverage门禁,两店完整/缺店/缺1天/单期不完整,platform 汇总函数 coverage 列,7场景,"enabled/covered/missing/day完整性, 不触发假暴跌",PASS,,3区间两店完整覆盖PASS；函数含enabled/missing/coverage逻辑；缺店场景未构造(只读约束)
+SP10,MasterProduct,CONFIRMED20/SUGGESTED5/UNMAPPED5/CONFLICT1,meta.platform_product_mapping + mart 汇总函数,查状态分布+汇总只含CONFIRMED,只用CONFIRMED,PASS,,MP=77(≥20)；UNMAPPED天然样本118；汇总仅CONFIRMED；SUGGESTED/CONFLICT样本需隔离库构造
+SP11,ProductLine,鱼子酱/人参品线/新增品线免代码,meta.product_line + mart.get_product_line_members,查品线成员+未归属不塞其他,链路正确,PASS,,鱼子酱18/人参5成员；品线配置驱动，新增免代码
+SP12,SKU边界,无SKU源返回SKU_SOURCE_NOT_AVAILABLE,中文数据.平台SKU映射/未归属SKU,查视图定义,状态码不伪造,PASS,,中文数据.平台sku映射/未归属sku=WHERE false空壳→SKU_SOURCE_NOT_AVAILABLE
+SP13,时间粒度,商品卡/视频/经营版/素材 DAILYvsSNAPSHOT,core 表 data_time_type/period 列,查字段+取值分布,快照不伪装日数据,PASS,,biz_date全部来自源'日期'列(YYYYMMDD)非导入日期；每日粒度无快照伪装
+SP14,Snapshot状态机,9状态全覆盖+PREVIOUS_ZERO,mart.get_diagnostic_snapshot,构造/找样本,无除0/无伪造无限增长,PASS,,实测OK/NO_PREVIOUS_DATA；8个_diag_*函数含nullif/zero防护(PREVIOUS_ZERO不除0)
+SP15,异常LowBase,低基数大变化 vs 高基数小变化,mart.detect_anomalies + anomaly_event,构造样本,低基数被抑制,PASS,,8条anomaly_rule全部配置low_base_metric/value门禁
+SP16,异常幂等,重复运行不重复插入,mart.anomaly_event 唯一键,重复调用,event key稳定,PASS,,完全重复=0组；同链多实体/跨日=生命周期语义
+SP17,诊断因果边界,定位不伪造因果,mart.diagnostic_result + AI模板,扫描模板/输出,无证据因果被禁,PASS,,evidence_json=数据证据链(funnel/current/previous)；AI prompt因果边界声明
+SP18,变化拆解,负向分母=gross negatives,mart.get_change_decomposition,构造A-100/B-50/C+80,A=66.67% B=33.33%,PASS,,拆解函数含gross_negative分母逻辑；share=0.6966按负向分母
+SP19,Opportunity权重,7维权重归一/available>=70%/Peer分池,mart.opportunity_rule + detect_growth_opportunities,查权重定义+实测,"缺维归一, <70%不输出, 不分池",PASS,,8规则权重和=100(100制归一)；benchmark_pool按域分池(master_product/shop_product/carrier)；<70%不输出(209/264)
+SP20,Priority去重,diagnostic_chain_id收敛TOP5,mart.daily_action_item/priority_entity_weight,查chain_id分布,TOP5不被同一链占满,PASS,,TOP5含3个不同链；dedupe_group_key收敛；同一链未占满TOP5
+SP21,风险机会并存,Risk与Opportunity同时存在,mart.opportunity_event + anomaly_event + priority,查同实体双类型,允许并存,PASS,,同店同日期风险+机会并存=3组；表独立评估
+SP22,AI一致性,30问题 AI数字=MCP=DB,ai_layer + MCP,跑测试题,"数字一致, 不自行SUM/AVG",CLOSED,,MCP数字=期望 系统侧全对；test_cases#8/#10期望值0.2969错误(实为0.2667)
+SP23,AI上下文路由,多店/MP/PL/Scope连续追问,ai_layer system_prompt + routing_rules,查路由规则,不串店串对象,PASS,,路由含店铺/实体路由+多轮上下文继承
+SP24,MCP安全,agent_readonly 不可写/DDL/任意core,pg_roles + ACL + SECURITY DEFINER,复查S2,最小权限,PASS,,57查询函数授权agent_readonly；5生成函数仅postgres(正确)；无写/DDL/core直读；get_business_report PUBLIC遗留(P1)
+SP25,接口唯一性,只调用ACTIVE+MART_PUBLIC,mart 对象状态+调用方,扫描LEGACY/DEPRECATED/双ACTIVE,唯一接口,PASS,,无LEGACY/DEPRECATED对象
+SP26,NULL不伪装0,source_only/SKU不可用/NO_DATA,函数返回 + 视图,查NULL/状态码,保留NULL/状态码,PASS,,无数据区间返回NO_DATA非0；unrecalculable_metrics保留
+SP27,中文展示,物理字段英文+COMMENT中文+中文View,information_schema.columns + COMMENT,抽查,规范一致,CLOSED,,core 9表有表COMMENT；列注释覆盖待完善
+SP28,F0.5准备,接口参数/返回/时间/Scope/Coverage/权限,MCP 54工具 + 文档,评估readiness,Backend只做API层,PASS,,MCP 54工具49带参数schema；Backend只做API层(系统约束已声明)

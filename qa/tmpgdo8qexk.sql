@@ -1,0 +1,1 @@
+SELECT user_pay_amount FROM core.douyin_terminal_daily WHERE biz_date='2026-06-01' AND terminal_type='抖音' AND selling_type='自营'

@@ -1,0 +1,214 @@
+﻿schema_name,object_name,object_type,owner,comment,estimated_rows,responsibility,lifecycle,dependencies,dependents
+audit,ai_diagnosis_run_run_id_seq,SEQUENCE,postgres,,,AUDIT,INTERNAL,,
+audit,import_batch_batch_id_seq,SEQUENCE,postgres,,,AUDIT,INTERNAL,,
+audit,masterdata_change_log_change_id_seq,SEQUENCE,postgres,,,AUDIT,INTERNAL,,
+audit,ai_diagnosis_run,TABLE,postgres,V1.1 AI 诊断审计（不含密码/密钥/.env/完整system prompt）。,-1,AUDIT,ACTIVE,,
+audit,import_batch,TABLE,postgres,数据导入批次表：每上传和处理一次Excel文件，就生成一条导入记录，用于追踪文件来源、数据周期、处理状态和错误信息。,-1,AUDIT,ACTIVE,,中文数据.导入批次记录
+audit,masterdata_change_log,TABLE,postgres,V1.3 主数据变更审计（历史可追溯，禁止物理删除历史映射）。,158,AUDIT,ACTIVE,,meta.audit_mapping;meta.audit_masterdata
+core,douyin_account_daily_row_id_seq,SEQUENCE,postgres,,,CORE_FACT,INTERNAL,,
+core,douyin_audience_daily_row_id_seq,SEQUENCE,postgres,,,CORE_FACT,INTERNAL,,
+core,douyin_carrier_daily_row_id_seq,SEQUENCE,postgres,,,CORE_FACT,INTERNAL,,
+core,douyin_category_daily_row_id_seq,SEQUENCE,postgres,,,CORE_FACT,INTERNAL,,
+core,douyin_content_daily_row_id_seq,SEQUENCE,postgres,,,CORE_FACT,INTERNAL,,
+core,douyin_deal_daily_row_id_seq,SEQUENCE,postgres,,,CORE_FACT,INTERNAL,,
+core,douyin_price_band_daily_row_id_seq,SEQUENCE,postgres,,,CORE_FACT,INTERNAL,,
+core,douyin_product_daily_row_id_seq,SEQUENCE,postgres,,,CORE_FACT,INTERNAL,,
+core,douyin_terminal_daily_row_id_seq,SEQUENCE,postgres,,,CORE_FACT,INTERNAL,,
+core,douyin_account_daily,TABLE,postgres,抖音账号构成日表：按账号名称、账号类型和成交归属拆分。,3940,CORE_FACT,ACTIVE,,mart._diag_account;mart.account_daily;mart.get_account_period_summary;中文数据.抖音账号日报
+core,douyin_audience_daily,TABLE,postgres,抖音人群构成日表：按首购/复购人群和载体类型拆分。,711,CORE_FACT,ACTIVE,,mart.audience_daily;mart.get_audience_period_summary;中文数据.抖音人群日报
+core,douyin_carrier_daily,TABLE,postgres,抖音载体构成日表：按成交归属、载体类型、账号或渠道拆分。,6517,CORE_FACT,ACTIVE,,mart._diag_carrier;mart.carrier_daily;mart.get_carrier_period_summary;中文数据.抖音载体日报
+core,douyin_category_daily,TABLE,postgres,抖音品类构成日表：按一至四级类目拆分。,827,CORE_FACT,ACTIVE,,mart._diag_category;mart.category_daily;mart.get_category_period_summary;中文数据.抖音类目日报
+core,douyin_content_daily,TABLE,postgres,抖音单载体构成日表：按直播间、短视频、图文等单个内容载体拆分。,10833,CORE_FACT,ACTIVE,,mart.content_daily;mart.get_content_period_summary;中文数据.抖音内容日报
+core,douyin_deal_daily,TABLE,postgres,抖音成交日表：合并成交概览、自营成交、合作成交三张工作表，以成交范围区分。,4320,CORE_FACT,ACTIVE,,mart._diag_scope;mart._diag_shop;mart.decompose_platform_change_by_shop;mart.douyin_platform_daily;mart.get_advertising_period_summary;mart.get_business_period_summary;mart.get_business_report;mart.get_data_coverage;mart.get_platform_business_period_summary;mart.get_shop_contribution;mart.scope_daily;mart.shop_daily;中文数据.抖音多店数据覆盖;中文数据.抖音店铺贡献;中文数据.抖音成交日报;中文数据.经营诊断快照
+core,douyin_price_band_daily,TABLE,postgres,抖音价格带构成日表：按价格带拆分。,357,CORE_FACT,ACTIVE,,mart.get_price_band_period_summary;mart.price_band_daily;中文数据.抖音价格带日报
+core,douyin_product_daily,TABLE,postgres,抖音商品构成日表：按商品和载体类型拆分。,10955,CORE_FACT,ACTIVE,,mart._diag_master_product;mart._diag_product;mart._diag_product_line;mart.decompose_master_product_by_shop_product;mart.get_master_product_period_summary;mart.get_masterdata_quality;mart.get_product_line_period_summary;mart.get_product_period_summary;mart.product_daily;mart.rank_master_products;mart.rank_products;mart.unmapped_products;中文数据.抖音商品日报
+core,douyin_terminal_daily,TABLE,postgres,抖音终端构成日表：按终端类型和售卖类型拆分。,900,CORE_FACT,ACTIVE,,mart.get_terminal_period_summary;mart.terminal_daily;中文数据.抖音终端日报
+mart,anomaly_event_anomaly_event_id_seq,SEQUENCE,postgres,,,MART_PUBLIC,INTERNAL,,
+mart,daily_action_item_action_item_id_seq,SEQUENCE,postgres,,,MART_PUBLIC,INTERNAL,,
+mart,diagnostic_result_diagnostic_id_seq,SEQUENCE,postgres,,,MART_PUBLIC,INTERNAL,,
+mart,mart_dimension_rule_rule_id_seq,SEQUENCE,postgres,,,MART_PUBLIC,INTERNAL,,
+mart,opportunity_event_opportunity_event_id_seq,SEQUENCE,postgres,,,MART_PUBLIC,INTERNAL,,
+mart,anomaly_event,TABLE,postgres,"V1.1 异常事件（只记录""哪里异常/多严重/是否持续/影响多大""；唯一键防重复；生命周期 OPEN/RESOLVED/SUPPRESSED）。",104,AI_INTELLIGENCE,ACTIVE,,mart.detect_anomalies;mart.diagnose_anomaly;mart.generate_daily_action_items;mart.get_anomalies;mart.get_anomaly_summary;mart.get_entity_anomalies
+mart,anomaly_rule,TABLE,postgres,V1.1 异常规则（8 类；base/阈值可配置；多店/主数据域可用独立 base）。,-1,AI_INTELLIGENCE,ACTIVE,,mart.detect_anomalies;mart.generate_daily_action_items;mart.get_anomalies;mart.get_anomaly_summary;mart.get_entity_anomalies
+mart,daily_action_item,TABLE,postgres,V1.1 每日行动项：只消费 Stage2/3/4 事件；risk/opportunity 独立优先级；chain 去重（同链仅 1 主卡）；冷却=更新原卡；禁止自动动作。,368,AI_INTELLIGENCE,ACTIVE,,mart.generate_daily_action_items;mart.get_daily_action_list;mart.get_daily_business_brief;mart.get_daily_opportunity_priorities;mart.get_daily_risk_priorities
+mart,diagnostic_entity_rule,TABLE,postgres,V1.1 诊断对象注册表：登记首批智能诊断业务域及对象能力（排名/贡献/Scope）。,-1,AI_INTELLIGENCE,ACTIVE,,mart.detect_anomalies;mart.diagnose_entity;mart.get_diagnostic_snapshot;中文数据.诊断对象规则
+mart,diagnostic_metric_rule,TABLE,postgres,V1.1 诊断指标注册表：登记可稳定跨期比较的诊断指标及属性（类型/方向/可重算/排名/贡献），不做异常判定。,-1,AI_INTELLIGENCE,ACTIVE,,mart.get_advertising_diagnosis;mart.get_diagnostic_entity_metrics;mart.get_diagnostic_supported_metrics;mart.get_funnel_diagnosis;中文数据.诊断指标规则
+mart,diagnostic_period_rule,TABLE,postgres,V1.1 诊断周期规则：当前周期与等长前置对比周期。previous_end = current_start - 1。,-1,AI_INTELLIGENCE,ACTIVE,,mart.resolve_diagnostic_period;中文数据.诊断周期规则
+mart,diagnostic_result,TABLE,postgres,"V1.1 诊断结果（数据层问题定位）：层级/漏斗/贡献/投放拆解 + 证据链 + 置信度 + 问题链。
+evidence_json 只写事实，禁止未证实业务原因。",-1,AI_INTELLIGENCE,ACTIVE,,mart.diagnose_entity;mart.get_diagnostic_result
+mart,diagnostic_type,TABLE,postgres,,-1,AI_INTELLIGENCE,ACTIVE,,mart.get_diagnostic_result
+mart,mart_dimension_rule,TABLE,postgres,mart维度治理表：登记TOTAL/DETAIL/独立口径/禁止汇总规则，供Scope Resolver和Daily Mart使用。,-1,AI_INTELLIGENCE,ACTIVE,,
+mart,opportunity_event,TABLE,postgres,V1.1 机会事件（机会质量排序分，非未来成功概率；幂等；COVERAGE/MAPPING/PEERS/WEIGHT 惩罚状态）。,264,AI_INTELLIGENCE,ACTIVE,,mart.detect_growth_opportunities;mart.generate_daily_action_items;mart.get_entity_opportunity;mart.get_growth_opportunities;mart.get_opportunity_summary
+mart,opportunity_rule,TABLE,postgres,V1.1 机会规则：7 维权重（默认20/20/20/15/10/10/5）+ peer 最小数量 + 低基数门槛。,-1,AI_INTELLIGENCE,ACTIVE,,mart.detect_growth_opportunities
+mart,opportunity_type,TABLE,postgres,,-1,AI_INTELLIGENCE,ACTIVE,,mart.get_entity_opportunity;mart.get_growth_opportunities;mart.get_opportunity_summary
+mart,priority_entity_weight,TABLE,postgres,,-1,AI_INTELLIGENCE,ACTIVE,,mart.generate_daily_action_items
+mart,account_daily,VIEW,postgres,账号拆分/排名（单账号、TOP账号、合作账号拆分；不提供全部账号/自营总/全店总量，总量回deal_daily）。,,MART_PUBLIC,ACTIVE,core.douyin_account_daily;meta.shop,中文数据.账号构成分析
+mart,analysis_metric_whitelist,VIEW,postgres,阶段3分析指标白名单。排名/贡献/环比禁止接受任意字段名；value_type=ratio时可计算百分点变化。,,MART_PUBLIC,ACTIVE,,mart.assert_rank_args;mart.compare_business_period;mart.compare_platform_business;mart.get_account_contribution;mart.get_business_contribution;mart.get_category_contribution;mart.get_product_contribution;mart.rank_accounts;mart.rank_audiences;mart.rank_carriers;mart.rank_categories;mart.rank_price_bands;mart.rank_products
+mart,audience_daily,VIEW,postgres,人群拆分（carrier_type=全部为合法TOTAL 60/60天验证；总览用全部，拆分用5载体明细，禁止TOTAL+DETAIL一起SUM）。,,MART_PUBLIC,ACTIVE,core.douyin_audience_daily;meta.shop,中文数据.人群构成分析
+mart,carrier_daily,VIEW,postgres,载体/渠道拆分与排名（不提供全店TOTAL；合作域明细+更多账号可SUM；全域投放时段/标准+品牌投放为special_overlap禁止与明细SUM）。,,MART_PUBLIC,ACTIVE,core.douyin_carrier_daily;meta.shop,中文数据.载体构成分析
+mart,category_daily,VIEW,postgres,类目拆分（含层级识别：category_level 1/2/3/4；is_total_row=是否父级占位行；不同层级禁止混SUM）。,,MART_PUBLIC,ACTIVE,core.douyin_category_daily;meta.shop,中文数据.品类构成分析
+mart,content_daily,VIEW,postgres,单内容(直播间/短视频/图文)拆分；当前真实样本仅商品卡载体(自营/合作)，为其他载体预留不制造数据。,,MART_PUBLIC,ACTIVE,core.douyin_content_daily;meta.shop,中文数据.单载体内容分析
+mart,douyin_platform_daily,VIEW,postgres,V1.3 平台日表（全店TOTAL口径）：platform×date，两店合计。平台整体只存在于 mart 语义，不建 shop_id=0。,,MART_PUBLIC,ACTIVE,core.douyin_deal_daily;meta.shop,中文数据.抖音多店经营日报
+mart,metric_rule_v14,VIEW,postgres,,,MART_PUBLIC,ACTIVE,meta.metric_formula_rule,
+mart,price_band_daily,VIEW,postgres,价格带拆分（6个价格带已验证互斥，可安全SUM重建店铺总量diff=0.00）。,,MART_PUBLIC,ACTIVE,core.douyin_price_band_daily;meta.shop,中文数据.价格带构成分析
+mart,product_daily,VIEW,postgres,商品拆分（carrier_type=全部为平台独立总口径，商品总览优先读取；商品卡+图文+直播+短视频禁止重建全部）。,,MART_PUBLIC,ACTIVE,core.douyin_product_daily;meta.shop,中文数据.商品构成分析
+mart,product_mapping_conflicts,VIEW,postgres,V1.3 商品映射冲突（同一平台店铺商品多条启用映射时间重叠）。,,MART_PUBLIC,ACTIVE,meta.master_product;meta.platform_product_mapping;meta.shop,mart.get_masterdata_quality;中文数据.商品映射冲突
+mart,product_master_resolution,VIEW,postgres,V1.3 商品主数据解析（平台商品 → Master Product → 品线 → 状态/来源/有效期）。,,MART_PUBLIC,ACTIVE,meta.master_product;meta.platform_product_mapping;meta.product_line;meta.shop,
+mart,shop_daily,VIEW,postgres,店铺每日总览：全店合法TOTAL口径(sale_scope=全部+carrier=全部+ad_period=不限)，粒度店铺×日期，每天唯一1行。,,MART_PUBLIC,ACTIVE,core.douyin_deal_daily;meta.shop,中文数据.店铺每日总览
+mart,sku_mapping_conflicts,VIEW,postgres,V1.3 SKU 映射冲突（预留；SKU 数据源接入后启用）。,,MART_PUBLIC,ACTIVE,,中文数据.sku映射冲突
+mart,sku_master_resolution,VIEW,postgres,V1.3 SKU 解析：当前抖音源无 SKU 维度，明确返回 SKU_SOURCE_NOT_AVAILABLE（不伪造）。,,MART_PUBLIC,ACTIVE,,
+mart,stage3_expected_scope_map,VIEW,postgres,阶段3固定Scope基线。WorkBuddy执行时须按本机阶段1 resolve_scope真实签名，将其与period_scope_rule逐条对比18/18一致；本脚本不猜测阶段1函数签名。,,MART_PUBLIC,ACTIVE,,
+mart,terminal_daily,VIEW,postgres,终端拆分（terminal_type=整体为合法TOTAL优先用于总览；拆分时只取明细终端，禁止整体+明细一起SUM）。,,MART_PUBLIC,ACTIVE,core.douyin_terminal_daily;meta.shop,中文数据.终端构成分析
+mart,unmapped_products,VIEW,postgres,V1.3 未映射商品（近30天GMV降序，成交金额仅用于决定处理优先级，不用于自动匹配）。,,MART_PUBLIC,ACTIVE,core.douyin_product_daily;meta.platform_product_mapping;meta.shop,mart.get_masterdata_quality;中文数据.未归属商品
+meta,database_object_dictionary_dictionary_id_seq,SEQUENCE,postgres,,,MASTER_DATA,INTERNAL,,
+meta,field_mapping_mapping_id_seq,SEQUENCE,postgres,,,MASTER_DATA,INTERNAL,,
+meta,master_product_alias_alias_id_seq,SEQUENCE,postgres,,,MASTER_DATA,INTERNAL,,
+meta,master_product_master_product_id_seq,SEQUENCE,postgres,,,MASTER_DATA,INTERNAL,,
+meta,master_sku_alias_alias_id_seq,SEQUENCE,postgres,,,MASTER_DATA,INTERNAL,,
+meta,master_sku_master_sku_id_seq,SEQUENCE,postgres,,,MASTER_DATA,INTERNAL,,
+meta,metric_formula_rule_metric_rule_id_seq,SEQUENCE,postgres,,,MASTER_DATA,INTERNAL,,
+meta,platform_product_mapping_mapping_id_seq,SEQUENCE,postgres,,,MASTER_DATA,INTERNAL,,
+meta,platform_sku_mapping_mapping_id_seq,SEQUENCE,postgres,,,MASTER_DATA,INTERNAL,,
+meta,product_line_product_line_id_seq,SEQUENCE,postgres,,,MASTER_DATA,INTERNAL,,
+meta,shop_shop_id_seq,SEQUENCE,postgres,,,MASTER_DATA,INTERNAL,,
+meta,database_object_dictionary,TABLE,postgres,全库中英文字典：记录最终显示名称及其来源（原始表头/系统词典/人工覆盖），可溯源。,488,RULE_META,ACTIVE,,meta.check_chinese_coverage;meta.refresh_chinese_views;中文数据.数据库中英文字典
+meta,field_mapping,TABLE,postgres,字段映射表：逐字段记录11张源工作表的中文字段如何转换为正式表英文列、数据类型、聚合规则和清洗规则。,448,RULE_META,ACTIVE,,中文数据.字段映射规则
+meta,master_product,TABLE,postgres,V1.3 公司级真实商品主档（master_product_id 代表公司认定的同一真实商品）。,77,MASTER_DATA,ACTIVE,,mart._diag_master_product;mart._diag_product_line;mart.decompose_master_product_by_shop_product;mart.get_master_product_period_summary;mart.get_masterdata_quality;mart.get_product_line_members;mart.get_product_line_period_summary;mart.product_mapping_conflicts;mart.product_master_resolution;mart.rank_master_products;mart.resolve_master_product;中文数据.公司sku主档;中文数据.公司商品主档;中文数据.平台商品映射
+meta,master_product_alias,TABLE,postgres,V1.3 公司商品别名（鱼子酱洗发水/鱼子酱洗发露 等，用于候选匹配）。,-1,MASTER_DATA,ACTIVE,,
+meta,master_sku,TABLE,postgres,V1.3 公司级 SKU 主档（一个 Master Product 可有多个 SKU）。,-1,MASTER_DATA,ACTIVE,,中文数据.公司sku主档
+meta,master_sku_alias,TABLE,postgres,V1.3 公司 SKU 别名（500ml/500ML/500毫升 等）。,-1,MASTER_DATA,ACTIVE,,
+meta,metric_formula_rule,TABLE,postgres,V1.4指标公式规则：记录比例/均值等非可加指标的分子、分母、跨期SQL、规则状态及真实Excel核对结果。,96,RULE_META,ACTIVE,,mart.metric_rule_v14;中文数据.指标公式规则
+meta,platform,TABLE,postgres,V1.3 平台维度：platform_code 为聚合范围语义，平台整体只存在于 mart 查询层，不进 core。,-1,MASTER_DATA,ACTIVE,,mart.compare_platform_business;mart.decompose_platform_change_by_shop;mart.get_platform_business_period_summary;mart.get_platform_diagnostic_snapshot;mart.get_shop_contribution
+meta,platform_product_mapping,TABLE,postgres,V1.3 平台商品→Master Product 映射（跨店按 shop_id 隔离；历史不物理删除）。,82,MASTER_DATA,ACTIVE,,mart._diag_master_product;mart._diag_product_line;mart.check_mapping_period_conflict;mart.decompose_master_product_by_shop_product;mart.get_master_product_members;mart.get_master_product_period_summary;mart.get_masterdata_quality;mart.get_product_line_members;mart.get_product_line_period_summary;mart.product_mapping_conflicts;mart.product_master_resolution;mart.rank_master_products;mart.resolve_master_product;mart.unmapped_products;中文数据.平台商品映射
+meta,platform_sku_mapping,TABLE,postgres,V1.3 平台 SKU→Master SKU 映射。当前抖音源无 SKU 维度（SKU_SOURCE_NOT_AVAILABLE），本表保留框架，不伪造平台 SKU。,-1,MASTER_DATA,ACTIVE,,
+meta,product_line,TABLE,postgres,V1.3 公司级品线（只初始化品线，不按名称关键词自动归属商品）。,-1,MASTER_DATA,ACTIVE,,mart._diag_product_line;mart.get_master_product_period_summary;mart.get_product_line_members;mart.get_product_line_period_summary;mart.product_master_resolution;mart.rank_master_products;mart.resolve_master_product;中文数据.公司商品主档;中文数据.品线配置;中文数据.平台商品映射
+meta,shop,TABLE,postgres,店铺基础资料表：统一登记抖音、天猫、京东等平台的所有店铺。,-1,MASTER_DATA,ACTIVE,,mart._diag_account;mart._diag_carrier;mart._diag_category;mart._diag_master_product;mart._diag_product;mart._diag_product_line;mart._diag_scope;mart._diag_shop;mart.account_daily;mart.audience_daily;mart.carrier_daily;mart.category_daily;mart.content_daily;mart.decompose_master_product_by_shop_product;mart.decompose_platform_change_by_shop;mart.douyin_platform_daily;mart.get_account_period_summary;mart.get_advertising_period_summary;mart.get_audience_period_summary;mart.get_business_period_summary;mart.get_carrier_period_summary;mart.get_category_period_summary;mart.get_content_period_summary;mart.get_data_coverage;mart.get_diagnostic_snapshot;mart.get_master_product_members;mart.get_master_product_period_summary;mart.get_platform_business_period_summary;mart.get_price_band_period_summary;mart.get_product_line_period_summary;mart.get_product_period_summary;mart.get_shop_contribution;mart.get_terminal_period_summary;mart.price_band_daily;mart.product_daily;mart.product_mapping_conflicts;mart.product_master_resolution;mart.rank_master_products;mart.rank_products;mart.resolve_master_product;mart.scope_daily;mart.shop_daily;mart.terminal_daily;mart.unmapped_products;中文数据.导入批次记录;中文数据.平台商品映射;中文数据.店铺信息;中文数据.抖音人群日报;中文数据.抖音价格带日报;中文数据.抖音内容日报;中文数据.抖音商品日报;中文数据.抖音多店数据覆盖;中文数据.抖音成交日报;中文数据.抖音类目日报;中文数据.抖音终端日报;中文数据.抖音账号日报;中文数据.抖音载体日报
+meta,source_sheet_mapping,TABLE,postgres,源工作表映射表：登记抖音成交分析Excel中每张工作表应写入的正式表、字段数量和派生规则。,-1,RULE_META,ACTIVE,,中文数据.工作表映射规则
+中文数据,sku映射冲突,VIEW,postgres,V1.3 SKU映射冲突（预留）。,,CHINESE_VIEW,ACTIVE,mart.sku_mapping_conflicts,
+中文数据,人群构成分析,VIEW,postgres,,,CHINESE_VIEW,ACTIVE,mart.audience_daily,
+中文数据,价格带构成分析,VIEW,postgres,,,CHINESE_VIEW,ACTIVE,mart.price_band_daily,
+中文数据,公司sku主档,VIEW,postgres,V1.3 公司SKU主档（中文）。,,CHINESE_VIEW,ACTIVE,meta.master_product;meta.master_sku,
+中文数据,公司商品主档,VIEW,postgres,V1.3 公司商品主档（中文）。,,CHINESE_VIEW,ACTIVE,meta.master_product;meta.product_line,
+中文数据,单载体内容分析,VIEW,postgres,,,CHINESE_VIEW,ACTIVE,mart.content_daily,
+中文数据,品类构成分析,VIEW,postgres,,,CHINESE_VIEW,ACTIVE,mart.category_daily,
+中文数据,品线配置,VIEW,postgres,V1.3 品线配置（中文）。,,CHINESE_VIEW,ACTIVE,meta.product_line,
+中文数据,商品映射冲突,VIEW,postgres,V1.3 商品映射冲突。,,CHINESE_VIEW,ACTIVE,mart.product_mapping_conflicts,
+中文数据,商品构成分析,VIEW,postgres,,,CHINESE_VIEW,ACTIVE,mart.product_daily,
+中文数据,字段映射规则,VIEW,postgres,,,CHINESE_VIEW,ACTIVE,meta.field_mapping,
+中文数据,导入批次记录,VIEW,postgres,,,CHINESE_VIEW,ACTIVE,audit.import_batch;meta.shop,
+中文数据,工作表映射规则,VIEW,postgres,,,CHINESE_VIEW,ACTIVE,meta.source_sheet_mapping,
+中文数据,平台sku映射,VIEW,postgres,V1.3 平台SKU映射（中文；当前SKU源不可用）。,,CHINESE_VIEW,ACTIVE,,
+中文数据,平台商品映射,VIEW,postgres,V1.3 平台商品映射（中文）。,,CHINESE_VIEW,ACTIVE,meta.master_product;meta.platform_product_mapping;meta.product_line;meta.shop,
+中文数据,店铺信息,VIEW,postgres,,,CHINESE_VIEW,ACTIVE,meta.shop,
+中文数据,店铺每日总览,VIEW,postgres,,,CHINESE_VIEW,ACTIVE,mart.shop_daily,
+中文数据,抖音人群日报,VIEW,postgres,,,CHINESE_VIEW,ACTIVE,core.douyin_audience_daily;meta.shop,
+中文数据,抖音价格带日报,VIEW,postgres,,,CHINESE_VIEW,ACTIVE,core.douyin_price_band_daily;meta.shop,
+中文数据,抖音内容日报,VIEW,postgres,,,CHINESE_VIEW,ACTIVE,core.douyin_content_daily;meta.shop,
+中文数据,抖音商品日报,VIEW,postgres,,,CHINESE_VIEW,ACTIVE,core.douyin_product_daily;meta.shop,
+中文数据,抖音多店数据覆盖,VIEW,postgres,V1.3 抖音各店独立数据覆盖（不因他店有数据而误判）。,,CHINESE_VIEW,ACTIVE,core.douyin_deal_daily;meta.shop,
+中文数据,抖音多店经营日报,VIEW,postgres,V1.3 平台日表（抖音两店合计，全店口径）。,,CHINESE_VIEW,ACTIVE,mart.douyin_platform_daily,
+中文数据,抖音店铺贡献,VIEW,postgres,V1.3 抖音店铺贡献度（默认全月全店 user_pay）。,,CHINESE_VIEW,ACTIVE,core.douyin_deal_daily,
+中文数据,抖音成交日报,VIEW,postgres,,,CHINESE_VIEW,ACTIVE,core.douyin_deal_daily;meta.shop,
+中文数据,抖音类目日报,VIEW,postgres,,,CHINESE_VIEW,ACTIVE,core.douyin_category_daily;meta.shop,
+中文数据,抖音终端日报,VIEW,postgres,,,CHINESE_VIEW,ACTIVE,core.douyin_terminal_daily;meta.shop,
+中文数据,抖音账号日报,VIEW,postgres,,,CHINESE_VIEW,ACTIVE,core.douyin_account_daily;meta.shop,
+中文数据,抖音载体日报,VIEW,postgres,,,CHINESE_VIEW,ACTIVE,core.douyin_carrier_daily;meta.shop,
+中文数据,指标公式规则,VIEW,postgres,,,CHINESE_VIEW,ACTIVE,meta.metric_formula_rule,
+中文数据,数据库中英文字典,VIEW,postgres,,,CHINESE_VIEW,ACTIVE,meta.database_object_dictionary,
+中文数据,未归属sku,VIEW,postgres,V1.3 未归属SKU（当前SKU源不可用）。,,CHINESE_VIEW,ACTIVE,,
+中文数据,未归属商品,VIEW,postgres,V1.3 未归属商品（近30天GMV排序）。,,CHINESE_VIEW,ACTIVE,mart.unmapped_products,
+中文数据,终端构成分析,VIEW,postgres,,,CHINESE_VIEW,ACTIVE,mart.terminal_daily,
+中文数据,经营诊断快照,VIEW,postgres,V1.1 经营诊断快照（默认最近7天×店铺整体，中文列）。,,CHINESE_VIEW,ACTIVE,core.douyin_deal_daily,
+中文数据,诊断周期规则,VIEW,postgres,V1.1 诊断周期规则（中文）。,,CHINESE_VIEW,ACTIVE,mart.diagnostic_period_rule,
+中文数据,诊断对象规则,VIEW,postgres,V1.1 诊断对象注册表（中文）。,,CHINESE_VIEW,ACTIVE,mart.diagnostic_entity_rule,
+中文数据,诊断指标规则,VIEW,postgres,V1.1 诊断指标注册表（中文）。,,CHINESE_VIEW,ACTIVE,mart.diagnostic_metric_rule,
+中文数据,账号构成分析,VIEW,postgres,,,CHINESE_VIEW,ACTIVE,mart.account_daily,
+中文数据,载体构成分析,VIEW,postgres,,,CHINESE_VIEW,ACTIVE,mart.carrier_daily,
+mart,_diag_account,FUNCTION,postgres,V1.1 账号域诊断快照（内部函数，不对外授权）。,,MART_INTERNAL,INTERNAL,core.douyin_account_daily;meta.shop,
+mart,_diag_carrier,FUNCTION,postgres,V1.1 载体域诊断快照（内部函数，不对外授权）。,,MART_INTERNAL,INTERNAL,core.douyin_carrier_daily;meta.shop,
+mart,_diag_category,FUNCTION,postgres,V1.1 类目域诊断快照（内部函数，不对外授权）。,,MART_INTERNAL,INTERNAL,core.douyin_category_daily;meta.shop,
+mart,_diag_master_product,FUNCTION,postgres,,,MART_INTERNAL,INTERNAL,core.douyin_product_daily;meta.master_product;meta.platform_product_mapping;meta.shop,
+mart,_diag_product,FUNCTION,postgres,V1.1 商品域诊断快照（内部函数，不对外授权）。,,MART_INTERNAL,INTERNAL,core.douyin_product_daily;meta.shop,
+mart,_diag_product_line,FUNCTION,postgres,,,MART_INTERNAL,INTERNAL,core.douyin_product_daily;meta.master_product;meta.platform_product_mapping;meta.product_line;meta.shop,
+mart,_diag_scope,FUNCTION,postgres,V1.1 经营Scope域诊断快照（内部函数，不对外授权）。,,MART_INTERNAL,INTERNAL,core.douyin_deal_daily;meta.shop,
+mart,_diag_shop,FUNCTION,postgres,V1.1 店铺整体域诊断快照（内部函数，不对外授权）。,,MART_INTERNAL,INTERNAL,core.douyin_deal_daily;meta.shop,
+mart,assert_period,FUNCTION,postgres,阶段2内部校验函数：验证时间区间非空且开始日期不晚于结束日期。,,MART_INTERNAL,ACTIVE,,
+mart,assert_rank_args,FUNCTION,postgres,,,MART_INTERNAL,ACTIVE,mart.analysis_metric_whitelist,
+mart,check_mapping_period_conflict,FUNCTION,postgres,V1.3 映射时间区间重叠检测：同一平台店铺商品在重叠有效期内存在多条启用映射 → CONFLICT（不静默覆盖）。,,MART_PUBLIC,ACTIVE,meta.platform_product_mapping,
+mart,compare_advertising_period,FUNCTION,postgres,V1.0.1 投放环比：本期N天 vs 紧邻前N天；比例输出百分点+相对，效率只输出绝对+相对（不输出百分点）。,,MART_PUBLIC,ACTIVE,,
+mart,compare_business_period,FUNCTION,postgres,阶段3A经营环比：固定N天vs紧邻前N天；ratio同时返回percentage_point_change（原始比率差，如0.02=2个百分点）。,,MART_PUBLIC,ACTIVE,mart.analysis_metric_whitelist,
+mart,compare_platform_business,FUNCTION,postgres,V1.3 平台环比：本期 vs 等长上期（金额/计数可比较；比例返回百分点+相对变化）。,,MART_PUBLIC,ACTIVE,mart.analysis_metric_whitelist;meta.platform,
+mart,decompose_master_product_by_shop_product,FUNCTION,postgres,V1.3/V1.1 Master Product → 店铺商品拆解：定位哪家店商品拖累（negative_impact_share=单店商品负向/全部负向）。,,MART_PUBLIC,ACTIVE,core.douyin_product_daily;meta.master_product;meta.platform_product_mapping;meta.shop,
+mart,decompose_platform_change_by_shop,FUNCTION,postgres,"V1.3 平台变化按店铺拆解：net_change=Σ单店变化；gross_negative_impact=Σ负向绝对值；gross_positive_offset=Σ正向；
+negative_impact_share=单店负向绝对值/全部负向绝对值（文档二十二节：不除以净下降额）。",,MART_PUBLIC,ACTIVE,core.douyin_deal_daily;meta.platform;meta.shop,
+mart,detect_anomalies,FUNCTION,postgres,"V1.1 异常检测（多店兼容）：对指定域全部实体×8类规则检测，幂等写 anomaly_event。
+检测链=快照→支持→coverage→低基数→阈值→持续性→严重度→事件。",,MART_PUBLIC,ACTIVE,mart.anomaly_event;mart.anomaly_rule;mart.diagnostic_entity_rule,
+mart,detect_growth_opportunities,FUNCTION,postgres,V1.1 机会检测：同域 peer 分池 + 7 维评分（缺失重归一）+ O01-O08 类型判定 + 幂等。,,MART_PUBLIC,ACTIVE,mart.opportunity_event;mart.opportunity_rule,
+mart,diagnose_anomaly,FUNCTION,postgres,V1.1 从异常事件入口生成诊断（Stage2 异常 → Stage3 定位）。,,MART_PUBLIC,ACTIVE,mart.anomaly_event,
+mart,diagnose_entity,FUNCTION,postgres,"V1.1 实体诊断主函数：快照+漏斗环节→primary_stage→diagnostic_code→置信度→证据链→diagnostic_result。
+多因素(MULTI_FACTOR)不强制唯一根因；无数据→NO_CONFIRMED_ANOMALY。",,MART_PUBLIC,ACTIVE,mart.diagnostic_entity_rule;mart.diagnostic_result,
+mart,format_percent_2,FUNCTION,postgres,将比率原始数值格式化为两位小数百分比，输入值可大于1。例如0.1972返回19.72%，9.625返回962.50%。仅用于展示，不用于后续数学计算。,,MART_INTERNAL,ACTIVE,,
+mart,generate_daily_action_items,FUNCTION,postgres,V1.1 每日行动生成器（后台）：消费异常/机会/观察事件 → RISK/OPPORTUNITY/WATCH 三类行动项；冷却=更新原卡；幂等。,,MART_PUBLIC,ACTIVE,mart.anomaly_event;mart.anomaly_rule;mart.daily_action_item;mart.opportunity_event;mart.priority_entity_weight,
+mart,get_account_contribution,FUNCTION,postgres,账号贡献度；分母使用deal权威scope TOTAL，自营覆盖缺口明确提示。,,MART_PUBLIC,ACTIVE,mart.analysis_metric_whitelist,
+mart,get_account_period_summary,FUNCTION,postgres,账号区间汇总，仅用于具体账号/合作剩余桶拆分，不用于重建全店或自营TOTAL。,,MART_PUBLIC,ACTIVE,core.douyin_account_daily;meta.shop,
+mart,get_advertising_diagnosis,FUNCTION,postgres,V1.1 投放诊断（复用快照投放指标；平台=跨店加权，单店=原口径）。,,MART_PUBLIC,ACTIVE,mart.diagnostic_metric_rule,
+mart,get_advertising_period_summary,FUNCTION,postgres,V1.0.1 投放经营汇总：一次返回10项投放指标+coverage。仅ad_period=不限参与；综合费比/效率为加权源比率，禁止AVG。,,MART_PUBLIC,ACTIVE,core.douyin_deal_daily;meta.shop,
+mart,get_anomalies,FUNCTION,postgres,V1.1 异常查询（按平台/区间/域/实体/严重度/状态过滤）。,,MART_PUBLIC,ACTIVE,mart.anomaly_event;mart.anomaly_rule,
+mart,get_anomaly_summary,FUNCTION,postgres,V1.1 异常汇总（按域×类型统计事件数/严重度/影响额）。,,MART_PUBLIC,ACTIVE,mart.anomaly_event;mart.anomaly_rule,
+mart,get_audience_period_summary,FUNCTION,postgres,人群区间汇总。默认carrier_type=全部（阶段0.5已验证60/60匹配合法TOTAL）；复购用户复购率缺基础字段，多日返回NULL。,,MART_PUBLIC,ACTIVE,core.douyin_audience_daily;meta.shop,
+mart,get_business_contribution,FUNCTION,postgres,经营范围贡献度；分母固定deal全店权威TOTAL。,,MART_PUBLIC,ACTIVE,mart.analysis_metric_whitelist,
+mart,get_business_period_summary,FUNCTION,postgres,,,MART_PUBLIC,ACTIVE,core.douyin_deal_daily;meta.shop,
+mart,get_business_report,FUNCTION,postgres,"抖音日报/周报数据模板 V1.0 报表：三板块(抖音整体/抖音弹动官方旗舰店/抖音弹动个人护理旗舰店)×六行(整体/自营直播/自营商品/达人直播/达人短视频/橱窗)。
+指标：成交金额=SUM(user_pay_amount)、成交退款金额=SUM(refund_amount_pay_time)、结算金额=SUM(settlement_amount)、
+退款率=退款金额/成交金额、投放消耗=SUM(ad_spend_shop_promoted)、投放费比=SUM(ad_spend_shop_bound)/SUM(settlement_amount)。
+防重口径：仅取 ad_period=不限(平台汇总行)。比率返回小数。无利润计算。",,MART_PUBLIC,ACTIVE,core.douyin_deal_daily,
+mart,get_carrier_period_summary,FUNCTION,postgres,载体/渠道区间拆分。按account_channel逐桶返回，不承担全店TOTAL；special_overlap行明确禁止与明细混SUM。,,MART_PUBLIC,ACTIVE,core.douyin_carrier_daily;meta.shop,
+mart,get_category_contribution,FUNCTION,postgres,类目贡献度；类目层级域分母与deal全店分母同时返回，不强行统一平台口径。,,MART_PUBLIC,ACTIVE,mart.analysis_metric_whitelist,
+mart,get_category_period_summary,FUNCTION,postgres,类目区间汇总，强制按category_level隔离父子层级，禁止不同层级混SUM。成交笔单价/次数转化率缺基础字段，多日返回NULL。,,MART_PUBLIC,ACTIVE,core.douyin_category_daily;meta.shop,
+mart,get_content_period_summary,FUNCTION,postgres,内容区间拆分；当前真实样本仅验证商品卡载体，不伪造短视频/直播内容数据。,,MART_PUBLIC,ACTIVE,core.douyin_content_daily;meta.shop,
+mart,get_daily_action_list,FUNCTION,postgres,,,MART_PUBLIC,ACTIVE,mart.daily_action_item,
+mart,get_daily_business_brief,FUNCTION,postgres,,,MART_PUBLIC,ACTIVE,mart.daily_action_item,
+mart,get_daily_opportunity_priorities,FUNCTION,postgres,,,MART_PUBLIC,ACTIVE,mart.daily_action_item,
+mart,get_daily_risk_priorities,FUNCTION,postgres,,,MART_PUBLIC,ACTIVE,mart.daily_action_item,
+mart,get_data_coverage,FUNCTION,postgres,,,MART_PUBLIC,ACTIVE,core.douyin_deal_daily;meta.shop,
+mart,get_diagnostic_entity_metrics,FUNCTION,postgres,,,MART_PUBLIC,ACTIVE,mart.diagnostic_metric_rule,
+mart,get_diagnostic_result,FUNCTION,postgres,,,MART_PUBLIC,ACTIVE,mart.diagnostic_result;mart.diagnostic_type,
+mart,get_diagnostic_snapshot,FUNCTION,postgres,V1.1 统一诊断快照（SECURITY DEFINER，固定 search_path；agent_readonly 可执行；内部 _diag_* 不对外）。,,MART_PUBLIC,ACTIVE,mart.diagnostic_entity_rule;meta.shop,
+mart,get_diagnostic_supported_metrics,FUNCTION,postgres,V1.1 支持的诊断指标目录（全部已注册且 diagnostic_enabled=true 的指标）。,,MART_PUBLIC,ACTIVE,mart.diagnostic_metric_rule,
+mart,get_entity_anomalies,FUNCTION,postgres,V1.1 单实体异常查询（域+实体名过滤）。,,MART_PUBLIC,ACTIVE,mart.anomaly_event;mart.anomaly_rule,
+mart,get_entity_opportunity,FUNCTION,postgres,V1.1 单实体机会（域+实体名过滤）。,,MART_PUBLIC,ACTIVE,mart.opportunity_event;mart.opportunity_type,
+mart,get_funnel_diagnosis,FUNCTION,postgres,V1.1 漏斗诊断：曝光→点击→成交→退款 各环节变化（缺字段跳过，不跨domain补数）。,,MART_PUBLIC,ACTIVE,mart.diagnostic_metric_rule,
+mart,get_growth_opportunities,FUNCTION,postgres,,,MART_PUBLIC,ACTIVE,mart.opportunity_event;mart.opportunity_type,
+mart,get_master_product_members,FUNCTION,postgres,V1.3 Master Product 跨店成员（平台/店铺/平台商品ID/状态/有效期）。,,MART_PUBLIC,ACTIVE,meta.platform_product_mapping;meta.shop,
+mart,get_master_product_period_summary,FUNCTION,postgres,V1.3 跨店 Master Product 经营汇总（仅 CONFIRMED 成员；返回 mapped_shop_count/unmapped_member_count/mapping_complete）。,,MART_PUBLIC,ACTIVE,core.douyin_product_daily;meta.master_product;meta.platform_product_mapping;meta.product_line;meta.shop,
+mart,get_masterdata_quality,FUNCTION,postgres,V1.3 主数据质量指标（GMV覆盖率/数量覆盖率/品线归属率/冲突数/高价值未映射数）。,,MART_PUBLIC,ACTIVE,core.douyin_product_daily;mart.product_mapping_conflicts;mart.unmapped_products;meta.master_product;meta.platform_product_mapping,
+mart,get_opportunity_summary,FUNCTION,postgres,,,MART_PUBLIC,ACTIVE,mart.opportunity_event;mart.opportunity_type,
+mart,get_platform_business_period_summary,FUNCTION,postgres,V1.3 平台整体经营汇总：范围=enabled且platform_code匹配的店铺；可加指标SUM、比例分子/分母重算、效率加权；coverage含启用/覆盖/缺失店铺数与日期完整性。成交人数=各店之和（跨店不去重）。,,MART_PUBLIC,ACTIVE,core.douyin_deal_daily;meta.platform;meta.shop,
+mart,get_platform_diagnostic_snapshot,FUNCTION,postgres,V1.3 平台整体诊断快照：对象=抖音整体，指标=平台汇总口径（18项），带 shop coverage 与数据状态。,,MART_PUBLIC,ACTIVE,meta.platform,
+mart,get_price_band_period_summary,FUNCTION,postgres,价格带区间汇总。6个价格带经阶段0.5验证为互斥分桶，可安全SUM重建店铺用户支付金额。,,MART_PUBLIC,ACTIVE,core.douyin_price_band_daily;meta.shop,
+mart,get_product_contribution,FUNCTION,postgres,商品贡献度；同时返回product域占比与全店占比，明确分母口径。,,MART_PUBLIC,ACTIVE,mart.analysis_metric_whitelist,
+mart,get_product_line_members,FUNCTION,postgres,V1.3 品线成员：品线 → Master Product → 已确认映射数/店铺覆盖。,,MART_PUBLIC,ACTIVE,meta.master_product;meta.platform_product_mapping;meta.product_line,
+mart,get_product_line_period_summary,FUNCTION,postgres,V1.3 品线跨店汇总（expected/mapped/unmapped 成员数 + 店铺覆盖 + mapping_complete/data_coverage_complete）。,,MART_PUBLIC,ACTIVE,core.douyin_product_daily;meta.master_product;meta.platform_product_mapping;meta.product_line;meta.shop,
+mart,get_product_period_summary,FUNCTION,postgres,商品区间汇总。默认carrier_type=全部，直接使用平台独立TOTAL；禁止用商品卡/图文/直播/短视频明细重建全部。,,MART_PUBLIC,ACTIVE,core.douyin_product_daily;meta.shop,
+mart,get_shop_contribution,FUNCTION,postgres,V1.3 店铺贡献度：单店值/平台总额/贡献占比（本期+上期+变化）。仅支持可加指标（默认 user_pay_amount）。,,MART_PUBLIC,ACTIVE,core.douyin_deal_daily;meta.platform;meta.shop,
+mart,get_terminal_period_summary,FUNCTION,postgres,终端区间汇总；terminal_type=整体为合法TOTAL，调用方不得将整体与明细终端再相加。,,MART_PUBLIC,ACTIVE,core.douyin_terminal_daily;meta.shop,
+mart,period_scope_rule,FUNCTION,postgres,阶段2 Scope稳定适配层。规则来自阶段0/0.5真实数据验证；平台TOTAL优先，不通过父子明细重建。,,MART_INTERNAL,ACTIVE,,
+mart,previous_period,FUNCTION,postgres,阶段3固定环比窗口：本期N天，对比紧邻之前N天。,,MART_INTERNAL,ACTIVE,,
+mart,rank_accounts,FUNCTION,postgres,账号排名；默认排除aggregate_bucket，避免把更多账号聚合桶当具体账号。,,MART_PUBLIC,ACTIVE,mart.analysis_metric_whitelist,
+mart,rank_audiences,FUNCTION,postgres,人群排名；默认carrier=全部合法TOTAL。,,MART_PUBLIC,ACTIVE,mart.analysis_metric_whitelist,
+mart,rank_carriers,FUNCTION,postgres,载体排名；使用deal合法TOTAL Scope，避免carrier_daily层级重叠。,,MART_PUBLIC,ACTIVE,mart.analysis_metric_whitelist,
+mart,rank_categories,FUNCTION,postgres,类目排名；强制同一category_level内比较，父子层级不混排。,,MART_PUBLIC,ACTIVE,mart.analysis_metric_whitelist,
+mart,rank_master_products,FUNCTION,postgres,V1.3 Master Product 跨店排名（仅 CONFIRMED 成员；与店铺内 rank_products 并存）。,,MART_PUBLIC,ACTIVE,core.douyin_product_daily;meta.master_product;meta.platform_product_mapping;meta.product_line;meta.shop,
+mart,rank_price_bands,FUNCTION,postgres,价格带排名；6个价格带已验证互斥。,,MART_PUBLIC,ACTIVE,mart.analysis_metric_whitelist,
+mart,rank_products,FUNCTION,postgres,商品排名/增长/下降/排名变化；默认carrier=全部的平台独立TOTAL；过滤商品时先全量排名再过滤，保留真实名次。,,MART_PUBLIC,ACTIVE,core.douyin_product_daily;mart.analysis_metric_whitelist;meta.shop,
+mart,resolve_diagnostic_period,FUNCTION,postgres,V1.1 诊断周期解析：等长前置对比。previous_end = current_start - 1。,,MART_INTERNAL,ACTIVE,mart.diagnostic_period_rule,
+mart,resolve_master_product,FUNCTION,postgres,"V1.3 查商品归属：平台+店铺+平台商品ID+业务日期 → Master Product/品线/状态。
+当前抖音源无 SKU 维度（SKU_SOURCE_NOT_AVAILABLE），SKU 优先规则在真实 SKU 数据接入后启用。",,MART_PUBLIC,ACTIVE,meta.master_product;meta.platform_product_mapping;meta.product_line;meta.shop,
+mart,resolve_scope,FUNCTION,postgres,Scope Resolver：将经营语义（全店/自营/合作/载体/组合）解析为真实过滤条件；TOTAL优先平台合法口径，禁止父级+子级SUM。,,MART_INTERNAL,ACTIVE,,
+mart,scope_daily,FUNCTION,postgres,按经营语义查询每日数据（使用deal_daily合法TOTAL/明细口径）。,,MART_INTERNAL,ACTIVE,core.douyin_deal_daily;meta.shop,
+meta,audit_mapping,FUNCTION,postgres,,,AUDIT,INTERNAL,audit.masterdata_change_log,
+meta,audit_masterdata,FUNCTION,postgres,,,AUDIT,INTERNAL,audit.masterdata_change_log,
+meta,check_chinese_coverage,FUNCTION,postgres,中文可读层覆盖率检查：对象/字段覆盖率、冲突数、重名列数。,,MASTER_DATA,INTERNAL,meta.database_object_dictionary,
+meta,gen_master_product_code,FUNCTION,postgres,,,MASTER_DATA,INTERNAL,,
+meta,gen_master_sku_code,FUNCTION,postgres,,,MASTER_DATA,INTERNAL,,
+meta,refresh_chinese_views,FUNCTION,postgres,中文View刷新机制：仅读取字典元数据，仅在中文数据Schema内重建View；存在冲突则停止。,,MASTER_DATA,INTERNAL,meta.database_object_dictionary,

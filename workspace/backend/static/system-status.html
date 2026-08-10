@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>系统状态｜抖音智能经营工作台</title>
+<style>
+:root{--bg:#f5f7fa;--card:#fff;--line:#e5e7eb;--text:#111827;--muted:#6b7280;--green:#16a34a;--red:#dc2626}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);padding:24px}
+h1{font-size:20px;margin-bottom:16px}
+nav a{color:#2563eb;text-decoration:none;margin-right:16px;font-size:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:16px;max-width:640px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+td{padding:10px 8px;border-bottom:1px solid var(--line)}
+td:first-child{color:var(--muted)}
+.badge{padding:2px 10px;border-radius:10px;font-size:12px}
+.badge.green{background:#dcfce7;color:var(--green)}.badge.red{background:#fee2e2;color:var(--red)}
+</style>
+</head>
+<body>
+<nav><a href="/">首页</a><a href="/system-status">系统状态</a><a href="/data-status">数据状态</a></nav>
+<h1>系统状态</h1>
+<div class="card"><table id="t"></table></div>
+<script>
+async function load(){
+  let out = '';
+  try{
+    const h = await fetch('/api/v1/health').then(r=>r.json());
+    out += `<tr><td>Web</td><td><span class="badge green">正常</span></td></tr>`;
+    out += `<tr><td>Backend</td><td><span class="badge green">正常（${h.data.service}）</span></td></tr>`;
+  }catch(e){ out += `<tr><td>Backend</td><td><span class="badge red">不可用</span></td></tr>`; }
+  try{
+    const r = await fetch('/api/v1/ready').then(r=>r.json());
+    out += `<tr><td>Database</td><td><span class="badge ${r.data.database==='OK'?'green':'red'}">${r.data.database==='OK'?'正常':'异常'}</span></td></tr>`;
+    out += `<tr><td>店铺数</td><td>${r.data.shop_count||'-'}</td></tr>`;
+    out += `<tr><td>关键 Function 样例</td><td>${r.data.sample_value!=null?'正常（'+r.data.sample_value+'）':'-'}</td></tr>`;
+  }catch(e){ out += `<tr><td>Database</td><td><span class="badge red">不可用</span></td></tr>`; }
+  document.getElementById('t').innerHTML = out;
+}
+load();
+</script>
+</body>
+</html>

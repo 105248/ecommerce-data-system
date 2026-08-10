@@ -1,0 +1,6 @@
+﻿id,stage,severity,area,description,root_cause,resolution,status
+1,V1.3-Stage2,P1,平台汇总函数权限,agent_readonly调用平台汇总失败(permission denied for function resolve_scope),get_platform_business_period_summary为普通函数以调用者权限执行,改为SECURITY DEFINER+固定search_path；05安全层REVOKE PUBLIC+GRANT agent_readonly,closed
+2,V1.3-Stage2,P1,平台环比指标,compare_platform_business的val硬编码user_pay_amount,未按p_metric_key取列,改为CASE p_metric_key动态取列,closed
+3,V1.3-Stage2,P1,平台变化拆解,net_change=sum(c_val)而非sum(c_val-p_val),totals计算错误,修复为sum(c_val-p_val)；net=-299600.78验证通过,closed
+4,V1.3-Stage2,P2,meta.platform权限,agent_readonly无新表SELECT权限,新表未授权,GRANT SELECT ON meta.platform TO agent_readonly,closed
+5,V1.3-Stage2,P2,类型匹配,sum(bigint)返回numeric与RETURNS TABLE bigint不匹配,订单/人数/件数/曝光计数字段,聚合列显式::bigint,closed

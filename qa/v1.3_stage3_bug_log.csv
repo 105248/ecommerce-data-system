@@ -1,0 +1,7 @@
+﻿id,stage,severity,area,description,root_cause,resolution,status
+1,V1.3-Stage3,P1,审计触发器,触发器引用master_product不存在的reviewed_by字段导致插入失败,audit_masterdata通用函数误引用mapping字段,改为按表判断(主档用SYSTEM,映射触发器用reviewed_by),closed
+2,V1.3-Stage3,P1,跨店汇总列,get_master_product_period_summary引用product_daily不存在的transaction_amount/order_count/buyer_count列,对core表字段了解不全,改为仅使用product_daily实际字段(user_pay_amount/refund_amount_pay_time/refund_rate_pay_time),closed
+3,V1.3-Stage3,P1,质量指标除法,product_mapping_rate_by_product_count返回0(bigint除法截断),count(*)整型相除,改为count(*)::numeric相除,closed
+4,V1.3-Stage3,P1,RETURNS TABLE歧义,get_master_product_period_summary/line_summary内CTE列与输出列同名(product_line_id等)报ambiguous,PL/pgSQL输出列遮蔽表列,CTE与子查询加表别名,closed
+5,V1.3-Stage3,P2,masterdata_admin权限,审计触发器写audit被拒(audit schema无USAGE),角色缺schema权限,GRANT USAGE ON SCHEMA audit + 表/序列授权,closed
+6,V1.3-Stage3,P2,未映射含"其他"桶,unmapped_products含平台"其他"聚合行(非真实商品)污染高价值计数,聚合桶product_id=''/name='其他',View排除其他桶(高价值未映射归零),closed

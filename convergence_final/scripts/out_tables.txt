@@ -1,0 +1,28 @@
+Output format is unaligned.
+Field separator is "|".
+audit|import_batch|TABLE|postgres|数据导入批次表：每上传和处理一次Excel文件，就生成一条导入记录，用于追踪文件来源、数据周期、处理状态和错误信息。|-1
+audit|masterdata_change_log|TABLE|postgres|V1.3 主数据变更审计（历史可追溯，禁止物理删除历史映射）。|158
+mart|anomaly_event|TABLE|postgres|V1.1 异常事件（只记录"哪里异常/多严重/是否持续/影响多大"；唯一键防重复；生命周期 OPEN/RESOLVED/SUPPRESSED）。|104
+mart|anomaly_rule|TABLE|postgres|V1.1 异常规则（8 类；base/阈值可配置；多店/主数据域可用独立 base）。|-1
+mart|daily_action_item|TABLE|postgres|V1.1 每日行动项：只消费 Stage2/3/4 事件；risk/opportunity 独立优先级；chain 去重（同链仅 1 主卡）；冷却=更新原卡；禁止自动动作。|368
+mart|diagnostic_result|TABLE|postgres|V1.1 诊断结果（数据层问题定位）：层级/漏斗/贡献/投放拆解 + 证据链 + 置信度 + 问题链。
+evidence_json 只写事实，禁止未证实业务原因。|-1
+mart|diagnostic_type|TABLE|postgres||-1
+mart|mart_dimension_rule|TABLE|postgres|mart维度治理表：登记TOTAL/DETAIL/独立口径/禁止汇总规则，供Scope Resolver和Daily Mart使用。|-1
+mart|opportunity_event|TABLE|postgres|V1.1 机会事件（机会质量排序分，非未来成功概率；幂等；COVERAGE/MAPPING/PEERS/WEIGHT 惩罚状态）。|264
+mart|opportunity_rule|TABLE|postgres|V1.1 机会规则：7 维权重（默认20/20/20/15/10/10/5）+ peer 最小数量 + 低基数门槛。|-1
+mart|opportunity_type|TABLE|postgres||-1
+mart|priority_entity_weight|TABLE|postgres||-1
+mart|analysis_metric_whitelist|VIEW|postgres|阶段3分析指标白名单。排名/贡献/环比禁止接受任意字段名；value_type=ratio时可计算百分点变化。|
+mart|product_mapping_conflicts|VIEW|postgres|V1.3 商品映射冲突（同一平台店铺商品多条启用映射时间重叠）。|
+mart|stage3_expected_scope_map|VIEW|postgres|阶段3固定Scope基线。WorkBuddy执行时须按本机阶段1 resolve_scope真实签名，将其与period_scope_rule逐条对比18/18一致；本脚本不猜测阶段1函数签名。|
+mart|unmapped_products|VIEW|postgres|V1.3 未映射商品（近30天GMV降序，成交金额仅用于决定处理优先级，不用于自动匹配）。|
+meta|master_product|TABLE|postgres|V1.3 公司级真实商品主档（master_product_id 代表公司认定的同一真实商品）。|77
+meta|master_product_alias|TABLE|postgres|V1.3 公司商品别名（鱼子酱洗发水/鱼子酱洗发露 等，用于候选匹配）。|-1
+meta|master_sku|TABLE|postgres|V1.3 公司级 SKU 主档（一个 Master Product 可有多个 SKU）。|-1
+meta|master_sku_alias|TABLE|postgres|V1.3 公司 SKU 别名（500ml/500ML/500毫升 等）。|-1
+meta|platform|TABLE|postgres|V1.3 平台维度：platform_code 为聚合范围语义，平台整体只存在于 mart 查询层，不进 core。|-1
+meta|platform_product_mapping|TABLE|postgres|V1.3 平台商品→Master Product 映射（跨店按 shop_id 隔离；历史不物理删除）。|82
+meta|platform_sku_mapping|TABLE|postgres|V1.3 平台 SKU→Master SKU 映射。当前抖音源无 SKU 维度（SKU_SOURCE_NOT_AVAILABLE），本表保留框架，不伪造平台 SKU。|-1
+meta|product_line|TABLE|postgres|V1.3 公司级品线（只初始化品线，不按名称关键词自动归属商品）。|-1
+meta|shop|TABLE|postgres|店铺基础资料表：统一登记抖音、天猫、京东等平台的所有店铺。|-1

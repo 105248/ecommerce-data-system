@@ -1,0 +1,293 @@
+Output format is unaligned.
+Field separator is "|".
+audit|ai_diagnosis_run_run_id_seq|SEQUENCE|postgres|||
+audit|import_batch_batch_id_seq|SEQUENCE|postgres|||
+audit|masterdata_change_log_change_id_seq|SEQUENCE|postgres|||
+audit|ai_diagnosis_run|TABLE|postgres|V1.1 AI 诊断审计（不含密码/密钥/.env/完整system prompt）。|-1|
+audit|import_batch|TABLE|postgres|数据导入批次表：每上传和处理一次Excel文件，就生成一条导入记录，用于追踪文件来源、数据周期、处理状态和错误信息。|-1|
+audit|masterdata_change_log|TABLE|postgres|V1.3 主数据变更审计（历史可追溯，禁止物理删除历史映射）。|158|
+core|douyin_account_daily_row_id_seq|SEQUENCE|postgres|||
+core|douyin_audience_daily_row_id_seq|SEQUENCE|postgres|||
+core|douyin_carrier_daily_row_id_seq|SEQUENCE|postgres|||
+core|douyin_category_daily_row_id_seq|SEQUENCE|postgres|||
+core|douyin_content_daily_row_id_seq|SEQUENCE|postgres|||
+core|douyin_deal_daily_row_id_seq|SEQUENCE|postgres|||
+core|douyin_price_band_daily_row_id_seq|SEQUENCE|postgres|||
+core|douyin_product_daily_row_id_seq|SEQUENCE|postgres|||
+core|douyin_terminal_daily_row_id_seq|SEQUENCE|postgres|||
+core|douyin_account_daily|TABLE|postgres|抖音账号构成日表：按账号名称、账号类型和成交归属拆分。|3940|
+core|douyin_audience_daily|TABLE|postgres|抖音人群构成日表：按首购/复购人群和载体类型拆分。|711|
+core|douyin_carrier_daily|TABLE|postgres|抖音载体构成日表：按成交归属、载体类型、账号或渠道拆分。|6517|
+core|douyin_category_daily|TABLE|postgres|抖音品类构成日表：按一至四级类目拆分。|827|
+core|douyin_content_daily|TABLE|postgres|抖音单载体构成日表：按直播间、短视频、图文等单个内容载体拆分。|10833|
+core|douyin_deal_daily|TABLE|postgres|抖音成交日表：合并成交概览、自营成交、合作成交三张工作表，以成交范围区分。|4320|
+core|douyin_price_band_daily|TABLE|postgres|抖音价格带构成日表：按价格带拆分。|357|
+core|douyin_product_daily|TABLE|postgres|抖音商品构成日表：按商品和载体类型拆分。|10955|
+core|douyin_terminal_daily|TABLE|postgres|抖音终端构成日表：按终端类型和售卖类型拆分。|900|
+mart|anomaly_event_anomaly_event_id_seq|SEQUENCE|postgres|||
+mart|daily_action_item_action_item_id_seq|SEQUENCE|postgres|||
+mart|diagnostic_result_diagnostic_id_seq|SEQUENCE|postgres|||
+mart|mart_dimension_rule_rule_id_seq|SEQUENCE|postgres|||
+mart|opportunity_event_opportunity_event_id_seq|SEQUENCE|postgres|||
+mart|anomaly_event|TABLE|postgres|V1.1 异常事件（只记录"哪里异常/多严重/是否持续/影响多大"；唯一键防重复；生命周期 OPEN/RESOLVED/SUPPRESSED）。|104|
+mart|anomaly_rule|TABLE|postgres|V1.1 异常规则（8 类；base/阈值可配置；多店/主数据域可用独立 base）。|-1|
+mart|daily_action_item|TABLE|postgres|V1.1 每日行动项：只消费 Stage2/3/4 事件；risk/opportunity 独立优先级；chain 去重（同链仅 1 主卡）；冷却=更新原卡；禁止自动动作。|368|
+mart|diagnostic_entity_rule|TABLE|postgres|V1.1 诊断对象注册表：登记首批智能诊断业务域及对象能力（排名/贡献/Scope）。|-1|
+mart|diagnostic_metric_rule|TABLE|postgres|V1.1 诊断指标注册表：登记可稳定跨期比较的诊断指标及属性（类型/方向/可重算/排名/贡献），不做异常判定。|-1|
+mart|diagnostic_period_rule|TABLE|postgres|V1.1 诊断周期规则：当前周期与等长前置对比周期。previous_end = current_start - 1。|-1|
+mart|diagnostic_result|TABLE|postgres|V1.1 诊断结果（数据层问题定位）：层级/漏斗/贡献/投放拆解 + 证据链 + 置信度 + 问题链。
+evidence_json 只写事实，禁止未证实业务原因。|-1|
+mart|diagnostic_type|TABLE|postgres||-1|
+mart|mart_dimension_rule|TABLE|postgres|mart维度治理表：登记TOTAL/DETAIL/独立口径/禁止汇总规则，供Scope Resolver和Daily Mart使用。|-1|
+mart|opportunity_event|TABLE|postgres|V1.1 机会事件（机会质量排序分，非未来成功概率；幂等；COVERAGE/MAPPING/PEERS/WEIGHT 惩罚状态）。|264|
+mart|opportunity_rule|TABLE|postgres|V1.1 机会规则：7 维权重（默认20/20/20/15/10/10/5）+ peer 最小数量 + 低基数门槛。|-1|
+mart|opportunity_type|TABLE|postgres||-1|
+mart|priority_entity_weight|TABLE|postgres||-1|
+mart|account_daily|VIEW|postgres|账号拆分/排名（单账号、TOP账号、合作账号拆分；不提供全部账号/自营总/全店总量，总量回deal_daily）。||
+mart|analysis_metric_whitelist|VIEW|postgres|阶段3分析指标白名单。排名/贡献/环比禁止接受任意字段名；value_type=ratio时可计算百分点变化。||
+mart|audience_daily|VIEW|postgres|人群拆分（carrier_type=全部为合法TOTAL 60/60天验证；总览用全部，拆分用5载体明细，禁止TOTAL+DETAIL一起SUM）。||
+mart|carrier_daily|VIEW|postgres|载体/渠道拆分与排名（不提供全店TOTAL；合作域明细+更多账号可SUM；全域投放时段/标准+品牌投放为special_overlap禁止与明细SUM）。||
+mart|category_daily|VIEW|postgres|类目拆分（含层级识别：category_level 1/2/3/4；is_total_row=是否父级占位行；不同层级禁止混SUM）。||
+mart|content_daily|VIEW|postgres|单内容(直播间/短视频/图文)拆分；当前真实样本仅商品卡载体(自营/合作)，为其他载体预留不制造数据。||
+mart|douyin_platform_daily|VIEW|postgres|V1.3 平台日表（全店TOTAL口径）：platform×date，两店合计。平台整体只存在于 mart 语义，不建 shop_id=0。||
+mart|metric_rule_v14|VIEW|postgres|||
+mart|price_band_daily|VIEW|postgres|价格带拆分（6个价格带已验证互斥，可安全SUM重建店铺总量diff=0.00）。||
+mart|product_daily|VIEW|postgres|商品拆分（carrier_type=全部为平台独立总口径，商品总览优先读取；商品卡+图文+直播+短视频禁止重建全部）。||
+mart|product_mapping_conflicts|VIEW|postgres|V1.3 商品映射冲突（同一平台店铺商品多条启用映射时间重叠）。||
+mart|product_master_resolution|VIEW|postgres|V1.3 商品主数据解析（平台商品 → Master Product → 品线 → 状态/来源/有效期）。||
+mart|shop_daily|VIEW|postgres|店铺每日总览：全店合法TOTAL口径(sale_scope=全部+carrier=全部+ad_period=不限)，粒度店铺×日期，每天唯一1行。||
+mart|sku_mapping_conflicts|VIEW|postgres|V1.3 SKU 映射冲突（预留；SKU 数据源接入后启用）。||
+mart|sku_master_resolution|VIEW|postgres|V1.3 SKU 解析：当前抖音源无 SKU 维度，明确返回 SKU_SOURCE_NOT_AVAILABLE（不伪造）。||
+mart|stage3_expected_scope_map|VIEW|postgres|阶段3固定Scope基线。WorkBuddy执行时须按本机阶段1 resolve_scope真实签名，将其与period_scope_rule逐条对比18/18一致；本脚本不猜测阶段1函数签名。||
+mart|terminal_daily|VIEW|postgres|终端拆分（terminal_type=整体为合法TOTAL优先用于总览；拆分时只取明细终端，禁止整体+明细一起SUM）。||
+mart|unmapped_products|VIEW|postgres|V1.3 未映射商品（近30天GMV降序，成交金额仅用于决定处理优先级，不用于自动匹配）。||
+meta|database_object_dictionary_dictionary_id_seq|SEQUENCE|postgres|||
+meta|field_mapping_mapping_id_seq|SEQUENCE|postgres|||
+meta|master_product_alias_alias_id_seq|SEQUENCE|postgres|||
+meta|master_product_master_product_id_seq|SEQUENCE|postgres|||
+meta|master_sku_alias_alias_id_seq|SEQUENCE|postgres|||
+meta|master_sku_master_sku_id_seq|SEQUENCE|postgres|||
+meta|metric_formula_rule_metric_rule_id_seq|SEQUENCE|postgres|||
+meta|platform_product_mapping_mapping_id_seq|SEQUENCE|postgres|||
+meta|platform_sku_mapping_mapping_id_seq|SEQUENCE|postgres|||
+meta|product_line_product_line_id_seq|SEQUENCE|postgres|||
+meta|shop_shop_id_seq|SEQUENCE|postgres|||
+meta|database_object_dictionary|TABLE|postgres|全库中英文字典：记录最终显示名称及其来源（原始表头/系统词典/人工覆盖），可溯源。|488|
+meta|field_mapping|TABLE|postgres|字段映射表：逐字段记录11张源工作表的中文字段如何转换为正式表英文列、数据类型、聚合规则和清洗规则。|448|
+meta|master_product|TABLE|postgres|V1.3 公司级真实商品主档（master_product_id 代表公司认定的同一真实商品）。|77|
+meta|master_product_alias|TABLE|postgres|V1.3 公司商品别名（鱼子酱洗发水/鱼子酱洗发露 等，用于候选匹配）。|-1|
+meta|master_sku|TABLE|postgres|V1.3 公司级 SKU 主档（一个 Master Product 可有多个 SKU）。|-1|
+meta|master_sku_alias|TABLE|postgres|V1.3 公司 SKU 别名（500ml/500ML/500毫升 等）。|-1|
+meta|metric_formula_rule|TABLE|postgres|V1.4指标公式规则：记录比例/均值等非可加指标的分子、分母、跨期SQL、规则状态及真实Excel核对结果。|96|
+meta|platform|TABLE|postgres|V1.3 平台维度：platform_code 为聚合范围语义，平台整体只存在于 mart 查询层，不进 core。|-1|
+meta|platform_product_mapping|TABLE|postgres|V1.3 平台商品→Master Product 映射（跨店按 shop_id 隔离；历史不物理删除）。|82|
+meta|platform_sku_mapping|TABLE|postgres|V1.3 平台 SKU→Master SKU 映射。当前抖音源无 SKU 维度（SKU_SOURCE_NOT_AVAILABLE），本表保留框架，不伪造平台 SKU。|-1|
+meta|product_line|TABLE|postgres|V1.3 公司级品线（只初始化品线，不按名称关键词自动归属商品）。|-1|
+meta|shop|TABLE|postgres|店铺基础资料表：统一登记抖音、天猫、京东等平台的所有店铺。|-1|
+meta|source_sheet_mapping|TABLE|postgres|源工作表映射表：登记抖音成交分析Excel中每张工作表应写入的正式表、字段数量和派生规则。|-1|
+中文数据|sku映射冲突|VIEW|postgres|V1.3 SKU映射冲突（预留）。||
+中文数据|人群构成分析|VIEW|postgres|||
+中文数据|价格带构成分析|VIEW|postgres|||
+中文数据|公司sku主档|VIEW|postgres|V1.3 公司SKU主档（中文）。||
+中文数据|公司商品主档|VIEW|postgres|V1.3 公司商品主档（中文）。||
+中文数据|单载体内容分析|VIEW|postgres|||
+中文数据|品类构成分析|VIEW|postgres|||
+中文数据|品线配置|VIEW|postgres|V1.3 品线配置（中文）。||
+中文数据|商品映射冲突|VIEW|postgres|V1.3 商品映射冲突。||
+中文数据|商品构成分析|VIEW|postgres|||
+中文数据|字段映射规则|VIEW|postgres|||
+中文数据|导入批次记录|VIEW|postgres|||
+中文数据|工作表映射规则|VIEW|postgres|||
+中文数据|平台sku映射|VIEW|postgres|V1.3 平台SKU映射（中文；当前SKU源不可用）。||
+中文数据|平台商品映射|VIEW|postgres|V1.3 平台商品映射（中文）。||
+中文数据|店铺信息|VIEW|postgres|||
+中文数据|店铺每日总览|VIEW|postgres|||
+中文数据|抖音人群日报|VIEW|postgres|||
+中文数据|抖音价格带日报|VIEW|postgres|||
+中文数据|抖音内容日报|VIEW|postgres|||
+中文数据|抖音商品日报|VIEW|postgres|||
+中文数据|抖音多店数据覆盖|VIEW|postgres|V1.3 抖音各店独立数据覆盖（不因他店有数据而误判）。||
+中文数据|抖音多店经营日报|VIEW|postgres|V1.3 平台日表（抖音两店合计，全店口径）。||
+中文数据|抖音店铺贡献|VIEW|postgres|V1.3 抖音店铺贡献度（默认全月全店 user_pay）。||
+中文数据|抖音成交日报|VIEW|postgres|||
+中文数据|抖音类目日报|VIEW|postgres|||
+中文数据|抖音终端日报|VIEW|postgres|||
+中文数据|抖音账号日报|VIEW|postgres|||
+中文数据|抖音载体日报|VIEW|postgres|||
+中文数据|指标公式规则|VIEW|postgres|||
+中文数据|数据库中英文字典|VIEW|postgres|||
+中文数据|未归属sku|VIEW|postgres|V1.3 未归属SKU（当前SKU源不可用）。||
+中文数据|未归属商品|VIEW|postgres|V1.3 未归属商品（近30天GMV排序）。||
+中文数据|终端构成分析|VIEW|postgres|||
+中文数据|经营诊断快照|VIEW|postgres|V1.1 经营诊断快照（默认最近7天×店铺整体，中文列）。||
+中文数据|诊断周期规则|VIEW|postgres|V1.1 诊断周期规则（中文）。||
+中文数据|诊断对象规则|VIEW|postgres|V1.1 诊断对象注册表（中文）。||
+中文数据|诊断指标规则|VIEW|postgres|V1.1 诊断指标注册表（中文）。||
+中文数据|账号构成分析|VIEW|postgres|||
+中文数据|载体构成分析|VIEW|postgres|||
+meta|trg_audit_master_product|TRIGGER|postgres|||table=master_product;event_bits=21
+meta|trg_audit_ppm|TRIGGER|postgres|||table=platform_product_mapping;event_bits=21
+meta|trg_audit_psm|TRIGGER|postgres|||table=platform_sku_mapping;event_bits=21
+meta|trg_master_product_code|TRIGGER|postgres|||table=master_product;event_bits=7
+meta|trg_master_sku_code|TRIGGER|postgres|||table=master_sku;event_bits=7
+audit|idx_import_batch_file_sha256|INDEX|postgres|||table=import_batch;unique=false;primary=false;def=CREATE INDEX idx_import_batch_file_sha256 ON audit.import_batch USING btree (file_sha256)
+audit|idx_import_batch_shop_date|INDEX|postgres|||table=import_batch;unique=false;primary=false;def=CREATE INDEX idx_import_batch_shop_date ON audit.import_batch USING btree (shop_id, period_start, period_end)
+audit|idx_import_batch_status|INDEX|postgres|||table=import_batch;unique=false;primary=false;def=CREATE INDEX idx_import_batch_status ON audit.import_batch USING btree (import_status)
+core|idx_douyin_account_daily_batch|INDEX|postgres|||table=douyin_account_daily;unique=false;primary=false;def=CREATE INDEX idx_douyin_account_daily_batch ON core.douyin_account_daily USING btree (batch_id)
+core|idx_douyin_account_daily_shop_date|INDEX|postgres|||table=douyin_account_daily;unique=false;primary=false;def=CREATE INDEX idx_douyin_account_daily_shop_date ON core.douyin_account_daily USING btree (shop_id, biz_date)
+core|idx_douyin_audience_daily_batch|INDEX|postgres|||table=douyin_audience_daily;unique=false;primary=false;def=CREATE INDEX idx_douyin_audience_daily_batch ON core.douyin_audience_daily USING btree (batch_id)
+core|idx_douyin_audience_daily_shop_date|INDEX|postgres|||table=douyin_audience_daily;unique=false;primary=false;def=CREATE INDEX idx_douyin_audience_daily_shop_date ON core.douyin_audience_daily USING btree (shop_id, biz_date)
+core|idx_douyin_carrier_daily_batch|INDEX|postgres|||table=douyin_carrier_daily;unique=false;primary=false;def=CREATE INDEX idx_douyin_carrier_daily_batch ON core.douyin_carrier_daily USING btree (batch_id)
+core|idx_douyin_carrier_daily_shop_date|INDEX|postgres|||table=douyin_carrier_daily;unique=false;primary=false;def=CREATE INDEX idx_douyin_carrier_daily_shop_date ON core.douyin_carrier_daily USING btree (shop_id, biz_date)
+core|idx_douyin_category_daily_batch|INDEX|postgres|||table=douyin_category_daily;unique=false;primary=false;def=CREATE INDEX idx_douyin_category_daily_batch ON core.douyin_category_daily USING btree (batch_id)
+core|idx_douyin_category_daily_shop_date|INDEX|postgres|||table=douyin_category_daily;unique=false;primary=false;def=CREATE INDEX idx_douyin_category_daily_shop_date ON core.douyin_category_daily USING btree (shop_id, biz_date)
+core|idx_douyin_content_daily_batch|INDEX|postgres|||table=douyin_content_daily;unique=false;primary=false;def=CREATE INDEX idx_douyin_content_daily_batch ON core.douyin_content_daily USING btree (batch_id)
+core|idx_douyin_content_daily_shop_date|INDEX|postgres|||table=douyin_content_daily;unique=false;primary=false;def=CREATE INDEX idx_douyin_content_daily_shop_date ON core.douyin_content_daily USING btree (shop_id, biz_date)
+core|idx_douyin_deal_daily_batch|INDEX|postgres|||table=douyin_deal_daily;unique=false;primary=false;def=CREATE INDEX idx_douyin_deal_daily_batch ON core.douyin_deal_daily USING btree (batch_id)
+core|idx_douyin_deal_daily_shop_date|INDEX|postgres|||table=douyin_deal_daily;unique=false;primary=false;def=CREATE INDEX idx_douyin_deal_daily_shop_date ON core.douyin_deal_daily USING btree (shop_id, biz_date)
+core|idx_douyin_price_band_daily_batch|INDEX|postgres|||table=douyin_price_band_daily;unique=false;primary=false;def=CREATE INDEX idx_douyin_price_band_daily_batch ON core.douyin_price_band_daily USING btree (batch_id)
+core|idx_douyin_price_band_daily_shop_date|INDEX|postgres|||table=douyin_price_band_daily;unique=false;primary=false;def=CREATE INDEX idx_douyin_price_band_daily_shop_date ON core.douyin_price_band_daily USING btree (shop_id, biz_date)
+core|idx_douyin_product_daily_batch|INDEX|postgres|||table=douyin_product_daily;unique=false;primary=false;def=CREATE INDEX idx_douyin_product_daily_batch ON core.douyin_product_daily USING btree (batch_id)
+core|idx_douyin_product_daily_shop_date|INDEX|postgres|||table=douyin_product_daily;unique=false;primary=false;def=CREATE INDEX idx_douyin_product_daily_shop_date ON core.douyin_product_daily USING btree (shop_id, biz_date)
+core|idx_douyin_terminal_daily_batch|INDEX|postgres|||table=douyin_terminal_daily;unique=false;primary=false;def=CREATE INDEX idx_douyin_terminal_daily_batch ON core.douyin_terminal_daily USING btree (batch_id)
+core|idx_douyin_terminal_daily_shop_date|INDEX|postgres|||table=douyin_terminal_daily;unique=false;primary=false;def=CREATE INDEX idx_douyin_terminal_daily_shop_date ON core.douyin_terminal_daily USING btree (shop_id, biz_date)
+core|uk_douyin_account_daily_business|INDEX|postgres|||table=douyin_account_daily;unique=true;primary=false;def=CREATE UNIQUE INDEX uk_douyin_account_daily_business ON core.douyin_account_daily USING btree (shop_id, biz_date, account_name, account_type, sale_scope, douyin_account_id)
+core|uk_douyin_audience_daily_business|INDEX|postgres|||table=douyin_audience_daily;unique=true;primary=false;def=CREATE UNIQUE INDEX uk_douyin_audience_daily_business ON core.douyin_audience_daily USING btree (shop_id, biz_date, audience_type, carrier_type)
+core|uk_douyin_carrier_daily_business|INDEX|postgres|||table=douyin_carrier_daily;unique=true;primary=false;def=CREATE UNIQUE INDEX uk_douyin_carrier_daily_business ON core.douyin_carrier_daily USING btree (shop_id, biz_date, sale_scope, carrier_type, account_channel, douyin_account_id)
+core|uk_douyin_category_daily_business|INDEX|postgres|||table=douyin_category_daily;unique=true;primary=false;def=CREATE UNIQUE INDEX uk_douyin_category_daily_business ON core.douyin_category_daily USING btree (shop_id, biz_date, category_level_1, category_level_2, category_level_3, category_level_4)
+core|uk_douyin_content_daily_business|INDEX|postgres|||table=douyin_content_daily;unique=true;primary=false;def=CREATE UNIQUE INDEX uk_douyin_content_daily_business ON core.douyin_content_daily USING btree (shop_id, biz_date, selling_type, carrier_type, content_id)
+core|uk_douyin_deal_daily_business|INDEX|postgres|||table=douyin_deal_daily;unique=true;primary=false;def=CREATE UNIQUE INDEX uk_douyin_deal_daily_business ON core.douyin_deal_daily USING btree (shop_id, biz_date, sale_scope, carrier_type, ad_period)
+core|uk_douyin_price_band_daily_business|INDEX|postgres|||table=douyin_price_band_daily;unique=true;primary=false;def=CREATE UNIQUE INDEX uk_douyin_price_band_daily_business ON core.douyin_price_band_daily USING btree (shop_id, biz_date, price_band)
+core|uk_douyin_product_daily_business|INDEX|postgres|||table=douyin_product_daily;unique=true;primary=false;def=CREATE UNIQUE INDEX uk_douyin_product_daily_business ON core.douyin_product_daily USING btree (shop_id, biz_date, product_id, carrier_type)
+core|uk_douyin_terminal_daily_business|INDEX|postgres|||table=douyin_terminal_daily;unique=true;primary=false;def=CREATE UNIQUE INDEX uk_douyin_terminal_daily_business ON core.douyin_terminal_daily USING btree (shop_id, biz_date, terminal_type, selling_type)
+mart|idx_daily_action_item_date|INDEX|postgres|||table=daily_action_item;unique=false;primary=false;def=CREATE INDEX idx_daily_action_item_date ON mart.daily_action_item USING btree (current_end_date, item_type, status)
+mart|uk_anomaly_event_dedup|INDEX|postgres|||table=anomaly_event;unique=true;primary=false;def=CREATE UNIQUE INDEX uk_anomaly_event_dedup ON mart.anomaly_event USING btree (platform_code, COALESCE(shop_name, ''::text), domain_key, COALESCE(entity_id, ''::text), COALESCE(scope_key, ''::text), metric_key, anomaly_type, current_start_date, current_end_date, rule_version)
+mart|uk_daily_action_dedup|INDEX|postgres|||table=daily_action_item;unique=true;primary=false;def=CREATE UNIQUE INDEX uk_daily_action_dedup ON mart.daily_action_item USING btree (platform_code, COALESCE(shop_name, ''::text), domain_key, COALESCE(entity_id, ''::text), item_type, COALESCE(source_anomaly_code, ''::text), COALESCE(source_opportunity_code, ''::text), current_start_date, current_end_date)
+mart|uk_dim_rule|INDEX|postgres|||table=mart_dimension_rule;unique=true;primary=false;def=CREATE UNIQUE INDEX uk_dim_rule ON mart.mart_dimension_rule USING btree (source_schema, source_table, dimension_name, dimension_value)
+mart|uk_opportunity_dedup|INDEX|postgres|||table=opportunity_event;unique=true;primary=false;def=CREATE UNIQUE INDEX uk_opportunity_dedup ON mart.opportunity_event USING btree (platform_code, COALESCE(shop_name, ''::text), domain_key, COALESCE(entity_id, ''::text), COALESCE(scope_key, ''::text), COALESCE(opportunity_code, ''::text), current_start_date, current_end_date)
+meta|master_product_master_product_code_key|INDEX|postgres|||table=master_product;unique=true;primary=false;def=CREATE UNIQUE INDEX master_product_master_product_code_key ON meta.master_product USING btree (master_product_code)
+meta|master_sku_master_sku_code_key|INDEX|postgres|||table=master_sku;unique=true;primary=false;def=CREATE UNIQUE INDEX master_sku_master_sku_code_key ON meta.master_sku USING btree (master_sku_code)
+meta|product_line_product_line_code_key|INDEX|postgres|||table=product_line;unique=true;primary=false;def=CREATE UNIQUE INDEX product_line_product_line_code_key ON meta.product_line USING btree (product_line_code)
+meta|product_line_product_line_name_key|INDEX|postgres|||table=product_line;unique=true;primary=false;def=CREATE UNIQUE INDEX product_line_product_line_name_key ON meta.product_line USING btree (product_line_name)
+meta|source_sheet_mapping_source_sheet_code_key|INDEX|postgres|||table=source_sheet_mapping;unique=true;primary=false;def=CREATE UNIQUE INDEX source_sheet_mapping_source_sheet_code_key ON meta.source_sheet_mapping USING btree (source_sheet_code)
+meta|uk_dict_obj_col|INDEX|postgres|||table=database_object_dictionary;unique=true;primary=false;def=CREATE UNIQUE INDEX uk_dict_obj_col ON meta.database_object_dictionary USING btree (schema_name, object_name, column_name)
+meta|uk_field_mapping_sheet_column|INDEX|postgres|||table=field_mapping;unique=true;primary=false;def=CREATE UNIQUE INDEX uk_field_mapping_sheet_column ON meta.field_mapping USING btree (source_sheet_name, source_column_name)
+meta|uk_field_mapping_sheet_order|INDEX|postgres|||table=field_mapping;unique=true;primary=false;def=CREATE UNIQUE INDEX uk_field_mapping_sheet_order ON meta.field_mapping USING btree (source_sheet_name, source_column_order)
+meta|uk_metric_formula_rule|INDEX|postgres|||table=metric_formula_rule;unique=true;primary=false;def=CREATE UNIQUE INDEX uk_metric_formula_rule ON meta.metric_formula_rule USING btree (target_schema, target_table, target_column_name)
+meta|uk_ppm_active_from|INDEX|postgres|||table=platform_product_mapping;unique=true;primary=false;def=CREATE UNIQUE INDEX uk_ppm_active_from ON meta.platform_product_mapping USING btree (platform_code, shop_id, platform_product_id, valid_from) WHERE enabled
+meta|uk_shop_code|INDEX|postgres|||table=shop;unique=true;primary=false;def=CREATE UNIQUE INDEX uk_shop_code ON meta.shop USING btree (platform_code, shop_code)
+audit|ai_diagnosis_run_pkey|CONSTRAINT_PRIMARY_KEY|postgres|||table=ai_diagnosis_run;def=PRIMARY KEY (run_id)
+audit|ck_import_period|CONSTRAINT_CHECK|postgres|||table=import_batch;def=CHECK (((period_start IS NULL) OR (period_end IS NULL) OR (period_start <= period_end)))
+audit|ck_inserted_row_count|CONSTRAINT_CHECK|postgres|||table=import_batch;def=CHECK ((inserted_row_count >= 0))
+audit|ck_source_row_count|CONSTRAINT_CHECK|postgres|||table=import_batch;def=CHECK ((source_row_count >= 0))
+audit|fk_import_batch_shop|CONSTRAINT_FOREIGN_KEY|postgres|||table=import_batch;def=FOREIGN KEY (shop_id) REFERENCES meta.shop(shop_id)
+audit|import_batch_pkey|CONSTRAINT_PRIMARY_KEY|postgres|||table=import_batch;def=PRIMARY KEY (batch_id)
+audit|masterdata_change_log_pkey|CONSTRAINT_PRIMARY_KEY|postgres|||table=masterdata_change_log;def=PRIMARY KEY (change_id)
+core|douyin_account_daily_pkey|CONSTRAINT_PRIMARY_KEY|postgres|||table=douyin_account_daily;def=PRIMARY KEY (row_id)
+core|douyin_account_daily_source_row_number_check|CONSTRAINT_CHECK|postgres|||table=douyin_account_daily;def=CHECK ((source_row_number >= 2))
+core|douyin_audience_daily_pkey|CONSTRAINT_PRIMARY_KEY|postgres|||table=douyin_audience_daily;def=PRIMARY KEY (row_id)
+core|douyin_audience_daily_source_row_number_check|CONSTRAINT_CHECK|postgres|||table=douyin_audience_daily;def=CHECK ((source_row_number >= 2))
+core|douyin_carrier_daily_pkey|CONSTRAINT_PRIMARY_KEY|postgres|||table=douyin_carrier_daily;def=PRIMARY KEY (row_id)
+core|douyin_carrier_daily_source_row_number_check|CONSTRAINT_CHECK|postgres|||table=douyin_carrier_daily;def=CHECK ((source_row_number >= 2))
+core|douyin_category_daily_pkey|CONSTRAINT_PRIMARY_KEY|postgres|||table=douyin_category_daily;def=PRIMARY KEY (row_id)
+core|douyin_category_daily_source_row_number_check|CONSTRAINT_CHECK|postgres|||table=douyin_category_daily;def=CHECK ((source_row_number >= 2))
+core|douyin_content_daily_pkey|CONSTRAINT_PRIMARY_KEY|postgres|||table=douyin_content_daily;def=PRIMARY KEY (row_id)
+core|douyin_content_daily_source_row_number_check|CONSTRAINT_CHECK|postgres|||table=douyin_content_daily;def=CHECK ((source_row_number >= 2))
+core|douyin_deal_daily_pkey|CONSTRAINT_PRIMARY_KEY|postgres|||table=douyin_deal_daily;def=PRIMARY KEY (row_id)
+core|douyin_deal_daily_source_row_number_check|CONSTRAINT_CHECK|postgres|||table=douyin_deal_daily;def=CHECK ((source_row_number >= 2))
+core|douyin_price_band_daily_pkey|CONSTRAINT_PRIMARY_KEY|postgres|||table=douyin_price_band_daily;def=PRIMARY KEY (row_id)
+core|douyin_price_band_daily_source_row_number_check|CONSTRAINT_CHECK|postgres|||table=douyin_price_band_daily;def=CHECK ((source_row_number >= 2))
+core|douyin_product_daily_pkey|CONSTRAINT_PRIMARY_KEY|postgres|||table=douyin_product_daily;def=PRIMARY KEY (row_id)
+core|douyin_product_daily_source_row_number_check|CONSTRAINT_CHECK|postgres|||table=douyin_product_daily;def=CHECK ((source_row_number >= 2))
+core|douyin_terminal_daily_pkey|CONSTRAINT_PRIMARY_KEY|postgres|||table=douyin_terminal_daily;def=PRIMARY KEY (row_id)
+core|douyin_terminal_daily_source_row_number_check|CONSTRAINT_CHECK|postgres|||table=douyin_terminal_daily;def=CHECK ((source_row_number >= 2))
+core|fk_douyin_account_daily_batch|CONSTRAINT_FOREIGN_KEY|postgres|||table=douyin_account_daily;def=FOREIGN KEY (batch_id) REFERENCES audit.import_batch(batch_id)
+core|fk_douyin_account_daily_shop|CONSTRAINT_FOREIGN_KEY|postgres|||table=douyin_account_daily;def=FOREIGN KEY (shop_id) REFERENCES meta.shop(shop_id)
+core|fk_douyin_audience_daily_batch|CONSTRAINT_FOREIGN_KEY|postgres|||table=douyin_audience_daily;def=FOREIGN KEY (batch_id) REFERENCES audit.import_batch(batch_id)
+core|fk_douyin_audience_daily_shop|CONSTRAINT_FOREIGN_KEY|postgres|||table=douyin_audience_daily;def=FOREIGN KEY (shop_id) REFERENCES meta.shop(shop_id)
+core|fk_douyin_carrier_daily_batch|CONSTRAINT_FOREIGN_KEY|postgres|||table=douyin_carrier_daily;def=FOREIGN KEY (batch_id) REFERENCES audit.import_batch(batch_id)
+core|fk_douyin_carrier_daily_shop|CONSTRAINT_FOREIGN_KEY|postgres|||table=douyin_carrier_daily;def=FOREIGN KEY (shop_id) REFERENCES meta.shop(shop_id)
+core|fk_douyin_category_daily_batch|CONSTRAINT_FOREIGN_KEY|postgres|||table=douyin_category_daily;def=FOREIGN KEY (batch_id) REFERENCES audit.import_batch(batch_id)
+core|fk_douyin_category_daily_shop|CONSTRAINT_FOREIGN_KEY|postgres|||table=douyin_category_daily;def=FOREIGN KEY (shop_id) REFERENCES meta.shop(shop_id)
+core|fk_douyin_content_daily_batch|CONSTRAINT_FOREIGN_KEY|postgres|||table=douyin_content_daily;def=FOREIGN KEY (batch_id) REFERENCES audit.import_batch(batch_id)
+core|fk_douyin_content_daily_shop|CONSTRAINT_FOREIGN_KEY|postgres|||table=douyin_content_daily;def=FOREIGN KEY (shop_id) REFERENCES meta.shop(shop_id)
+core|fk_douyin_deal_daily_batch|CONSTRAINT_FOREIGN_KEY|postgres|||table=douyin_deal_daily;def=FOREIGN KEY (batch_id) REFERENCES audit.import_batch(batch_id)
+core|fk_douyin_deal_daily_shop|CONSTRAINT_FOREIGN_KEY|postgres|||table=douyin_deal_daily;def=FOREIGN KEY (shop_id) REFERENCES meta.shop(shop_id)
+core|fk_douyin_price_band_daily_batch|CONSTRAINT_FOREIGN_KEY|postgres|||table=douyin_price_band_daily;def=FOREIGN KEY (batch_id) REFERENCES audit.import_batch(batch_id)
+core|fk_douyin_price_band_daily_shop|CONSTRAINT_FOREIGN_KEY|postgres|||table=douyin_price_band_daily;def=FOREIGN KEY (shop_id) REFERENCES meta.shop(shop_id)
+core|fk_douyin_product_daily_batch|CONSTRAINT_FOREIGN_KEY|postgres|||table=douyin_product_daily;def=FOREIGN KEY (batch_id) REFERENCES audit.import_batch(batch_id)
+core|fk_douyin_product_daily_shop|CONSTRAINT_FOREIGN_KEY|postgres|||table=douyin_product_daily;def=FOREIGN KEY (shop_id) REFERENCES meta.shop(shop_id)
+core|fk_douyin_terminal_daily_batch|CONSTRAINT_FOREIGN_KEY|postgres|||table=douyin_terminal_daily;def=FOREIGN KEY (batch_id) REFERENCES audit.import_batch(batch_id)
+core|fk_douyin_terminal_daily_shop|CONSTRAINT_FOREIGN_KEY|postgres|||table=douyin_terminal_daily;def=FOREIGN KEY (shop_id) REFERENCES meta.shop(shop_id)
+mart|anomaly_event_anomaly_type_fkey|CONSTRAINT_FOREIGN_KEY|postgres|||table=anomaly_event;def=FOREIGN KEY (anomaly_type) REFERENCES mart.anomaly_rule(rule_code)
+mart|anomaly_event_parent_anomaly_event_id_fkey|CONSTRAINT_FOREIGN_KEY|postgres|||table=anomaly_event;def=FOREIGN KEY (parent_anomaly_event_id) REFERENCES mart.anomaly_event(anomaly_event_id)
+mart|anomaly_event_pkey|CONSTRAINT_PRIMARY_KEY|postgres|||table=anomaly_event;def=PRIMARY KEY (anomaly_event_id)
+mart|anomaly_event_severity_check|CONSTRAINT_CHECK|postgres|||table=anomaly_event;def=CHECK ((severity = ANY (ARRAY['INFO'::text, 'LOW'::text, 'MEDIUM'::text, 'HIGH'::text, 'CRITICAL'::text])))
+mart|anomaly_event_status_check|CONSTRAINT_CHECK|postgres|||table=anomaly_event;def=CHECK ((status = ANY (ARRAY['OPEN'::text, 'RESOLVED'::text, 'SUPPRESSED'::text])))
+mart|anomaly_rule_metric_direction_check|CONSTRAINT_CHECK|postgres|||table=anomaly_rule;def=CHECK ((metric_direction = ANY (ARRAY['DROP'::text, 'RISE'::text])))
+mart|anomaly_rule_pkey|CONSTRAINT_PRIMARY_KEY|postgres|||table=anomaly_rule;def=PRIMARY KEY (rule_code)
+mart|daily_action_item_item_type_check|CONSTRAINT_CHECK|postgres|||table=daily_action_item;def=CHECK ((item_type = ANY (ARRAY['RISK'::text, 'OPPORTUNITY'::text, 'WATCH'::text])))
+mart|daily_action_item_opportunity_level_check|CONSTRAINT_CHECK|postgres|||table=daily_action_item;def=CHECK ((opportunity_level = ANY (ARRAY['O1_STRONG'::text, 'O2_HIGH'::text, 'O3_MEDIUM'::text, 'O4_WATCH'::text])))
+mart|daily_action_item_pkey|CONSTRAINT_PRIMARY_KEY|postgres|||table=daily_action_item;def=PRIMARY KEY (action_item_id)
+mart|daily_action_item_risk_level_check|CONSTRAINT_CHECK|postgres|||table=daily_action_item;def=CHECK ((risk_level = ANY (ARRAY['P1_URGENT'::text, 'P2_HIGH'::text, 'P3_MEDIUM'::text, 'P4_LOW'::text])))
+mart|daily_action_item_status_check|CONSTRAINT_CHECK|postgres|||table=daily_action_item;def=CHECK ((status = ANY (ARRAY['OPEN'::text, 'WATCHING'::text, 'RESOLVED'::text, 'EXPIRED'::text])))
+mart|diagnostic_entity_rule_pkey|CONSTRAINT_PRIMARY_KEY|postgres|||table=diagnostic_entity_rule;def=PRIMARY KEY (domain_key)
+mart|diagnostic_metric_rule_metric_type_check|CONSTRAINT_CHECK|postgres|||table=diagnostic_metric_rule;def=CHECK ((metric_type = ANY (ARRAY['amount'::text, 'count'::text, 'average'::text, 'ratio'::text, 'efficiency'::text])))
+mart|diagnostic_metric_rule_pkey|CONSTRAINT_PRIMARY_KEY|postgres|||table=diagnostic_metric_rule;def=PRIMARY KEY (metric_key)
+mart|diagnostic_period_rule_pkey|CONSTRAINT_PRIMARY_KEY|postgres|||table=diagnostic_period_rule;def=PRIMARY KEY (period_key)
+mart|diagnostic_result_diagnostic_code_fkey|CONSTRAINT_FOREIGN_KEY|postgres|||table=diagnostic_result;def=FOREIGN KEY (diagnostic_code) REFERENCES mart.diagnostic_type(diagnostic_code)
+mart|diagnostic_result_diagnostic_status_check|CONSTRAINT_CHECK|postgres|||table=diagnostic_result;def=CHECK ((diagnostic_status = ANY (ARRAY['DIAGNOSED'::text, 'MULTI_FACTOR'::text, 'INSUFFICIENT_EVIDENCE'::text, 'NO_CONFIRMED_ANOMALY'::text, 'UNSUPPORTED_DOMAIN'::text, 'UNSUPPORTED_DIAGNOSTIC_PATH'::text, 'COVERAGE_INCOMPLETE'::text, 'MAPPING_INCOMPLETE'::text])))
+mart|diagnostic_result_pkey|CONSTRAINT_PRIMARY_KEY|postgres|||table=diagnostic_result;def=PRIMARY KEY (diagnostic_id)
+mart|diagnostic_result_primary_stage_check|CONSTRAINT_CHECK|postgres|||table=diagnostic_result;def=CHECK ((primary_stage = ANY (ARRAY['traffic'::text, 'click'::text, 'conversion'::text, 'refund'::text, 'advertising'::text, 'mix'::text, 'contribution'::text, 'unknown'::text])))
+mart|diagnostic_result_source_anomaly_event_id_fkey|CONSTRAINT_FOREIGN_KEY|postgres|||table=diagnostic_result;def=FOREIGN KEY (source_anomaly_event_id) REFERENCES mart.anomaly_event(anomaly_event_id)
+mart|diagnostic_type_pkey|CONSTRAINT_PRIMARY_KEY|postgres|||table=diagnostic_type;def=PRIMARY KEY (diagnostic_code)
+mart|mart_dimension_rule_pkey|CONSTRAINT_PRIMARY_KEY|postgres|||table=mart_dimension_rule;def=PRIMARY KEY (rule_id)
+mart|opportunity_event_opportunity_code_fkey|CONSTRAINT_FOREIGN_KEY|postgres|||table=opportunity_event;def=FOREIGN KEY (opportunity_code) REFERENCES mart.opportunity_type(opportunity_code)
+mart|opportunity_event_opportunity_level_check|CONSTRAINT_CHECK|postgres|||table=opportunity_event;def=CHECK ((opportunity_level = ANY (ARRAY['LOW'::text, 'MEDIUM'::text, 'HIGH'::text, 'STRONG'::text])))
+mart|opportunity_event_pkey|CONSTRAINT_PRIMARY_KEY|postgres|||table=opportunity_event;def=PRIMARY KEY (opportunity_event_id)
+mart|opportunity_event_status_check|CONSTRAINT_CHECK|postgres|||table=opportunity_event;def=CHECK ((status = ANY (ARRAY['QUALIFIED'::text, 'COVERAGE_INCOMPLETE'::text, 'MAPPING_INCOMPLETE'::text, 'INSUFFICIENT_PEERS'::text, 'INSUFFICIENT_EVIDENCE'::text, 'NEW_BASE_SIGNAL'::text, 'LOW_BASE'::text])))
+mart|opportunity_rule_pkey|CONSTRAINT_PRIMARY_KEY|postgres|||table=opportunity_rule;def=PRIMARY KEY (rule_code)
+mart|opportunity_type_pkey|CONSTRAINT_PRIMARY_KEY|postgres|||table=opportunity_type;def=PRIMARY KEY (opportunity_code)
+mart|priority_entity_weight_pkey|CONSTRAINT_PRIMARY_KEY|postgres|||table=priority_entity_weight;def=PRIMARY KEY (entity_level)
+mart|uk_dim_rule|CONSTRAINT_UNIQUE|postgres|||table=mart_dimension_rule;def=UNIQUE (source_schema, source_table, dimension_name, dimension_value)
+meta|database_object_dictionary_pkey|CONSTRAINT_PRIMARY_KEY|postgres|||table=database_object_dictionary;def=PRIMARY KEY (dictionary_id)
+meta|field_mapping_pkey|CONSTRAINT_PRIMARY_KEY|postgres|||table=field_mapping;def=PRIMARY KEY (mapping_id)
+meta|fk_field_mapping_sheet|CONSTRAINT_FOREIGN_KEY|postgres|||table=field_mapping;def=FOREIGN KEY (source_sheet_name) REFERENCES meta.source_sheet_mapping(source_sheet_name)
+meta|master_product_alias_alias_type_check|CONSTRAINT_CHECK|postgres|||table=master_product_alias;def=CHECK ((alias_type = ANY (ARRAY['COMMON'::text, 'SHORT_NAME'::text, 'OLD_NAME'::text, 'PLATFORM_SPECIFIC'::text])))
+meta|master_product_alias_master_product_id_fkey|CONSTRAINT_FOREIGN_KEY|postgres|||table=master_product_alias;def=FOREIGN KEY (master_product_id) REFERENCES meta.master_product(master_product_id)
+meta|master_product_alias_pkey|CONSTRAINT_PRIMARY_KEY|postgres|||table=master_product_alias;def=PRIMARY KEY (alias_id)
+meta|master_product_master_product_code_key|CONSTRAINT_UNIQUE|postgres|||table=master_product;def=UNIQUE (master_product_code)
+meta|master_product_merged_into_master_product_id_fkey|CONSTRAINT_FOREIGN_KEY|postgres|||table=master_product;def=FOREIGN KEY (merged_into_master_product_id) REFERENCES meta.master_product(master_product_id)
+meta|master_product_pkey|CONSTRAINT_PRIMARY_KEY|postgres|||table=master_product;def=PRIMARY KEY (master_product_id)
+meta|master_product_product_line_id_fkey|CONSTRAINT_FOREIGN_KEY|postgres|||table=master_product;def=FOREIGN KEY (product_line_id) REFERENCES meta.product_line(product_line_id)
+meta|master_product_product_status_check|CONSTRAINT_CHECK|postgres|||table=master_product;def=CHECK ((product_status = ANY (ARRAY['ACTIVE'::text, 'DISCONTINUED'::text, 'MERGED'::text, 'TEST'::text])))
+meta|master_sku_alias_alias_type_check|CONSTRAINT_CHECK|postgres|||table=master_sku_alias;def=CHECK ((alias_type = ANY (ARRAY['COMMON'::text, 'SHORT_NAME'::text, 'OLD_NAME'::text, 'PLATFORM_SPECIFIC'::text])))
+meta|master_sku_alias_master_sku_id_fkey|CONSTRAINT_FOREIGN_KEY|postgres|||table=master_sku_alias;def=FOREIGN KEY (master_sku_id) REFERENCES meta.master_sku(master_sku_id)
+meta|master_sku_alias_pkey|CONSTRAINT_PRIMARY_KEY|postgres|||table=master_sku_alias;def=PRIMARY KEY (alias_id)
+meta|master_sku_master_product_id_fkey|CONSTRAINT_FOREIGN_KEY|postgres|||table=master_sku;def=FOREIGN KEY (master_product_id) REFERENCES meta.master_product(master_product_id)
+meta|master_sku_master_sku_code_key|CONSTRAINT_UNIQUE|postgres|||table=master_sku;def=UNIQUE (master_sku_code)
+meta|master_sku_pkey|CONSTRAINT_PRIMARY_KEY|postgres|||table=master_sku;def=PRIMARY KEY (master_sku_id)
+meta|metric_formula_rule_pkey|CONSTRAINT_PRIMARY_KEY|postgres|||table=metric_formula_rule;def=PRIMARY KEY (metric_rule_id)
+meta|platform_pkey|CONSTRAINT_PRIMARY_KEY|postgres|||table=platform;def=PRIMARY KEY (platform_code)
+meta|platform_product_mapping_mapping_source_check|CONSTRAINT_CHECK|postgres|||table=platform_product_mapping;def=CHECK ((mapping_source = ANY (ARRAY['MANUAL'::text, 'EXACT_ID_RULE'::text, 'EXACT_NAME_SUGGESTION'::text, 'ALIAS_SUGGESTION'::text, 'AI_SUGGESTION'::text, 'IMPORT_FILE'::text])))
+meta|platform_product_mapping_mapping_status_check|CONSTRAINT_CHECK|postgres|||table=platform_product_mapping;def=CHECK ((mapping_status = ANY (ARRAY['CONFIRMED'::text, 'SUGGESTED'::text, 'UNMAPPED'::text, 'CONFLICT'::text, 'DISABLED'::text])))
+meta|platform_product_mapping_master_product_id_fkey|CONSTRAINT_FOREIGN_KEY|postgres|||table=platform_product_mapping;def=FOREIGN KEY (master_product_id) REFERENCES meta.master_product(master_product_id)
+meta|platform_product_mapping_pkey|CONSTRAINT_PRIMARY_KEY|postgres|||table=platform_product_mapping;def=PRIMARY KEY (mapping_id)
+meta|platform_product_mapping_shop_id_fkey|CONSTRAINT_FOREIGN_KEY|postgres|||table=platform_product_mapping;def=FOREIGN KEY (shop_id) REFERENCES meta.shop(shop_id)
+meta|platform_sku_mapping_mapping_source_check|CONSTRAINT_CHECK|postgres|||table=platform_sku_mapping;def=CHECK ((mapping_source = ANY (ARRAY['MANUAL'::text, 'EXACT_ID_RULE'::text, 'EXACT_NAME_SUGGESTION'::text, 'ALIAS_SUGGESTION'::text, 'AI_SUGGESTION'::text, 'IMPORT_FILE'::text])))
+meta|platform_sku_mapping_mapping_status_check|CONSTRAINT_CHECK|postgres|||table=platform_sku_mapping;def=CHECK ((mapping_status = ANY (ARRAY['CONFIRMED'::text, 'SUGGESTED'::text, 'UNMAPPED'::text, 'CONFLICT'::text, 'DISABLED'::text])))
+meta|platform_sku_mapping_master_product_id_fkey|CONSTRAINT_FOREIGN_KEY|postgres|||table=platform_sku_mapping;def=FOREIGN KEY (master_product_id) REFERENCES meta.master_product(master_product_id)
+meta|platform_sku_mapping_master_sku_id_fkey|CONSTRAINT_FOREIGN_KEY|postgres|||table=platform_sku_mapping;def=FOREIGN KEY (master_sku_id) REFERENCES meta.master_sku(master_sku_id)
+meta|platform_sku_mapping_pkey|CONSTRAINT_PRIMARY_KEY|postgres|||table=platform_sku_mapping;def=PRIMARY KEY (mapping_id)
+meta|platform_sku_mapping_shop_id_fkey|CONSTRAINT_FOREIGN_KEY|postgres|||table=platform_sku_mapping;def=FOREIGN KEY (shop_id) REFERENCES meta.shop(shop_id)
+meta|product_line_pkey|CONSTRAINT_PRIMARY_KEY|postgres|||table=product_line;def=PRIMARY KEY (product_line_id)
+meta|product_line_product_line_code_key|CONSTRAINT_UNIQUE|postgres|||table=product_line;def=UNIQUE (product_line_code)
+meta|product_line_product_line_name_key|CONSTRAINT_UNIQUE|postgres|||table=product_line;def=UNIQUE (product_line_name)
+meta|shop_pkey|CONSTRAINT_PRIMARY_KEY|postgres|||table=shop;def=PRIMARY KEY (shop_id)
+meta|source_sheet_mapping_pkey|CONSTRAINT_PRIMARY_KEY|postgres|||table=source_sheet_mapping;def=PRIMARY KEY (source_sheet_name)
+meta|source_sheet_mapping_source_sheet_code_key|CONSTRAINT_UNIQUE|postgres|||table=source_sheet_mapping;def=UNIQUE (source_sheet_code)
+meta|uk_dict_obj_col|CONSTRAINT_UNIQUE|postgres|||table=database_object_dictionary;def=UNIQUE (schema_name, object_name, column_name)
+meta|uk_field_mapping_sheet_column|CONSTRAINT_UNIQUE|postgres|||table=field_mapping;def=UNIQUE (source_sheet_name, source_column_name)
+meta|uk_field_mapping_sheet_order|CONSTRAINT_UNIQUE|postgres|||table=field_mapping;def=UNIQUE (source_sheet_name, source_column_order)
+meta|uk_metric_formula_rule|CONSTRAINT_UNIQUE|postgres|||table=metric_formula_rule;def=UNIQUE (target_schema, target_table, target_column_name)
+meta|uk_shop_code|CONSTRAINT_UNIQUE|postgres|||table=shop;def=UNIQUE (platform_code, shop_code)

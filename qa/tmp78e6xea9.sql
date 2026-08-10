@@ -1,0 +1,1 @@
+SELECT user_pay_amount FROM core.douyin_deal_daily WHERE biz_date='2026-06-01' AND sale_scope='全部' AND carrier_type='全部' AND ad_period='不限'

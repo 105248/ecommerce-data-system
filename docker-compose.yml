@@ -1,0 +1,36 @@
+# ============================================================
+# ecommerce-data-system · Docker Compose 配置
+# 作用: 用容器运行 PostgreSQL 16，数据持久化到 D:\ecommerce-data-system\pgdata
+# 用法:
+#   cd D:\ecommerce-data-system
+#   docker compose up -d          # 启动
+#   docker compose down           # 停止（数据保留）
+# ============================================================
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: ecommerce-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      # 密码从 .env 注入（.env 不进入版本控制/归档；未设置时仅用于本地开发占位）
+      POSTGRES_PASSWORD: ${PG_ADMIN_PASSWORD:-__SET_ME_FROM_ENV__}
+      POSTGRES_DB: ecommerce_db
+      TZ: Asia/Shanghai
+    ports:
+      - "5432:5432"
+    volumes:
+      # 数据持久化（Windows 路径映射到容器 /var/lib/postgresql/data）
+      - D:/ecommerce-data-system/pgdata_docker:/var/lib/postgresql/data
+      # 初始化脚本（首次启动自动执行 sql/ 下的脚本，按文件名顺序）
+      - D:/ecommerce-data-system/sql:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata_docker:
+    driver: local

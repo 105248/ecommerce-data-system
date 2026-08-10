@@ -1,0 +1,1 @@
+SELECT SUM(user_pay_amount) FROM core.douyin_product_daily WHERE carrier_type IN ('商品卡','图文','直播','短视频','其他') AND biz_date BETWEEN '2026-06-01' AND '2026-06-30'

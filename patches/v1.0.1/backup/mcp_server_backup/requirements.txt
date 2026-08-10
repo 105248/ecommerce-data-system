@@ -1,0 +1,6 @@
+# mart MCP Server (Stage4 V1.0) 依赖
+# 版本已按本机 venv 实际安装记录
+mcp>=1.29.0,<2
+psycopg2-binary==2.9.12
+pydantic>=2.13,<3
+python-dotenv>=1.2,<2

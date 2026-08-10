@@ -1,0 +1,77 @@
+# -*- coding: utf-8 -*-
+"""F1.0 页面/API/数据契约验收矩阵生成（整改后最终状态）"""
+import csv
+from pathlib import Path
+
+# page, route, title, component, supported_filters, frontend_service, backend_endpoint, official_db_interface,
+# data_status, independent_page, independent_api, uses_mock, uses_today_data_wrongly, formula_in_frontend, formula_in_backend, test_result
+rows = [
+    ["今日经营","/today","经营概览/今日经营/单日经营(随区间)","TodayPage(独立)","shop+date+scope",
+     "api('/business/*')+api('/priorities/*')","/business/summary /business/compare /business/trend /priorities/risks /priorities/opportunities /business/shop-contribution",
+     "get_business_period_summary/get_platform_business_period_summary/compare_*/get_daily_risk_priorities/get_daily_opportunity_priorities/get_shop_contribution",
+     "READY","是","是","否","否","否","否","PASS"],
+    ["店铺","/store","店铺经营","StorePage(独立)","date+scope(不选店,两店对比)",
+     "api('/business/summary')+api('/business/shop-contribution')","/business/summary(×3:整体+两店) /business/shop-contribution",
+     "get_business_period_summary×3/get_shop_contribution","READY","是","是","否","否","否","否","PASS"],
+    ["经营优先级","/priorities","经营优先级","PriorityPage(独立)","date",
+     "api('/priorities/*')","/priorities/risks /priorities/opportunities /priorities/watchlist",
+     "get_daily_risk_priorities/get_daily_opportunity_priorities/get_daily_action_list","READY","是","是","否","否","否","否","PASS"],
+    ["品线","/product-lines","品线分析","ProductLinePage(独立)","date",
+     "api('/master-data/*')","/master-data/product-lines /master-data/product-line-members",
+     "meta.product_line+master_product 关联","PARTIAL(经营汇总NOT_READY)","是","是","否","否","否","否","PASS"],
+    ["Master Product","/master-products","Master Product","MasterProductPage(独立)","date",
+     "api('/master-data/products')","/master-data/products","meta.master_product","PARTIAL(经营NOT_READY)","是","是","否","否","否","否","PASS"],
+    ["商品","/products","商品分析","ProductPage(独立)","shop+date",
+     "api('/business/products/top')","/business/products/top","mart.rank_products","PARTIAL(列级缺口)","是","是","否","否","否","否","PASS"],
+    ["商品卡","/product-card","商品卡经营","ProductCardPage(独立)","shop+date(scope固定商品卡)",
+     "api('/business/summary')+api('/business/trend')","/business/summary?scope=商品卡 /business/trend?scope=商品卡",
+     "get_business_period_summary(scope=商品卡)","READY(构成NOT_READY)","是","是","否","否","否","否","PASS"],
+    ["投放","/advertising","投放经营","AdvertisingPage(独立)","shop+date+scope",
+     "api('/advertising/summary')+api('/business/trend')","/advertising/summary /business/trend",
+     "get_advertising_period_summary(白名单)","READY","是","是","否","否","否","否","PASS"],
+    ["退款","/refund","退款分析","RefundPage(独立)","shop+date+scope",
+     "api('/business/summary')+api('/business/trend')","/business/summary /business/trend(refund_rate) /business/summary(两店)",
+     "get_business_period_summary","READY(原因NOT_READY)","是","是","否","否","否","否","PASS"],
+    ["达人/账号","/accounts","达人 / 账号","AccountPage(NOT_READY)","date",
+     "无","无","无(白名单未暴露)","NOT_READY","是","否","否","否","否","否","PASS"],
+    ["直播","/live","直播经营","LivePage(独立)","shop+date(scope固定直播)",
+     "api('/business/summary')+api('/business/trend')","/business/summary?scope=直播 /business/trend?scope=直播",
+     "get_business_period_summary(scope=直播)","READY(明细NOT_READY)","是","是","否","否","否","否","PASS"],
+    ["短视频","/video","短视频经营","VideoPage(独立)","shop+date(scope固定短视频)",
+     "api('/business/summary')+api('/business/trend')","/business/summary?scope=短视频 /business/trend?scope=短视频",
+     "get_business_period_summary(scope=短视频)","READY(明细NOT_READY)","是","是","否","否","否","否","PASS"],
+    ["搜索","/search","搜索","SearchPage(NOT_READY)","date","无","无","无","NOT_READY","是","否","否","否","否","否","PASS"],
+    ["素材","/materials","素材","MaterialPage(NOT_READY)","date","无","无","无","NOT_READY","是","否","否","否","否","否","PASS"],
+    ["智能经营","/smart-operation","智能经营","SmartOperationPage(独立)","date",
+     "api('/priorities/*')","/priorities/risks /priorities/opportunities /priorities/watchlist",
+     "get_daily_risk_priorities/get_daily_opportunity_priorities/get_daily_action_list","READY","是","是","否","否","否","否","PASS"],
+    ["风险中心","/risks","风险中心","RiskPage(独立)","date",
+     "api('/priorities/risks')","/priorities/risks?limit=50","get_daily_risk_priorities","READY","是","是","否","否","否","否","PASS"],
+    ["问题诊断","/diagnosis","问题诊断","DiagnosisPage(独立)","shop+date",
+     "api('/diagnostics/*')","/diagnostics/results /diagnostics/decomposition",
+     "get_diagnostic_result/decompose_platform_change_by_shop","READY","是","是","否","否","否","否","PASS"],
+    ["增长机会","/opportunities","增长机会","OpportunityPage(独立)","date",
+     "api('/priorities/opportunities')","/priorities/opportunities?limit=50","get_daily_opportunity_priorities","READY","是","是","否","否","否","否","PASS"],
+    ["数据中心","/data-center","数据中心","DataCenterPage","date","api('/data-status')","/data-status","get_data_coverage","READY","是","是","否","否","否","否","PASS"],
+    ["系统状态","/system-status","系统状态","SystemStatusPage","-","api('/health')+api('/ready')","/health /ready","(只读探测)","READY","是","是","否","否","否","否","PASS"],
+    ["数据状态","/data-status","数据状态","DataStatusPage","date","api('/data-status')","/data-status","get_data_coverage","READY","是","是","否","否","否","否","PASS"],
+]
+
+p = Path("F1.0_page_api_matrix.csv")
+with p.open("w", newline="", encoding="utf-8-sig") as f:
+    w = csv.writer(f)
+    w.writerow(["page","route","title","component","supported_filters","frontend_service","backend_endpoint",
+                "official_db_interface","data_status","independent_page","independent_api","uses_mock",
+                "uses_today_data_wrongly","formula_in_frontend","formula_in_backend","test_result"])
+    w.writerows(rows)
+print("验收矩阵生成:", p, "| 页面数:", len(rows))
+
+# 统计
+from collections import Counter
+st = Counter(r[8].split("(")[0] for r in rows)
+print("状态分布:", dict(st))
+print("uses_mock=否:", all(r[11]=='否' for r in rows))
+print("uses_today_wrongly=否:", all(r[12]=='否' for r in rows))
+print("formula_frontend=否:", all(r[13]=='否' for r in rows))
+print("formula_backend=否:", all(r[14]=='否' for r in rows))
+print("PASS 数:", sum(1 for r in rows if r[15]=='PASS'))

@@ -1,0 +1,3 @@
+product_line_id,product_line_code,product_line_name,enabled,display_order,valid_from,valid_to,notes,created_at,updated_at
+1,YIZIJIANG,鱼子酱品线,t,1,,,鱼子酱系列,2026-08-08 14:48:08.519357+08,2026-08-08 14:48:08.519357+08
+2,RENSHEN,人参品线,t,2,,,人参系列,2026-08-08 14:48:08.519357+08,2026-08-08 14:48:08.519357+08

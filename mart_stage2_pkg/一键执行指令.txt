@@ -1,0 +1,138 @@
+【整段可直接复制给 WorkBuddy｜mart V1.0 阶段2】
+
+现在进入《PostgreSQL mart经营分析层 V1.0｜阶段2 动态时间区间汇总 Function》实施。
+
+本次我同时提供两份正式文件：
+1. 《PostgreSQL mart经营分析层 V1.0｜阶段2 动态时间区间汇总Function｜开发与验收规范.docx》
+2. `02_mart_V1.0_阶段2_Period_Function.sql`
+
+请把 DOCX 作为开发规则基线，把 SQL 作为实施参考/执行脚本。若 SQL 与当前数据库阶段1真实对象签名存在差异，必须先检查差异再做最小适配，不允许自行改变业务口径。
+
+当前已确认基线：
+- V1.4 指标规则已落库并验收：96条；已确认51；已明确28；待平台口径确认6；缺基础字段11；auto_use_allowed=true 79。
+- 12条“剔除退款”投放费比/综合费比的分母全部为 settlement_amount。
+- core 9表当前6月真实数据总计18809行，日期2026-06-01～2026-06-30。
+- 阶段0、0.5真实维度扫描已经完成。
+- 阶段1已完成：mart schema、mart_dimension_rule 31条、Scope Resolver、9个 Daily Mart、9个中文 Mart View。
+- shop_daily当前30行且30/30每日唯一，与deal合法TOTAL一致。
+- 所有人工可见mart统一显示shop_name；底层shop_id继续保留，不删除。
+
+本阶段架构原则必须锁死：
+
+一、禁止做“万能Function”。
+`mart.get_business_period_summary()`只负责高频经营总览Scope：
+全店、自营、合作、商品卡、短视频、直播、图文、其他、自营商品卡、合作商品卡、自营短视频、合作短视频以及已确认同类组合。
+它的核心参数保持简单：p_shop_name、p_start_date、p_end_date、p_scope_key。
+不要往该Function继续加入product_id、account_name、category、terminal、price_band、audience、content等几十个可选参数。
+
+复杂业务域必须使用独立Function：
+- mart.get_carrier_period_summary()
+- mart.get_account_period_summary()
+- mart.get_content_period_summary()
+- mart.get_terminal_period_summary()
+- mart.get_category_period_summary()
+- mart.get_product_period_summary()
+- mart.get_price_band_period_summary()
+- mart.get_audience_period_summary()
+
+二、时间规则统一：
+- p_start_date、p_end_date不能为空。
+- p_start_date <= p_end_date。
+- p_shop_name='弹动官方旗舰店'查询单店；NULL为未来全部店铺预留。
+- Function对外只返回shop_name，不显示shop_id。
+- 当前任何代码禁止写死shop_id=1。
+
+三、Scope必须沿用阶段0/0.5/阶段1确认结果：
+- 全店 = sale_scope='全部' AND carrier_type='全部' AND ad_period='不限'
+- 自营 = 自营 + 全部载体 + 不限
+- 合作 = 合作 + 全部载体 + 不限
+- 商品卡 = 全部 + 商品卡 + 不限
+- 短视频 = 全部 + 短视频 + 不限
+- 自营商品卡 = 自营 + 商品卡 + 不限
+- 合作商品卡 = 合作 + 商品卡 + 不限
+- 自营短视频 = 自营 + 短视频 + 不限
+- 合作短视频 = 合作 + 短视频 + 不限
+平台已有合法TOTAL时优先直接取TOTAL，禁止用父级+子级重新构造TOTAL。
+
+四、跨期指标必须遵守V1.4：
+- 可加金额/人数/订单/件数/曝光/点击等：SUM。
+- 非可加ratio/均值：必须按V1.4的分子分母跨期重算。
+- 禁止AVG(日退款率)、AVG(日客单价)、AVG(日转化率)、AVG(日费比)。
+- 分母为0统一返回NULL。
+- 0.1972仍保存/返回0.1972；9.625仍保存/返回9.625，不乘100存储。
+- “剔除退款”投放费比/综合费比分母必须继续是settlement_amount，不得回退net_transaction_amount。
+
+五、source_only/缺基础字段：
+- 单日可以返回平台源值。
+- 多日必须返回NULL，并明确标记不可精确跨期重算。
+- 当前6个待平台口径确认和11个缺基础字段禁止SUM、AVG或自行推导。
+
+六、业务域特殊规则：
+1. carrier/account不承担全店TOTAL。全店/自营总量必须回deal合法TOTAL。
+2. carrier中“全域投放时段/标准+品牌投放”为special_overlap，绝不能与其明细一起SUM。
+3. account_name='弹动官方旗舰店'是具体账号，不是TOTAL；“更多账号”是合作剩余聚合桶。
+4. content当前真实样本只验证商品卡，不制造短视频/直播内容数据。
+5. terminal_type='整体'是合法TOTAL；禁止“整体+明细终端”一起SUM。
+6. category必须按category_level隔离父子层级，不同层级绝不能混SUM。
+7. product carrier_type='全部'是平台独立TOTAL，禁止用商品卡+图文+直播+短视频明细重建“全部”。
+8. price_band 6个价格带已经验证互斥，可以安全SUM重建店铺用户支付金额。
+9. audience carrier_type='全部'已验证60/60完全匹配，是合法TOTAL；禁止TOTAL+5个明细一起SUM。
+
+七、执行步骤：
+1. 先读取DOCX和SQL，不立即执行。
+2. 检查当前数据库阶段1对象、函数签名、9个Daily Mart字段结构。
+3. 比对SQL脚本依赖字段与当前真实数据库。
+4. 如果完全兼容，执行SQL。
+5. 如果仅有函数签名/列名差异，做最小适配后执行；不得改变已确认业务规则。
+6. 所有修改仅限mart层Function/View；禁止修改core/meta/audit业务数据。
+7. 执行完成后做完整验收。
+
+八、必须验收：
+- core总行数仍18809。
+- get_business_period_summary可运行。
+- 8个独立业务域Period Function可运行。
+- 1天结果与Daily/源合法行一致。
+- 7天SUM及非可加指标重算准确。
+- 30天6月结果与合法总口径一致。
+- 至少验证全店、自营、合作、商品卡、短视频、自营商品卡、合作商品卡、自营短视频、合作短视频。
+- 至少拿1个比例指标同时计算“正确SUM分子/SUM分母”与“错误AVG(日比例)”并输出差异，证明未误用AVG。
+- source_only：至少测试1个待平台口径确认指标和1个缺基础字段指标，单日有源值、多日NULL。
+- product默认carrier=全部，不能重建TOTAL。
+- category不能混层。
+- terminal不能整体+明细混SUM。
+- audience不能全部+明细混SUM。
+- price_band 6带SUM与店铺TOTAL用户支付金额diff=0.00。
+- 所有对外结果显示shop_name。
+- 12条剔除退款规则仍为settlement_amount分母。
+- 随机至少核对5个日期区间。
+
+九、本阶段禁止：
+- 不做环比/上期比较。
+- 不做排名变化、贡献度、异常分析。
+- 不做MCP。
+- 不导入第二店。
+- 不做天猫/京东。
+- 不开发前端。
+- 不修改V1.4公式。
+- 不重新导入6月Excel。
+- 不删除任何core数据。
+
+十、最终停止条件：
+完成后不要进入阶段3。输出并保存：
+《mart V1.0 阶段2｜动态时间区间汇总 Function 验收报告》
+报告至少包含：
+1. 实际创建/修改的Function清单
+2. 每个Function参数和职责
+3. 与提供SQL相比做了哪些最小适配
+4. Scope测试结果
+5. 1天/7天/30天测试
+6. V1.4非可加指标重算测试
+7. source_only测试
+8. product/category/terminal/audience/price_band专项测试
+9. core行数与比例原值保护
+10. 发现的问题和待确认项
+11. 是否满足进入阶段3的条件
+
+完成阶段2后停止，等我确认。
+
+【结束】

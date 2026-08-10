@@ -1,0 +1,168 @@
+Output format is unaligned.
+Field separator is "|".
+SCHEMA_PUBLIC|audit|
+SCHEMA_PUBLIC|core|
+SCHEMA_PUBLIC|mart|
+SCHEMA_PUBLIC|meta|
+SCHEMA_PUBLIC|pg_temp_3|
+SCHEMA_PUBLIC|pg_temp_4|
+SCHEMA_PUBLIC|public|USAGE
+SCHEMA_PUBLIC|stg|
+SCHEMA_PUBLIC|中文数据|
+FUNC_PUBLIC|mart|_diag_master_product|EXECUTE
+FUNC_PUBLIC|mart|_diag_product_line|EXECUTE
+FUNC_PUBLIC|mart|check_mapping_period_conflict|EXECUTE
+FUNC_PUBLIC|mart|get_business_report|EXECUTE
+FUNC_PUBLIC|meta|audit_mapping|EXECUTE
+FUNC_PUBLIC|meta|audit_masterdata|EXECUTE
+FUNC_PUBLIC|meta|check_chinese_coverage|EXECUTE
+FUNC_PUBLIC|meta|gen_master_product_code|EXECUTE
+FUNC_PUBLIC|meta|gen_master_sku_code|EXECUTE
+FUNC_PUBLIC|meta|refresh_chinese_views|EXECUTE
+SECURITY_DEFINER|mart|assert_period|p_start_date date, p_end_date date|postgres|
+SECURITY_DEFINER|mart|assert_rank_args|p_domain_key text, p_metric_key text, p_sort_by text, p_sort_direction text, p_limit integer|postgres|
+SECURITY_DEFINER|mart|compare_advertising_period|p_shop_name text, p_start_date date, p_end_date date, p_scope_key text|postgres|
+SECURITY_DEFINER|mart|compare_business_period|p_shop_name text, p_start_date date, p_end_date date, p_scope_key text, p_metric_key text|postgres|
+SECURITY_DEFINER|mart|compare_platform_business|p_platform_code text, p_start_date date, p_end_date date, p_scope_key text, p_metric_key text|postgres|
+SECURITY_DEFINER|mart|decompose_master_product_by_shop_product|p_master_product_id bigint, p_start_date date, p_end_date date|postgres|
+SECURITY_DEFINER|mart|decompose_platform_change_by_shop|p_platform_code text, p_start_date date, p_end_date date, p_scope_key text, p_metric_key text|postgres|
+SECURITY_DEFINER|mart|detect_anomalies|p_platform_code text, p_start_date date, p_end_date date, p_domain_key text, p_shop_name text|postgres|
+SECURITY_DEFINER|mart|detect_growth_opportunities|p_platform_code text, p_start_date date, p_end_date date, p_domain_key text, p_shop_name text|postgres|
+SECURITY_DEFINER|mart|diagnose_anomaly|p_anomaly_event_id bigint|postgres|
+SECURITY_DEFINER|mart|diagnose_entity|p_domain_key text, p_entity_name text, p_start_date date, p_end_date date, p_shop_name text, p_scope_key text, p_anomaly_event_id bigint|postgres|
+SECURITY_DEFINER|mart|generate_daily_action_items|p_platform_code text, p_start_date date, p_end_date date|postgres|
+SECURITY_DEFINER|mart|get_account_contribution|p_shop_name text, p_start_date date, p_end_date date, p_sale_scope text, p_metric_key text, p_account_name text, p_include_aggregate_bucket boolean, p_limit integer|postgres|
+SECURITY_DEFINER|mart|get_account_period_summary|p_shop_name text, p_start_date date, p_end_date date, p_sale_scope text, p_account_name text|postgres|
+SECURITY_DEFINER|mart|get_advertising_diagnosis|p_domain_key text, p_entity_name text, p_start_date date, p_end_date date, p_shop_name text|postgres|
+SECURITY_DEFINER|mart|get_advertising_period_summary|p_shop_name text, p_start_date date, p_end_date date, p_scope_key text|postgres|
+SECURITY_DEFINER|mart|get_anomalies|p_platform_code text, p_start_date date, p_end_date date, p_domain_key text, p_entity_name text, p_severity text, p_status text|postgres|
+SECURITY_DEFINER|mart|get_anomaly_summary|p_platform_code text, p_start_date date, p_end_date date, p_status text|postgres|
+SECURITY_DEFINER|mart|get_audience_period_summary|p_shop_name text, p_start_date date, p_end_date date, p_audience_type text, p_carrier_type text|postgres|
+SECURITY_DEFINER|mart|get_business_contribution|p_shop_name text, p_start_date date, p_end_date date, p_scope_key text, p_metric_key text|postgres|
+SECURITY_DEFINER|mart|get_business_period_summary|p_shop_name text, p_start_date date, p_end_date date, p_scope_key text|postgres|
+SECURITY_DEFINER|mart|get_business_report|p_start_date date, p_end_date date|postgres|
+SECURITY_DEFINER|mart|get_carrier_period_summary|p_shop_name text, p_start_date date, p_end_date date, p_sale_scope text, p_carrier_type text, p_account_channel text|postgres|
+SECURITY_DEFINER|mart|get_category_contribution|p_shop_name text, p_start_date date, p_end_date date, p_category_level integer, p_category_l1 text, p_category_l2 text, p_metric_key text, p_limit integer|postgres|
+SECURITY_DEFINER|mart|get_category_period_summary|p_shop_name text, p_start_date date, p_end_date date, p_category_level integer, p_category_l1 text, p_category_l2 text, p_category_l3 text|postgres|
+SECURITY_DEFINER|mart|get_content_period_summary|p_shop_name text, p_start_date date, p_end_date date, p_selling_type text, p_carrier_type text, p_content_id text|postgres|
+SECURITY_DEFINER|mart|get_daily_action_list|p_platform_code text, p_start_date date, p_end_date date, p_item_type text, p_limit integer|postgres|
+SECURITY_DEFINER|mart|get_daily_business_brief|p_platform_code text, p_start_date date, p_end_date date|postgres|
+SECURITY_DEFINER|mart|get_daily_opportunity_priorities|p_platform_code text, p_start_date date, p_end_date date, p_limit integer|postgres|
+SECURITY_DEFINER|mart|get_daily_risk_priorities|p_platform_code text, p_start_date date, p_end_date date, p_limit integer|postgres|
+SECURITY_DEFINER|mart|get_data_coverage|p_shop_name text|postgres|
+SECURITY_DEFINER|mart|get_diagnostic_entity_metrics|p_domain_key text|postgres|
+SECURITY_DEFINER|mart|get_diagnostic_result|p_platform_code text, p_start_date date, p_end_date date, p_domain_key text, p_status text|postgres|
+SECURITY_DEFINER|mart|get_diagnostic_snapshot|p_shop_name text, p_start_date date, p_end_date date, p_domain_key text, p_scope_key text, p_entity_id text, p_entity_name text, p_category_level integer|postgres|
+SECURITY_DEFINER|mart|get_diagnostic_supported_metrics||postgres|
+SECURITY_DEFINER|mart|get_entity_anomalies|p_platform_code text, p_domain_key text, p_entity_name text, p_start_date date, p_end_date date|postgres|
+SECURITY_DEFINER|mart|get_entity_opportunity|p_platform_code text, p_domain_key text, p_entity_name text, p_start_date date, p_end_date date|postgres|
+SECURITY_DEFINER|mart|get_funnel_diagnosis|p_domain_key text, p_entity_name text, p_start_date date, p_end_date date, p_shop_name text, p_scope_key text|postgres|
+SECURITY_DEFINER|mart|get_growth_opportunities|p_platform_code text, p_start_date date, p_end_date date, p_domain_key text, p_opportunity_code text, p_min_level text|postgres|
+SECURITY_DEFINER|mart|get_master_product_members|p_master_product_id bigint|postgres|
+SECURITY_DEFINER|mart|get_master_product_period_summary|p_master_product_id bigint, p_start_date date, p_end_date date, p_shop_name text|postgres|
+SECURITY_DEFINER|mart|get_masterdata_quality|p_start_date date, p_end_date date|postgres|
+SECURITY_DEFINER|mart|get_opportunity_summary|p_platform_code text, p_start_date date, p_end_date date, p_status text|postgres|
+SECURITY_DEFINER|mart|get_platform_business_period_summary|p_platform_code text, p_start_date date, p_end_date date, p_scope_key text|postgres|
+SECURITY_DEFINER|mart|get_platform_diagnostic_snapshot|p_platform_code text, p_start_date date, p_end_date date, p_scope_key text|postgres|
+SECURITY_DEFINER|mart|get_price_band_period_summary|p_shop_name text, p_start_date date, p_end_date date, p_price_band text|postgres|
+SECURITY_DEFINER|mart|get_product_contribution|p_shop_name text, p_start_date date, p_end_date date, p_metric_key text, p_product_id text, p_product_name text, p_limit integer|postgres|
+SECURITY_DEFINER|mart|get_product_line_members|p_product_line_name text|postgres|
+SECURITY_DEFINER|mart|get_product_line_period_summary|p_product_line_name text, p_start_date date, p_end_date date|postgres|
+SECURITY_DEFINER|mart|get_product_period_summary|p_shop_name text, p_start_date date, p_end_date date, p_product_id text, p_product_name text, p_carrier_type text|postgres|
+SECURITY_DEFINER|mart|get_shop_contribution|p_platform_code text, p_start_date date, p_end_date date, p_scope_key text, p_metric_key text|postgres|
+SECURITY_DEFINER|mart|get_terminal_period_summary|p_shop_name text, p_start_date date, p_end_date date, p_terminal_type text, p_selling_type text|postgres|
+SECURITY_DEFINER|mart|period_scope_rule|p_scope_key text|postgres|
+SECURITY_DEFINER|mart|previous_period|p_start_date date, p_end_date date|postgres|
+SECURITY_DEFINER|mart|rank_accounts|p_shop_name text, p_start_date date, p_end_date date, p_sale_scope text, p_metric_key text, p_sort_by text, p_sort_direction text, p_limit integer, p_include_aggregate_bucket boolean, p_account_name text|postgres|
+SECURITY_DEFINER|mart|rank_audiences|p_shop_name text, p_start_date date, p_end_date date, p_carrier_type text, p_metric_key text, p_sort_by text, p_sort_direction text, p_limit integer|postgres|
+SECURITY_DEFINER|mart|rank_carriers|p_shop_name text, p_start_date date, p_end_date date, p_sale_scope text, p_metric_key text, p_sort_by text, p_sort_direction text, p_limit integer|postgres|
+SECURITY_DEFINER|mart|rank_categories|p_shop_name text, p_start_date date, p_end_date date, p_category_level integer, p_category_l1 text, p_category_l2 text, p_metric_key text, p_sort_by text, p_sort_direction text, p_limit integer|postgres|
+SECURITY_DEFINER|mart|rank_master_products|p_start_date date, p_end_date date, p_metric_key text, p_sort_by text, p_sort_direction text, p_limit integer|postgres|
+SECURITY_DEFINER|mart|rank_price_bands|p_shop_name text, p_start_date date, p_end_date date, p_metric_key text, p_sort_by text, p_sort_direction text, p_limit integer|postgres|
+SECURITY_DEFINER|mart|rank_products|p_shop_name text, p_start_date date, p_end_date date, p_metric_key text, p_sort_by text, p_sort_direction text, p_limit integer, p_product_id text, p_product_name text|postgres|
+SECURITY_DEFINER|mart|resolve_master_product|p_platform_code text, p_shop_name text, p_platform_product_id text, p_biz_date date|postgres|
+AGENT_TABLES|audit|import_batch
+AGENT_TABLES|audit|masterdata_change_log
+AGENT_TABLES|mart|analysis_metric_whitelist
+AGENT_TABLES|mart|anomaly_event
+AGENT_TABLES|mart|anomaly_rule
+AGENT_TABLES|mart|daily_action_item
+AGENT_TABLES|mart|diagnostic_result
+AGENT_TABLES|mart|diagnostic_type
+AGENT_TABLES|mart|mart_dimension_rule
+AGENT_TABLES|mart|opportunity_event
+AGENT_TABLES|mart|opportunity_rule
+AGENT_TABLES|mart|opportunity_type
+AGENT_TABLES|mart|priority_entity_weight
+AGENT_TABLES|mart|product_mapping_conflicts
+AGENT_TABLES|mart|stage3_expected_scope_map
+AGENT_TABLES|mart|unmapped_products
+AGENT_TABLES|meta|master_product
+AGENT_TABLES|meta|master_product_alias
+AGENT_TABLES|meta|master_sku
+AGENT_TABLES|meta|master_sku_alias
+AGENT_TABLES|meta|platform
+AGENT_TABLES|meta|platform_product_mapping
+AGENT_TABLES|meta|platform_sku_mapping
+AGENT_TABLES|meta|product_line
+AGENT_TABLES|meta|shop
+AGENT_FUNCS|mart|assert_period
+AGENT_FUNCS|mart|assert_rank_args
+AGENT_FUNCS|mart|compare_advertising_period
+AGENT_FUNCS|mart|compare_business_period
+AGENT_FUNCS|mart|compare_platform_business
+AGENT_FUNCS|mart|decompose_master_product_by_shop_product
+AGENT_FUNCS|mart|decompose_platform_change_by_shop
+AGENT_FUNCS|mart|get_account_contribution
+AGENT_FUNCS|mart|get_account_period_summary
+AGENT_FUNCS|mart|get_advertising_diagnosis
+AGENT_FUNCS|mart|get_advertising_period_summary
+AGENT_FUNCS|mart|get_anomalies
+AGENT_FUNCS|mart|get_anomaly_summary
+AGENT_FUNCS|mart|get_audience_period_summary
+AGENT_FUNCS|mart|get_business_contribution
+AGENT_FUNCS|mart|get_business_period_summary
+AGENT_FUNCS|mart|get_business_report
+AGENT_FUNCS|mart|get_carrier_period_summary
+AGENT_FUNCS|mart|get_category_contribution
+AGENT_FUNCS|mart|get_category_period_summary
+AGENT_FUNCS|mart|get_content_period_summary
+AGENT_FUNCS|mart|get_daily_action_list
+AGENT_FUNCS|mart|get_daily_business_brief
+AGENT_FUNCS|mart|get_daily_opportunity_priorities
+AGENT_FUNCS|mart|get_daily_risk_priorities
+AGENT_FUNCS|mart|get_data_coverage
+AGENT_FUNCS|mart|get_diagnostic_entity_metrics
+AGENT_FUNCS|mart|get_diagnostic_result
+AGENT_FUNCS|mart|get_diagnostic_snapshot
+AGENT_FUNCS|mart|get_diagnostic_supported_metrics
+AGENT_FUNCS|mart|get_entity_anomalies
+AGENT_FUNCS|mart|get_entity_opportunity
+AGENT_FUNCS|mart|get_funnel_diagnosis
+AGENT_FUNCS|mart|get_growth_opportunities
+AGENT_FUNCS|mart|get_master_product_members
+AGENT_FUNCS|mart|get_master_product_period_summary
+AGENT_FUNCS|mart|get_masterdata_quality
+AGENT_FUNCS|mart|get_opportunity_summary
+AGENT_FUNCS|mart|get_platform_business_period_summary
+AGENT_FUNCS|mart|get_platform_diagnostic_snapshot
+AGENT_FUNCS|mart|get_price_band_period_summary
+AGENT_FUNCS|mart|get_product_contribution
+AGENT_FUNCS|mart|get_product_line_members
+AGENT_FUNCS|mart|get_product_line_period_summary
+AGENT_FUNCS|mart|get_product_period_summary
+AGENT_FUNCS|mart|get_shop_contribution
+AGENT_FUNCS|mart|get_terminal_period_summary
+AGENT_FUNCS|mart|period_scope_rule
+AGENT_FUNCS|mart|previous_period
+AGENT_FUNCS|mart|rank_accounts
+AGENT_FUNCS|mart|rank_audiences
+AGENT_FUNCS|mart|rank_carriers
+AGENT_FUNCS|mart|rank_categories
+AGENT_FUNCS|mart|rank_master_products
+AGENT_FUNCS|mart|rank_price_bands
+AGENT_FUNCS|mart|rank_products
+AGENT_FUNCS|mart|resolve_master_product
+ROLE_MEMBERSHIP|pg_read_all_settings|pg_monitor
+ROLE_MEMBERSHIP|pg_read_all_stats|pg_monitor
+ROLE_MEMBERSHIP|pg_stat_scan_tables|pg_monitor

@@ -1,0 +1,116 @@
+{
+ "official": [
+  {
+   "sheet": "成交概览",
+   "rows": 720,
+   "cols": 61
+  },
+  {
+   "sheet": "自营成交",
+   "rows": 720,
+   "cols": 61
+  },
+  {
+   "sheet": "合作成交",
+   "rows": 720,
+   "cols": 61
+  },
+  {
+   "sheet": "载体构成",
+   "rows": 3203,
+   "cols": 64
+  },
+  {
+   "sheet": "账号构成",
+   "rows": 1953,
+   "cols": 64
+  },
+  {
+   "sheet": "单载体构成",
+   "rows": 4294,
+   "cols": 64
+  },
+  {
+   "sheet": "终端构成",
+   "rows": 450,
+   "cols": 37
+  },
+  {
+   "sheet": "品类构成",
+   "rows": 439,
+   "cols": 10
+  },
+  {
+   "sheet": "商品构成",
+   "rows": 5771,
+   "cols": 13
+  },
+  {
+   "sheet": "价格带构成",
+   "rows": 179,
+   "cols": 5
+  },
+  {
+   "sheet": "人群构成",
+   "rows": 360,
+   "cols": 8
+  }
+ ],
+ "personal": [
+  {
+   "sheet": "成交概览",
+   "rows": 720,
+   "cols": 61
+  },
+  {
+   "sheet": "自营成交",
+   "rows": 720,
+   "cols": 61
+  },
+  {
+   "sheet": "合作成交",
+   "rows": 720,
+   "cols": 61
+  },
+  {
+   "sheet": "载体构成",
+   "rows": 3314,
+   "cols": 64
+  },
+  {
+   "sheet": "账号构成",
+   "rows": 1987,
+   "cols": 64
+  },
+  {
+   "sheet": "单载体构成",
+   "rows": 6539,
+   "cols": 64
+  },
+  {
+   "sheet": "终端构成",
+   "rows": 450,
+   "cols": 37
+  },
+  {
+   "sheet": "品类构成",
+   "rows": 388,
+   "cols": 10
+  },
+  {
+   "sheet": "商品构成",
+   "rows": 5184,
+   "cols": 13
+  },
+  {
+   "sheet": "价格带构成",
+   "rows": 178,
+   "cols": 5
+  },
+  {
+   "sheet": "人群构成",
+   "rows": 351,
+   "cols": 8
+  }
+ ]
+}

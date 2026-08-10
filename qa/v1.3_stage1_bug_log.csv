@@ -1,0 +1,5 @@
+﻿id,stage,severity,area,description,root_cause,resolution,status
+1,V1.3-Stage1,P1,MCP店铺校验,未知店铺返回NO_DATA而非UNKNOWN_SHOP,业务工具未预校验shop_name存在性,schemas.py新增check_shop并在business/advertising/catalog/diagnostic工具接入；未知店铺现返回UNKNOWN_SHOP,closed
+2,V1.3-Stage1,P2,店铺命名,第二店名「抖音个人护理旗舰店」与官方店命名风格不一致,历史导入时采用平台口径名,统一为「弹动个人护理旗舰店」并同步meta.shop/raw_files目录/中文View/AI别名,closed
+3,V1.3-Stage1,P2,AI提示词,system_prompt写死「服务弹动官方旗舰店」,单店时代遗留,改为多店感知+店铺识别别名映射（官方旗舰店/弹动官方旗舰店/个人护理店/弹动个人护理旗舰店）+歧义追问,closed
+4,V1.3-Stage1,P1,MCP平台汇总,多店未指定店铺时business_summary等返回单店值(个护3082489.63)而非两店合计,把单店伪装成多店完整结果(文档19节红线),schemas.check_shop增加required参数→多店未指定返回SHOP_REQUIRED;business/advertising/diagnostic强制店铺,coverage允许NULL=全部店,closed
