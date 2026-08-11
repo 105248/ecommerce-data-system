@@ -21,6 +21,9 @@ DB_PORT = int(os.getenv("DB_PORT", "5432"))
 DB_NAME = os.getenv("DB_NAME", "ecommerce_db")
 DB_USER = os.getenv("DB_USER", "growth_workspace_reader")
 DB_PASSWORD = os.getenv("DB_PASSWORD", "")
+# F1.1：目标管理写库专用最小权限角色（仅 meta.business_target 增改查）
+TARGET_WRITER_USER = "growth_workspace_target_writer"
+TARGET_WRITER_PASSWORD = os.getenv("TARGET_WRITER_PASSWORD", "")
 STATEMENT_TIMEOUT_MS = int(os.getenv("STATEMENT_TIMEOUT_MS", "10000"))
 SESSION_SECRET = os.getenv("SESSION_SECRET", "")
 

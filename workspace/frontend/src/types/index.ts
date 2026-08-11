@@ -93,6 +93,7 @@ export interface PageMeta {
   title: string
   supportsShop: boolean
   supportsScope: boolean
+  supportsDate?: boolean
 }
 
 export const SCOPE_LIST = ['全店', '自营', '合作', '商品卡', '短视频', '直播', '图文', '其他',

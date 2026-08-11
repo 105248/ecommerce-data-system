@@ -72,3 +72,29 @@ def health_check_db():
                 "sample_function": "OK", "sample_value": rows2[0]["user_pay_amount"]}
     except Exception as e:
         return {"database": "ERROR", "detail": str(e)[:80]}
+
+
+# ===== F1.1 目标写库（growth_workspace_target_writer 最小权限：仅 meta.business_target 增改查） =====
+def execute_write(sql: str, params: tuple = ()):
+    """执行目标表写操作（INSERT/UPDATE，禁止 DELETE/DDL）。返回影响行数。"""
+    sql = sql.strip()
+    up = sql.upper()
+    if not (up.startswith("INSERT") or up.startswith("UPDATE")):
+        raise BackendDBError("仅允许 INSERT/UPDATE（目标管理；删除用 enabled=false 软删）")
+    t0 = time.time()
+    try:
+        conn = psycopg2.connect(
+            host=config.DB_HOST, port=config.DB_PORT, dbname=config.DB_NAME,
+            user=config.TARGET_WRITER_USER, password=config.TARGET_WRITER_PASSWORD,
+            connect_timeout=5, options="-c statement_timeout={}".format(config.STATEMENT_TIMEOUT_MS),
+        )
+        try:
+            with conn.cursor() as cur:
+                cur.execute(sql, params)
+                n = cur.rowcount
+            conn.commit()
+            return n, (time.time() - t0) * 1000
+        finally:
+            conn.close()
+    except psycopg2.Error as e:
+        raise BackendDBError("目标写库失败: {}".format(str(e).strip())) from e

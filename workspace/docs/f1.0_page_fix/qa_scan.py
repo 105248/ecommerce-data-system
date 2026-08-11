@@ -143,7 +143,7 @@ try:
     wl_names = {i.get("object_name") for i in wl.get("interfaces", [])}
     need = {"get_product_line_members", "get_product_line_period_summary", "get_master_product_period_summary", "rank_master_products"}
     check("J1 品线/MP 4 函数已入白名单", need.issubset(wl_names), str(need - wl_names) if need - wl_names else "全含")
-    check("J2 白名单总数=70(F1.0.4-R3)", wl.get("interface_count") == 70, str(wl.get("interface_count")))
+    check("J2 白名单总数=75(F1.1)", wl.get("interface_count") == 75, str(wl.get("interface_count")))
 except Exception as e:
     check("J1/J2 白名单检查", False, str(e)[:100])
 

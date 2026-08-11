@@ -2,7 +2,7 @@
   "version": "V1.0",
   "purpose": "数据库最终架构收口：MCP 与未来 Backend API 唯一正式公共接口白名单",
   "consumer_policy": "仅允许消费 ACTIVE + MART_PUBLIC / MASTER_DATA 只读对象；检测/生成类(写库)不列入白名单",
-  "interface_count": 70,
+  "interface_count": 75,
   "interfaces": [
     {
       "interface_code": "audit.import_batch",
@@ -773,6 +773,58 @@
       "planned_for_http_api": true,
       "endpoint": "/api/v1/business/cycle-report",
       "description": "周期进度（日报/周报/月报）：3店铺表×6经营类型×6指标，经营类型归并口径"
+    },
+    {
+      "interface_code": "mart.get_operating_progress",
+      "schema": "mart",
+      "object_name": "get_operating_progress",
+      "object_type": "FUNCTION",
+      "business_domain": "business_summary",
+      "used_by_mcp": false,
+      "planned_for_http_api": true,
+      "endpoint": "/api/v1/operating-progress",
+      "description": "F1.1 经营进度18行×目标测算×告警（日报/周报/月报）"
+    },
+    {
+      "interface_code": "mart._calc_period_target",
+      "schema": "mart",
+      "object_name": "_calc_period_target",
+      "object_type": "FUNCTION",
+      "business_domain": "business_summary",
+      "used_by_mcp": false,
+      "planned_for_http_api": false,
+      "description": "F1.1 内部辅助：期间目标测算（月目标÷月天×落月天数）"
+    },
+    {
+      "interface_code": "mart._fmt_amount",
+      "schema": "mart",
+      "object_name": "_fmt_amount",
+      "object_type": "FUNCTION",
+      "business_domain": "business_summary",
+      "used_by_mcp": false,
+      "planned_for_http_api": false,
+      "description": "F1.1 内部辅助：金额格式化"
+    },
+    {
+      "interface_code": "mart._fmt_pct",
+      "schema": "mart",
+      "object_name": "_fmt_pct",
+      "object_type": "FUNCTION",
+      "business_domain": "business_summary",
+      "used_by_mcp": false,
+      "planned_for_http_api": false,
+      "description": "F1.1 内部辅助：百分比格式化"
+    },
+    {
+      "interface_code": "meta.business_target",
+      "schema": "meta",
+      "object_name": "business_target",
+      "object_type": "TABLE",
+      "business_domain": "target_management",
+      "used_by_mcp": false,
+      "planned_for_http_api": true,
+      "endpoint": "/api/v1/targets",
+      "description": "F1.1 月经营目标（人工维护；写权限=growth_workspace_target_writer）"
     }
   ]
 }

@@ -1,34 +1,33 @@
-// F1.0.4-R3 正式前端入口：核心页 + 周期进度 + 智能视图（业务分析页已按需求移除）
+// F1.1 V2.0 正式前端入口：经营进度为核心，业务分析精简，待关注/目标管理/数据中心/问数据
+// 旧业务分析页（商品/商品卡/短视频/投放/退款/直播/素材/搜索/智能经营/风险/诊断/机会）→ UI_HIDDEN，能力保留
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { AppShell } from './components/AppShell'
-import { TodayPage } from './features/dashboard/TodayPage'
-import { CycleProgressPage } from './features/cycle/CycleProgressPage'
-import { PrioritiesPage } from './features/priorities/PrioritiesPage'
+import { ProgressPage } from './features/progress/ProgressPage'
+import { AttentionPage } from './features/attention/AttentionPage'
+import { TargetsPage } from './features/targets/TargetsPage'
+import { DataCenterPage } from './features/data/DataCenterPage'
+import { AskPage } from './features/ask/AskPage'
 import { ProductLinesPage } from './features/product-lines/ProductLinesPage'
 import { MasterProductsPage } from './features/master-products/MasterProductsPage'
-import { MaterialsPage } from './features/materials/MaterialsPage'
-import { AccountsPage, RisksPage, OpportunitiesPage, DiagnosticsPage, SmartOperationPage, SearchPage } from './features/pages'
+import { AccountsPage } from './features/pages'
 import type { Filters } from './types'
 
 type Helpers = { changePreset: (k: string) => void }
 
 function Router({ f, h }: { f: Filters; h: Helpers }) {
-  const route = location.hash.slice(1) || '/today'
+  const route = location.hash.slice(1) || '/progress'
   switch (route) {
-    case '/today': return <TodayPage f={f} />
-    case '/cycle': return <CycleProgressPage f={f} h={h} />
-    case '/priorities': return <PrioritiesPage f={f} />
+    case '/progress': return <ProgressPage f={f} h={h} />
+    case '/attention': return <AttentionPage />
+    case '/targets': return <TargetsPage />
+    case '/data-center': return <DataCenterPage />
+    case '/ask': return <AskPage />
     case '/product-lines': return <ProductLinesPage f={f} />
     case '/master-products': return <MasterProductsPage f={f} />
     case '/accounts': return <AccountsPage f={f} />
-    case '/materials': return <MaterialsPage f={f} />
-    case '/search': return <SearchPage />
-    case '/smart-operation': return <SmartOperationPage f={f} />
-    case '/risks': return <RisksPage f={f} />
-    case '/diagnostics': return <DiagnosticsPage f={f} />
-    case '/opportunities': return <OpportunitiesPage f={f} />
-    default: return <TodayPage f={f} />
+    // UI_HIDDEN 旧路由安全回退经营进度（能力保留，智能体可查）
+    default: return <ProgressPage f={f} h={h} />
   }
 }
 

@@ -1,4 +1,5 @@
-// F1.0.4 /master-products（主档 + 合法排名，CONFIRMED 映射）
+// F1.1 /master-products 标准商品（UI 全中文化；内部 master_product 物理字段不变）
+// 回答"一个真实商品跨两家店到底表现怎么样"；仅 CONFIRMED 映射进入正式跨店汇总
 import { useEffect, useState } from 'react'
 import type { Filters } from '../../types'
 import { api } from '../../services/api'
@@ -20,14 +21,14 @@ export function MasterProductsPage({ f }: { f: Filters }) {
   }, [f.sd, f.ed])
   return (
     <div>
-      <h1>Master Product</h1>
-      <div className="sub">公司商品主档（跨店统一主商品；CONFIRMED 映射进入正式跨店汇总）｜ {f.sd} ～ {f.ed}</div>
+      <h1>标准商品</h1>
+      <div className="sub">公司标准商品主档（跨店统一；CONFIRMED 映射进入正式跨店汇总）｜ {f.sd} ～ {f.ed}</div>
       {err ? <CapabilityNotice state="ERROR" text={err} /> : (
         <>
           <div className="card">
-            <h3>Master Product 经营排名（用户支付金额）<span className="badge green">正式接口</span></h3>
+            <h3>标准商品经营表现（用户支付金额）<span className="badge green">正式接口</span></h3>
             <table>
-              <thead><tr><th>#</th><th>Master Product</th><th>品线</th><th className="num">用户支付金额</th><th className="num">映射店</th><th>映射完整</th></tr></thead>
+              <thead><tr><th>#</th><th>标准商品名称</th><th>所属品线</th><th className="num">当前金额</th><th className="num">覆盖店铺</th><th>映射状态</th></tr></thead>
               <tbody>
                 {rank.map((x, i) => (
                   <tr key={i}>
@@ -36,7 +37,7 @@ export function MasterProductsPage({ f }: { f: Filters }) {
                     <td>{esc(x.product_line_name || '—')}</td>
                     <td className="num">{yuan(x.current_value)}</td>
                     <td className="num">{x.mapped_shop_count}</td>
-                    <td>{x.mapping_complete ? <span className="badge green">完整</span> : <span className="badge amber">不完整</span>}</td>
+                    <td>{x.mapping_complete ? <span className="badge green">已确认</span> : <span className="badge amber">不完整</span>}</td>
                   </tr>
                 ))}
                 {!rank.length && <tr><td colSpan={6} className="empty">当前区间无排名数据</td></tr>}
@@ -44,9 +45,9 @@ export function MasterProductsPage({ f }: { f: Filters }) {
             </table>
           </div>
           <div className="card">
-            <h3>主档结构</h3>
+            <h3>标准商品成员</h3>
             <table>
-              <thead><tr><th>编码</th><th>名称</th><th>状态</th></tr></thead>
+              <thead><tr><th>标准商品编码</th><th>标准商品名称</th><th>状态</th></tr></thead>
               <tbody>
                 {list.map((m, i) => (
                   <tr key={i}>

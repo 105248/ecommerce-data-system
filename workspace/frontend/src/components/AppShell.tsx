@@ -1,37 +1,34 @@
-// F1.0.4 正式 App Shell：路由 / 侧边栏 / 筛选器单一状态源 / 数据状态条
+// F1.1 V2.0 正式 App Shell：分组导航 / 经营进度为主入口 / 工具页跳转
 import { useEffect, useRef, useState } from 'react'
 import { PRESET_CN, SCOPE_LIST, type Filters, type PageMeta } from '../types'
 import { api } from '../services/api'
 import { esc } from '../lib/format'
 
-export const ROUTES: Array<[string, string]> = [
-  ['/today', '今日经营'],
-  ['/cycle', '周期进度'],
-  ['/priorities', '经营优先级'],
-  ['/product-lines', '品线'],
-  ['/master-products', 'Master Product'],
-  ['/accounts', '达人/账号'],
-  ['/materials', '素材'],
-  ['/search', '搜索'],
-  ['/smart-operation', '智能经营'],
-  ['/risks', '风险中心'],
-  ['/diagnostics', '问题诊断'],
-  ['/opportunities', '增长机会'],
+// V2 分组导航（旧业务分析页 UI_HIDDEN，能力保留：数据库/mart/API/MCP 不删除）
+type NavItem = [string, string]
+type NavGroup = [string, NavItem[]]
+export const NAV: NavGroup[] = [
+  ['核心', [['/progress', '经营进度']]],
+  ['业务分析', [['/product-lines', '品线'], ['/master-products', '标准商品'], ['/accounts', '达人/账号']]],
+  ['决策', [['/attention', '待关注']]],
+  ['管理', [['/targets', '目标管理']]],
+  ['数据', [['/data-center', '数据中心'], ['/data-status', '数据状态'], ['/system-status', '系统状态']]],
+  ['智能助手', [['/ask', '问数据']]],
 ]
+export const FLAT_ROUTES: NavItem[] = NAV.flatMap(([, items]) => items)
+
+// 整页跳转的工具页（独立 HTML，非 React SPA）
+const EXTERNAL_PAGES = new Set(['/data-status', '/system-status'])
 
 export const PAGE_META: Record<string, PageMeta> = {
-  '/today': { title: '今日经营', supportsShop: true, supportsScope: true },
-  '/cycle': { title: '周期进度', supportsShop: false, supportsScope: false },
-  '/priorities': { title: '经营优先级', supportsShop: false, supportsScope: false },
-  '/product-lines': { title: '品线分析', supportsShop: false, supportsScope: false },
-  '/master-products': { title: 'Master Product', supportsShop: false, supportsScope: false },
+  '/progress': { title: '经营进度', supportsShop: false, supportsScope: false, supportsDate: false },
+  '/product-lines': { title: '品线', supportsShop: false, supportsScope: false },
+  '/master-products': { title: '标准商品', supportsShop: false, supportsScope: false },
   '/accounts': { title: '达人 / 账号', supportsShop: true, supportsScope: false },
-  '/materials': { title: '素材', supportsShop: true, supportsScope: false },
-  '/search': { title: '搜索', supportsShop: false, supportsScope: false },
-  '/smart-operation': { title: '智能经营', supportsShop: false, supportsScope: false },
-  '/risks': { title: '风险中心', supportsShop: false, supportsScope: false },
-  '/diagnostics': { title: '问题诊断', supportsShop: false, supportsScope: false },
-  '/opportunities': { title: '增长机会', supportsShop: false, supportsScope: false },
+  '/attention': { title: '待关注', supportsShop: false, supportsScope: false, supportsDate: false },
+  '/targets': { title: '目标管理', supportsShop: false, supportsScope: false, supportsDate: false },
+  '/data-center': { title: '数据中心', supportsShop: false, supportsScope: false, supportsDate: false },
+  '/ask': { title: '问数据', supportsShop: false, supportsScope: false, supportsDate: false },
 }
 
 export const SHOP_OPTIONS = [
@@ -117,20 +114,34 @@ export function AppShell({ children }: { children: (f: Filters, h: { changePrese
     setFilters({ ...filters, scope })
   }
 
+  function go(path: string) {
+    // 数据状态/系统状态为独立工具页（非 React SPA），整页跳转
+    if (EXTERNAL_PAGES.has(path)) { location.href = path; return }
+    location.hash = '#' + path
+  }
+
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
       <aside style={{ width: 190, background: '#1f2937', color: '#e5e7eb', padding: '16px 0', flexShrink: 0 }}>
-        <div style={{ padding: '0 16px 16px', fontWeight: 600, fontSize: 15 }}>抖音智能<br />经营工作台</div>
+        <div style={{ padding: '0 16px 16px', fontWeight: 600, fontSize: 15 }}>抖音经营<br />工作台</div>
         <nav>
-          {ROUTES.map(([path, label]) => (
-            <a key={path} href={`#${path}`}
-              style={{ display: 'block', padding: '8px 16px', fontSize: 13, color: route === path ? '#fff' : '#9ca3af', background: route === path ? '#374151' : 'transparent' }}>
-              {label}
-            </a>
+          {NAV.map(([group, items]) => (
+            <div key={group} style={{ marginBottom: 6 }}>
+              <div style={{ padding: '8px 16px 4px', fontSize: 11, color: '#6b7280', letterSpacing: 1 }}>{group}</div>
+              {items.map(([path, label]) => (
+                <a key={path} href={EXTERNAL_PAGES.has(path) ? path : `#${path}`}
+                  onClick={EXTERNAL_PAGES.has(path) ? undefined : e => { e.preventDefault(); go(path) }}
+                  style={{ display: 'block', padding: '7px 16px 7px 22px', fontSize: 13, cursor: 'pointer',
+                           color: route === path ? '#fff' : '#9ca3af', background: route === path ? '#374151' : 'transparent' }}>
+                  {label}
+                </a>
+              ))}
+            </div>
           ))}
         </nav>
       </aside>
       <main style={{ flex: 1, padding: 16, minWidth: 0 }}>
+        {meta.supportsDate !== false && (
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', background: '#fff', padding: '10px 14px', borderRadius: 10, border: '1px solid #e5e7eb', marginBottom: 12 }}>
           <span style={{ fontSize: 13, color: '#6b7280' }}>日期范围</span>
           <select value={filters.preset} onChange={e => changePreset(e.target.value)} style={{ padding: '4px 8px', borderRadius: 6, border: '1px solid #d1d5db' }}>
@@ -141,11 +152,15 @@ export function AppShell({ children }: { children: (f: Filters, h: { changePrese
           <span style={{ color: '#6b7280' }}>～</span>
           <input type="date" value={filters.ed} onChange={e => { userTouched.current = true; setFilters({ ...filters, preset: 'custom', ed: e.target.value }) }}
             style={{ padding: '4px 8px', borderRadius: 6, border: '1px solid #d1d5db' }} />
-          <span style={{ fontSize: 13, color: '#6b7280' }}>店铺</span>
-          <select value={filters.shop} onChange={e => changeShop(e.target.value)} disabled={!meta.supportsShop}
-            style={{ padding: '4px 8px', borderRadius: 6, border: '1px solid #d1d5db' }}>
-            {SHOP_OPTIONS.map(s => <option key={s.code} value={s.code}>{s.name}</option>)}
-          </select>
+          {meta.supportsShop && (
+            <>
+              <span style={{ fontSize: 13, color: '#6b7280' }}>店铺</span>
+              <select value={filters.shop} onChange={e => changeShop(e.target.value)}
+                style={{ padding: '4px 8px', borderRadius: 6, border: '1px solid #d1d5db' }}>
+                {SHOP_OPTIONS.map(s => <option key={s.code} value={s.code}>{s.name}</option>)}
+              </select>
+            </>
+          )}
           {meta.supportsScope && (
             <>
               <span style={{ fontSize: 13, color: '#6b7280' }}>口径</span>
@@ -155,10 +170,10 @@ export function AppShell({ children }: { children: (f: Filters, h: { changePrese
               </select>
             </>
           )}
-          {!meta.supportsShop && filters.shop && <span className="badge gray">店铺筛选不适用于当前页面</span>}
         </div>
+        )}
         <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 8, padding: '8px 14px', marginBottom: 12, fontSize: 12, color: '#6b7280', display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-          <span>查询区间：{filters.sd} ～ {filters.ed}</span>
+          {meta.supportsDate !== false && <span>查询区间：{filters.sd} ～ {filters.ed}</span>}
           <span>系统最新入库数据：{esc(status.fact || '—')}</span>
           <span>店铺：{filters.shopName}｜口径：{filters.scope}</span>
         </div>

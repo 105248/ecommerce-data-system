@@ -3,13 +3,16 @@ import type { ApiResponse, BusinessSummary, TrendPoint, ShopContributionRow, Ris
 
 const BASE = '/api/v1'
 
-export async function api<T>(path: string, params: Record<string, string | number | null | undefined> = {}): Promise<ApiResponse<T>> {
+export async function api<T>(path: string, params: Record<string, string | number | null | undefined> = {},
+                             method: 'GET' | 'PUT' = 'GET', body?: unknown): Promise<ApiResponse<T>> {
   const q = new URLSearchParams()
   for (const [k, v] of Object.entries(params)) {
     if (v !== null && v !== undefined && v !== '') q.set(k, String(v))
   }
   const url = `${BASE}${path}${q.toString() ? '?' + q.toString() : ''}`
-  const res = await fetch(url)
+  const res = await fetch(url, method === 'PUT'
+    ? { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body ?? {}) }
+    : undefined)
   const json = await res.json() as ApiResponse<T>
   if (!json.success) {
     const err = new Error(json.error?.message || json.error?.code || 'API Error')
